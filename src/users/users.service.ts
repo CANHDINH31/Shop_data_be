@@ -4,10 +4,35 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { Model } from 'mongoose';
 import { User } from 'src/schemas/users.schema';
 import { InjectModel } from '@nestjs/mongoose';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class UsersService {
   constructor(@InjectModel(User.name) private userModal: Model<User>) {}
+
+  async login(loginDto: LoginDto) {
+    try {
+      const existAccount = await this.userModal.findOne({
+        email: loginDto.email,
+        password: loginDto.password,
+      });
+
+      if (!existAccount)
+        throw new BadRequestException({
+          message: 'Email hoặc password không tồn tại',
+        });
+
+      const { password, ...data } = existAccount.toObject();
+
+      return {
+        status: HttpStatus.OK,
+        message: 'Đăng nhập thành công',
+        data,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
 
   async create(createUserDto: CreateUserDto) {
     try {
