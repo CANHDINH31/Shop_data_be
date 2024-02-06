@@ -90,7 +90,15 @@ export class UsersService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    try {
+      await this.userModal.deleteOne({ _id: id });
+      return {
+        status: HttpStatus.OK,
+        message: 'Xóa người dùng thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 }
