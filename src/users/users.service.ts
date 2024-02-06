@@ -58,16 +58,36 @@ export class UsersService {
     }
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll() {
+    try {
+      return await this.userModal
+        .find()
+        .select('-password')
+        .sort({ createdAt: -1 });
+    } catch (error) {
+      throw error;
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string) {
+    try {
+      return await this.userModal.findById(id);
+    } catch (error) {}
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    try {
+      const data = await this.userModal.findByIdAndUpdate(id, updateUserDto, {
+        new: true,
+      });
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Cập nhật thông tin thành công',
+        data,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   remove(id: number) {
