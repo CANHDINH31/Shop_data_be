@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
       serveRoot: '/uploads',
     }),
     ConfigModule.forRoot({ isGlobal: true }),
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService, JwtService],
