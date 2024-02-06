@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { UsersModule } from './users/users.module';
+import { PlansModule } from './plans/plans.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UsersModule } from './users/users.module';
     }),
     ConfigModule.forRoot({ isGlobal: true }),
     UsersModule,
+    PlansModule,
   ],
   controllers: [AppController],
   providers: [AppService, JwtService],
