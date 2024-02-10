@@ -20,6 +20,21 @@ export class User {
 
   @Prop()
   address: string;
+
+  @Prop()
+  country: string;
+
+  @Prop()
+  job: string;
+
+  @Prop({ default: 3 })
+  purpose: number;
+  /*Type of purpose
+  0. Access global internet from China
+  1. Access global internet from Iran
+  2. Play Gaming
+  3. Others
+  */
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
