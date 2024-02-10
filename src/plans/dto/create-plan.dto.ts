@@ -21,6 +21,6 @@ export class CreatePlanDto {
 
   @IsArray()
   @IsString({ each: true })
-  @ArrayMaxSize(1)
+  @ArrayMaxSize(20)
   description: string[];
 }

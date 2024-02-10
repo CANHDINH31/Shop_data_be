@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { CreatePlanDto } from './dto/create-plan.dto';
 import { UpdatePlanDto } from './dto/update-plan.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -7,25 +7,62 @@ import { Plan } from 'src/schemas/plans.schema';
 
 @Injectable()
 export class PlansService {
-  constructor(@InjectModel(Plan.name) private userModal: Model<Plan>) {}
+  constructor(@InjectModel(Plan.name) private planModal: Model<Plan>) {}
 
-  create(createPlanDto: CreatePlanDto) {
-    return 'This action adds a new plan';
+  async create(createPlanDto: CreatePlanDto) {
+    try {
+      const data = await this.planModal.create({ ...createPlanDto });
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Thêm mới plan thành công',
+        data,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
-  findAll() {
-    return `This action returns all plans`;
+  async findAll() {
+    try {
+      return await this.planModal.find().sort({ createdAt: -1 });
+    } catch (error) {
+      throw error;
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} plan`;
+  async findOne(id: string) {
+    try {
+      return await this.planModal.findById(id);
+    } catch (error) {
+      throw error;
+    }
   }
 
-  update(id: number, updatePlanDto: UpdatePlanDto) {
-    return `This action updates a #${id} plan`;
+  async update(id: string, updatePlanDto: UpdatePlanDto) {
+    try {
+      const data = await this.planModal.findByIdAndUpdate(id, updatePlanDto, {
+        new: true,
+      });
+
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Cập nhật thông tin thành công',
+        data,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} plan`;
+  async remove(id: string) {
+    try {
+      await this.planModal.deleteOne({ _id: id });
+      return {
+        status: HttpStatus.OK,
+        message: 'Xóa thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 }

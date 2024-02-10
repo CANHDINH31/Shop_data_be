@@ -72,7 +72,9 @@ export class UsersService {
   async findOne(id: string) {
     try {
       return await this.userModal.findById(id);
-    } catch (error) {}
+    } catch (error) {
+      throw error;
+    }
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
