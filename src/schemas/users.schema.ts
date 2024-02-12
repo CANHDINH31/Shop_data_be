@@ -35,6 +35,10 @@ export class User {
   2. Play Gaming
   3. Others
   */
+
+  @Prop()
+  referenceCode: string;
+  /*Auto generate when create user*/
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import { User } from 'src/schemas/users.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { LoginDto } from './dto/login.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -45,7 +46,13 @@ export class UsersService {
           message: 'Email đã tồn tại',
         });
 
-      const userCreated = await this.userModal.create({ ...createUserDto });
+      const referenceCode = await bcrypt.genSaltSync(10);
+
+      const userCreated = await this.userModal.create({
+        ...createUserDto,
+        referenceCode,
+      });
+
       const { password, ...data } = userCreated.toObject();
 
       return {
