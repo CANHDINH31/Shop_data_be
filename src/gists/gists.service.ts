@@ -105,8 +105,8 @@ export class GistsService {
         gist_id: gist.gistId,
         description: '',
         files: {
-          'README.md': {
-            content: 'Hello World from GitHub',
+          [gist.fileName]: {
+            content: updateGistDto.content,
           },
         },
         headers: {
