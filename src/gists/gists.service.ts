@@ -48,6 +48,7 @@ export class GistsService {
         startDate,
         endDate,
         gistId: gist?.data?.id,
+        fileName,
       });
 
       return {
@@ -81,7 +82,7 @@ export class GistsService {
       const gist = await this.octokit.request(
         `GET /gists/${gistMongo.gistId}`,
         {
-          gist_id: 'GIST_ID',
+          gist_id: gistMongo.gistId,
           headers: {
             'X-GitHub-Api-Version': '2022-11-28',
           },
@@ -97,8 +98,28 @@ export class GistsService {
     }
   }
 
-  update(id: number, updateGistDto: UpdateGistDto) {
-    return `This action updates a #${id} gist`;
+  async update(id: string, updateGistDto: UpdateGistDto) {
+    try {
+      const gist = await this.gistModal.findById(id);
+      await this.octokit.request(`PATCH /gists/${gist.gistId}`, {
+        gist_id: gist.gistId,
+        description: '',
+        files: {
+          'README.md': {
+            content: 'Hello World from GitHub',
+          },
+        },
+        headers: {
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+      });
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Cập nhật thông tin thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   async remove(id: string) {

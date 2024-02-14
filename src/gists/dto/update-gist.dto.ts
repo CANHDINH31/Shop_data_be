@@ -1,4 +1,7 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateGistDto } from './create-gist.dto';
+import { IsNotEmpty, IsString } from 'class-validator';
 
-export class UpdateGistDto extends PartialType(CreateGistDto) {}
+export class UpdateGistDto {
+  @IsNotEmpty()
+  @IsString()
+  content: string;
+}

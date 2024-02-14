@@ -32,7 +32,7 @@ export class GistsController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateGistDto: UpdateGistDto) {
-    return this.gistsService.update(+id, updateGistDto);
+    return this.gistsService.update(id, updateGistDto);
   }
 
   @Delete(':id')
