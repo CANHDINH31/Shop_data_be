@@ -8,6 +8,7 @@ import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { UsersModule } from './users/users.module';
 import { PlansModule } from './plans/plans.module';
+import { GistsModule } from './gists/gists.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { PlansModule } from './plans/plans.module';
     ConfigModule.forRoot({ isGlobal: true }),
     UsersModule,
     PlansModule,
+    GistsModule,
   ],
   controllers: [AppController],
   providers: [AppService, JwtService],

@@ -20,6 +20,10 @@ export class UpdatePlanDto {
   type: string;
 
   @IsOptional()
+  @IsNumber()
+  day: number;
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   @ArrayMaxSize(20)

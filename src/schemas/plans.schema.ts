@@ -16,6 +16,9 @@ export class Plan {
 
   @Prop()
   description: string[];
+
+  @Prop()
+  day: number;
 }
 
 export const PlanSchema = SchemaFactory.createForClass(Plan);

@@ -19,6 +19,10 @@ export class CreatePlanDto {
   @IsString()
   type: string;
 
+  @IsNotEmpty()
+  @IsNumber()
+  day: number;
+
   @IsArray()
   @IsString({ each: true })
   @ArrayMaxSize(20)
