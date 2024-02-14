@@ -25,17 +25,12 @@ export class GistsService {
   async create(createGistDto: CreateGistDto) {
     try {
       const plan = await this.planModal.findById(createGistDto.planId);
-      const startDate = moment().format('YYYYMMDD');
-      const endDate = moment().add(plan.day, 'd').format('YYYYMMDD');
-      const gist = await this.gistModal.create({
-        ...createGistDto,
-        startDate,
-        endDate,
-      });
+      const startDate = moment().format('YYYY-MM-DD');
+      const endDate = moment().add(plan.day, 'd').format('YYYY-MM-DD');
 
-      const fileName = `${startDate}-${endDate}-${createGistDto.userId}-${createGistDto.planId}-${gist._id}`;
+      const fileName = `${startDate}*${endDate}*${createGistDto.userId}*${createGistDto.planId}.txt`;
 
-      await this.octokit.request('POST /gists', {
+      const gist = await this.octokit.request('POST /gists', {
         description: fileName,
         public: true,
         files: {
@@ -48,6 +43,13 @@ export class GistsService {
         },
       });
 
+      await this.gistModal.create({
+        ...createGistDto,
+        startDate,
+        endDate,
+        gistId: gist?.data?.id,
+      });
+
       return {
         status: HttpStatus.CREATED,
         message: 'Thêm mới thành công',
@@ -57,19 +59,66 @@ export class GistsService {
     }
   }
 
-  findAll() {
-    return `This action returns all gists`;
+  async findAll() {
+    try {
+      return await this.gistModal
+        .find()
+        .sort({ createdAt: -1 })
+        .populate('userId')
+        .populate('planId');
+    } catch (error) {
+      throw error;
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} gist`;
+  async findOne(id: string) {
+    try {
+      const gistMongo = await this.gistModal
+        .findById(id)
+        .populate('userId')
+        .populate('planId');
+
+      const gist = await this.octokit.request(
+        `GET /gists/${gistMongo.gistId}`,
+        {
+          gist_id: 'GIST_ID',
+          headers: {
+            'X-GitHub-Api-Version': '2022-11-28',
+          },
+        },
+      );
+
+      return {
+        ...gistMongo.toObject(),
+        gistInfo: gist.data,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   update(id: number, updateGistDto: UpdateGistDto) {
     return `This action updates a #${id} gist`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} gist`;
+  async remove(id: string) {
+    try {
+      const gist = await this.gistModal.findById(id);
+      await this.octokit.request(`DELETE /gists/${gist.gistId}`, {
+        gist_id: `${gist.gistId}`,
+        headers: {
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+      });
+
+      await this.gistModal.deleteOne({ _id: id });
+
+      return {
+        status: HttpStatus.OK,
+        message: 'Xóa thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 }

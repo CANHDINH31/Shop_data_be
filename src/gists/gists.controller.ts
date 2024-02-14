@@ -27,7 +27,7 @@ export class GistsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.gistsService.findOne(+id);
+    return this.gistsService.findOne(id);
   }
 
   @Patch(':id')
@@ -37,6 +37,6 @@ export class GistsController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.gistsService.remove(+id);
+    return this.gistsService.remove(id);
   }
 }

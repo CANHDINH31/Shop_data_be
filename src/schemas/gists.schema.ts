@@ -16,6 +16,9 @@ export class Gist {
 
   @Prop()
   endDate: string;
+
+  @Prop()
+  gistId: string;
 }
 
 export const GistSchema = SchemaFactory.createForClass(Gist);
