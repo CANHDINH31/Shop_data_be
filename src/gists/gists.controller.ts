@@ -25,6 +25,11 @@ export class GistsController {
     return this.gistsService.findAll();
   }
 
+  @Get('/test')
+  test() {
+    return this.gistsService.test();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.gistsService.findOne(id);
