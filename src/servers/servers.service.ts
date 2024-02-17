@@ -75,8 +75,14 @@ export class ServersService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} server`;
+  async findOne(id: string) {
+    try {
+      const listServer = await this.serverModal.findById(id);
+      const listKeys = await this.keyModal.find({ serverId: id });
+      return { ...listServer.toObject(), listKeys };
+    } catch (error) {
+      throw error;
+    }
   }
 
   update(id: number, updateServerDto: UpdateServerDto) {
@@ -86,6 +92,7 @@ export class ServersService {
   async remove(id: string) {
     try {
       await this.serverModal.deleteOne({ _id: id });
+      await this.keyModal.deleteMany({ serverId: id });
       return {
         status: HttpStatus.OK,
         message: 'Xóa thành công',
