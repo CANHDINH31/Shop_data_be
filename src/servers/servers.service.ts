@@ -10,6 +10,7 @@ import { User } from 'outlinevpn-api/dist/types';
 import { AddKeyDto } from './dto/add-key.dto';
 import { RenameKeyDto } from './dto/rename-key.dto';
 import { RemoveKeyDto } from './dto/remove-key.dto';
+import { DisableKeyDto } from './dto/disable-key.dto';
 
 @Injectable()
 export class ServersService {
@@ -90,6 +91,29 @@ export class ServersService {
       return {
         status: HttpStatus.OK,
         message: 'Cập nhật key thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async disableKey(id: string, disableKeyDto: DisableKeyDto) {
+    try {
+      const outlineVpn = new OutlineVPN({
+        apiUrl: disableKeyDto.apiUrl,
+        fingerprint: disableKeyDto.fingerPrint,
+      });
+
+      await outlineVpn.disableUser(id);
+
+      await this.keyModal.findOneAndUpdate(
+        { keyId: id },
+        { dataLimit: 0, enable: false },
+      );
+
+      return {
+        status: HttpStatus.OK,
+        message: 'disable key thành công',
       };
     } catch (error) {
       throw error;

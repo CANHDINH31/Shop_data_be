@@ -13,6 +13,7 @@ import { SyncServerDto } from './dto/sync-server.dto';
 import { AddKeyDto } from './dto/add-key.dto';
 import { RenameKeyDto } from './dto/rename-key.dto';
 import { RemoveKeyDto } from './dto/remove-key.dto';
+import { DisableKeyDto } from './dto/disable-key.dto';
 
 @Controller('servers')
 export class ServersController {
@@ -46,6 +47,11 @@ export class ServersController {
   @Patch('/rename-key/:id')
   renameKey(@Param('id') id: string, @Body() renameKeyDto: RenameKeyDto) {
     return this.serversService.renameKey(id, renameKeyDto);
+  }
+
+  @Patch('/disable-key/:id')
+  disableKey(@Param('id') id: string, @Body() disableKeyDto: DisableKeyDto) {
+    return this.serversService.disableKey(id, disableKeyDto);
   }
 
   @Delete('/remove-key/:id')

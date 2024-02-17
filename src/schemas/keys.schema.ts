@@ -26,6 +26,12 @@ export class Key {
   @Prop({ default: false })
   used: boolean;
 
+  @Prop({ default: true })
+  enable: boolean;
+
+  @Prop({ default: 120000000000 })
+  dataLimit: number;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Server' })
   serverId: string;
 }
