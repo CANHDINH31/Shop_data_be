@@ -9,6 +9,7 @@ import { SyncServerDto } from './dto/sync-server.dto';
 import { User } from 'outlinevpn-api/dist/types';
 import { AddKeyDto } from './dto/add-key.dto';
 import { RenameKeyDto } from './dto/rename-key.dto';
+import { RemoveKeyDto } from './dto/remove-key.dto';
 
 @Injectable()
 export class ServersService {
@@ -134,6 +135,24 @@ export class ServersService {
       return {
         status: HttpStatus.OK,
         message: 'Xóa thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async removeKey(id: string, removeKeyDto: RemoveKeyDto) {
+    try {
+      const outlineVpn = new OutlineVPN({
+        apiUrl: removeKeyDto.apiUrl,
+        fingerprint: removeKeyDto.fingerPrint,
+      });
+
+      await outlineVpn.deleteUser(id);
+
+      return {
+        status: HttpStatus.OK,
+        message: 'Xóa key thành công',
       };
     } catch (error) {
       throw error;

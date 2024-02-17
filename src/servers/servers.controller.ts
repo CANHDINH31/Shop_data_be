@@ -12,6 +12,7 @@ import { UpdateServerDto } from './dto/update-server.dto';
 import { SyncServerDto } from './dto/sync-server.dto';
 import { AddKeyDto } from './dto/add-key.dto';
 import { RenameKeyDto } from './dto/rename-key.dto';
+import { RemoveKeyDto } from './dto/remove-key.dto';
 
 @Controller('servers')
 export class ServersController {
@@ -45,6 +46,11 @@ export class ServersController {
   @Patch('/rename-key/:id')
   renameKey(@Param('id') id: string, @Body() renameKeyDto: RenameKeyDto) {
     return this.serversService.renameKey(id, renameKeyDto);
+  }
+
+  @Delete('/remove-key/:id')
+  removeKey(@Param('id') id: string, @Body() removeKeyDto: RemoveKeyDto) {
+    return this.serversService.removeKey(id, removeKeyDto);
   }
 
   @Delete(':id')
