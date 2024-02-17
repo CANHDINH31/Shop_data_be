@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
 
 export type KeyDocument = HydratedDocument<Key>;
 
@@ -22,6 +22,12 @@ export class Key {
 
   @Prop()
   accessUrl: string;
+
+  @Prop({ default: false })
+  used: boolean;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Server' })
+  serverId: string;
 }
 
 export const KeySchema = SchemaFactory.createForClass(Key);

@@ -8,16 +8,16 @@ import {
   Delete,
 } from '@nestjs/common';
 import { ServersService } from './servers.service';
-import { CreateServerDto } from './dto/create-server.dto';
 import { UpdateServerDto } from './dto/update-server.dto';
+import { SyncServerDto } from './dto/sync-server.dto';
 
 @Controller('servers')
 export class ServersController {
   constructor(private readonly serversService: ServersService) {}
 
   @Post()
-  create(@Body() createServerDto: CreateServerDto) {
-    return this.serversService.create(createServerDto);
+  create(@Body() syncServerDto: SyncServerDto) {
+    return this.serversService.sync(syncServerDto);
   }
 
   @Get()
@@ -37,6 +37,6 @@ export class ServersController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.serversService.remove(+id);
+    return this.serversService.remove(id);
   }
 }
