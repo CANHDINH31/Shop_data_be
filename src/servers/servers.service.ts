@@ -7,6 +7,8 @@ import { OutlineVPN } from 'outlinevpn-api';
 import { Key } from 'src/schemas/keys.schema';
 import { SyncServerDto } from './dto/sync-server.dto';
 import { User } from 'outlinevpn-api/dist/types';
+import { AddKeyDto } from './dto/add-key.dto';
+import { RenameKeyDto } from './dto/rename-key.dto';
 
 @Injectable()
 export class ServersService {
@@ -51,6 +53,42 @@ export class ServersService {
       return {
         status: HttpStatus.OK,
         message: 'Đồng bộ thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async addKey(addKeyDto: AddKeyDto) {
+    try {
+      const outlineVpn = new OutlineVPN({
+        apiUrl: addKeyDto.apiUrl,
+        fingerprint: addKeyDto.fingerPrint,
+      });
+
+      await outlineVpn.createUser();
+
+      return {
+        status: HttpStatus.OK,
+        message: 'Thêm key thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async renameKey(id: string, renameKeyDto: RenameKeyDto) {
+    try {
+      const outlineVpn = new OutlineVPN({
+        apiUrl: renameKeyDto.apiUrl,
+        fingerprint: renameKeyDto.fingerPrint,
+      });
+
+      await outlineVpn.renameUser(id, renameKeyDto.name);
+
+      return {
+        status: HttpStatus.OK,
+        message: 'Cập nhật key thành công',
       };
     } catch (error) {
       throw error;

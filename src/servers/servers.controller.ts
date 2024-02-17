@@ -10,6 +10,8 @@ import {
 import { ServersService } from './servers.service';
 import { UpdateServerDto } from './dto/update-server.dto';
 import { SyncServerDto } from './dto/sync-server.dto';
+import { AddKeyDto } from './dto/add-key.dto';
+import { RenameKeyDto } from './dto/rename-key.dto';
 
 @Controller('servers')
 export class ServersController {
@@ -18,6 +20,11 @@ export class ServersController {
   @Post()
   create(@Body() syncServerDto: SyncServerDto) {
     return this.serversService.sync(syncServerDto);
+  }
+
+  @Post('/add-key')
+  addKey(@Body() addKeyDto: AddKeyDto) {
+    return this.serversService.addKey(addKeyDto);
   }
 
   @Get()
@@ -33,6 +40,11 @@ export class ServersController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateServerDto: UpdateServerDto) {
     return this.serversService.update(+id, updateServerDto);
+  }
+
+  @Patch('/rename-key/:id')
+  renameKey(@Param('id') id: string, @Body() renameKeyDto: RenameKeyDto) {
+    return this.serversService.renameKey(id, renameKeyDto);
   }
 
   @Delete(':id')
