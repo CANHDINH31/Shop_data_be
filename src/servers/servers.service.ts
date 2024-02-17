@@ -11,6 +11,7 @@ import { AddKeyDto } from './dto/add-key.dto';
 import { RenameKeyDto } from './dto/rename-key.dto';
 import { RemoveKeyDto } from './dto/remove-key.dto';
 import { DisableKeyDto } from './dto/disable-key.dto';
+import { EnableKeyDto } from './dto/enable-key.dto';
 
 @Injectable()
 export class ServersService {
@@ -114,6 +115,29 @@ export class ServersService {
       return {
         status: HttpStatus.OK,
         message: 'disable key thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async enableKey(id: string, enableKeyDto: EnableKeyDto) {
+    try {
+      const outlineVpn = new OutlineVPN({
+        apiUrl: enableKeyDto.apiUrl,
+        fingerprint: enableKeyDto.fingerPrint,
+      });
+
+      await outlineVpn.enableUser(id);
+
+      await this.keyModal.findOneAndUpdate(
+        { keyId: id },
+        { dataLimit: 120000000000, enable: true },
+      );
+
+      return {
+        status: HttpStatus.OK,
+        message: 'enable key thành công',
       };
     } catch (error) {
       throw error;

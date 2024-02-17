@@ -14,6 +14,7 @@ import { AddKeyDto } from './dto/add-key.dto';
 import { RenameKeyDto } from './dto/rename-key.dto';
 import { RemoveKeyDto } from './dto/remove-key.dto';
 import { DisableKeyDto } from './dto/disable-key.dto';
+import { EnableKeyDto } from './dto/enable-key.dto';
 
 @Controller('servers')
 export class ServersController {
@@ -52,6 +53,11 @@ export class ServersController {
   @Patch('/disable-key/:id')
   disableKey(@Param('id') id: string, @Body() disableKeyDto: DisableKeyDto) {
     return this.serversService.disableKey(id, disableKeyDto);
+  }
+
+  @Patch('/enable-key/:id')
+  enableKey(@Param('id') id: string, @Body() enableKeyDto: EnableKeyDto) {
+    return this.serversService.enableKey(id, enableKeyDto);
   }
 
   @Delete('/remove-key/:id')
