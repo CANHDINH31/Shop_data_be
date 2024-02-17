@@ -9,6 +9,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { UsersModule } from './users/users.module';
 import { PlansModule } from './plans/plans.module';
 import { GistsModule } from './gists/gists.module';
+import { ServersModule } from './servers/servers.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { GistsModule } from './gists/gists.module';
     UsersModule,
     PlansModule,
     GistsModule,
+    ServersModule,
   ],
   controllers: [AppController],
   providers: [AppService, JwtService],

@@ -8,12 +8,10 @@ import { Octokit } from '@octokit/core';
 import { ConfigService } from '@nestjs/config';
 import * as moment from 'moment';
 import { Plan } from 'src/schemas/plans.schema';
-import { OutlineVPN } from 'outlinevpn-api';
 
 @Injectable()
 export class GistsService {
   private readonly octokit;
-  private readonly outlineVpn;
 
   constructor(
     @InjectModel(Gist.name) private gistModal: Model<Gist>,
@@ -22,12 +20,6 @@ export class GistsService {
   ) {
     this.octokit = new Octokit({
       auth: configService.get('PERSONAL_GIST_TOKEN'),
-    });
-
-    this.outlineVpn = new OutlineVPN({
-      apiUrl: 'https://64.176.49.96:35671/yOZ-4uwlx5Tk1ZyPPeuIDQ',
-      fingerprint:
-        'C754811394D11AD385FEB63AD85987F93821CED3FBE0B11AAF1713DBE1E90E87',
     });
   }
 
@@ -76,15 +68,6 @@ export class GistsService {
         .sort({ createdAt: -1 })
         .populate('userId')
         .populate('planId');
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async test() {
-    try {
-      const users = await this.outlineVpn.getDataUsage();
-      return users;
     } catch (error) {
       throw error;
     }
