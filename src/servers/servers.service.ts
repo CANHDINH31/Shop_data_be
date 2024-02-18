@@ -12,6 +12,7 @@ import { RenameKeyDto } from './dto/rename-key.dto';
 import { RemoveKeyDto } from './dto/remove-key.dto';
 import { DisableKeyDto } from './dto/disable-key.dto';
 import { EnableKeyDto } from './dto/enable-key.dto';
+import { AddDataLimitDto } from './dto/add-data-limit.dto';
 
 @Injectable()
 export class ServersService {
@@ -201,6 +202,30 @@ export class ServersService {
       return {
         status: HttpStatus.OK,
         message: 'Xóa key thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async addDataLimit(id: string, addDataLimitDto: AddDataLimitDto) {
+    try {
+      const outlineVpn = new OutlineVPN({
+        apiUrl: addDataLimitDto.apiUrl,
+        fingerprint: addDataLimitDto.fingerPrint,
+      });
+
+      const data = addDataLimitDto.bytes * 1000000000;
+      await outlineVpn.addDataLimit(id, data);
+
+      await this.keyModal.findOneAndUpdate(
+        { keyId: id },
+        { dataLimit: data, enable: true },
+      );
+
+      return {
+        status: HttpStatus.OK,
+        message: 'Thêm data thành công',
       };
     } catch (error) {
       throw error;

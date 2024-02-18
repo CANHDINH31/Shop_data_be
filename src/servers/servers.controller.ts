@@ -15,6 +15,7 @@ import { RenameKeyDto } from './dto/rename-key.dto';
 import { RemoveKeyDto } from './dto/remove-key.dto';
 import { DisableKeyDto } from './dto/disable-key.dto';
 import { EnableKeyDto } from './dto/enable-key.dto';
+import { AddDataLimitDto } from './dto/add-data-limit.dto';
 
 @Controller('servers')
 export class ServersController {
@@ -23,11 +24,6 @@ export class ServersController {
   @Post()
   create(@Body() syncServerDto: SyncServerDto) {
     return this.serversService.sync(syncServerDto);
-  }
-
-  @Post('/add-key')
-  addKey(@Body() addKeyDto: AddKeyDto) {
-    return this.serversService.addKey(addKeyDto);
   }
 
   @Get()
@@ -45,6 +41,11 @@ export class ServersController {
     return this.serversService.update(+id, updateServerDto);
   }
 
+  @Post('/add-key')
+  addKey(@Body() addKeyDto: AddKeyDto) {
+    return this.serversService.addKey(addKeyDto);
+  }
+
   @Patch('/rename-key/:id')
   renameKey(@Param('id') id: string, @Body() renameKeyDto: RenameKeyDto) {
     return this.serversService.renameKey(id, renameKeyDto);
@@ -58,6 +59,14 @@ export class ServersController {
   @Patch('/enable-key/:id')
   enableKey(@Param('id') id: string, @Body() enableKeyDto: EnableKeyDto) {
     return this.serversService.enableKey(id, enableKeyDto);
+  }
+
+  @Patch('/add-data-limit/:id')
+  addDataLimit(
+    @Param('id') id: string,
+    @Body() AddDataLimitDto: AddDataLimitDto,
+  ) {
+    return this.serversService.addDataLimit(id, AddDataLimitDto);
   }
 
   @Delete('/remove-key/:id')
