@@ -6,19 +6,20 @@ import { Server } from 'src/schemas/servers.schema';
 import { OutlineVPN } from 'outlinevpn-api';
 import { Key } from 'src/schemas/keys.schema';
 import { SyncServerDto } from './dto/sync-server.dto';
-import { User } from 'outlinevpn-api/dist/types';
 import { AddKeyDto } from './dto/add-key.dto';
 import { RenameKeyDto } from './dto/rename-key.dto';
 import { RemoveKeyDto } from './dto/remove-key.dto';
 import { DisableKeyDto } from './dto/disable-key.dto';
 import { EnableKeyDto } from './dto/enable-key.dto';
 import { AddDataLimitDto } from './dto/add-data-limit.dto';
+import { Gist } from 'src/schemas/gists.schema';
 
 @Injectable()
 export class ServersService {
   constructor(
     @InjectModel(Server.name) private serverModal: Model<Server>,
     @InjectModel(Key.name) private keyModal: Model<Key>,
+    @InjectModel(Gist.name) private gistModal: Model<Gist>,
   ) {}
 
   async sync(syncServerDto: SyncServerDto) {
@@ -207,6 +208,12 @@ export class ServersService {
       });
 
       await outlineVpn.deleteUser(id);
+
+      const server = await outlineVpn.getServer();
+
+      await this.keyModal.deleteOne({ keyId: id, serverId: server.serverId });
+
+      await this.gistModal.deleteOne({ keyId: id, serverId: server.serverId });
 
       return {
         status: HttpStatus.OK,

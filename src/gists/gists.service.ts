@@ -96,6 +96,8 @@ export class GistsService {
         endDate,
         gistId: gist?.data?.id,
         fileName,
+        keyId: keysWithLeastKeyServerId[0].keyId,
+        serverId: sortedKeyCountByServerId[0].serverId,
       });
 
       return {

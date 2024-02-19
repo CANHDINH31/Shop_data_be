@@ -22,6 +22,12 @@ export class Gist {
 
   @Prop()
   fileName: string;
+
+  @Prop()
+  serverId: string;
+
+  @Prop()
+  keyId: string;
 }
 
 export const GistSchema = SchemaFactory.createForClass(Gist);
