@@ -13,14 +13,23 @@ import { DisableKeyDto } from './dto/disable-key.dto';
 import { EnableKeyDto } from './dto/enable-key.dto';
 import { AddDataLimitDto } from './dto/add-data-limit.dto';
 import { Gist } from 'src/schemas/gists.schema';
+import { Octokit } from '@octokit/core';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ServersService {
+  private readonly octokit;
+
   constructor(
     @InjectModel(Server.name) private serverModal: Model<Server>,
     @InjectModel(Key.name) private keyModal: Model<Key>,
     @InjectModel(Gist.name) private gistModal: Model<Gist>,
-  ) {}
+    private configService: ConfigService,
+  ) {
+    this.octokit = new Octokit({
+      auth: configService.get('PERSONAL_GIST_TOKEN'),
+    });
+  }
 
   async sync(syncServerDto: SyncServerDto) {
     try {
@@ -211,9 +220,25 @@ export class ServersService {
 
       const server = await outlineVpn.getServer();
 
-      await this.keyModal.deleteOne({ keyId: id, serverId: server.serverId });
+      const serverMongo = await this.serverModal.findOne({
+        serverId: server.serverId,
+      });
 
-      await this.gistModal.deleteOne({ keyId: id, serverId: server.serverId });
+      await this.keyModal.deleteOne({ keyId: id, serverId: serverMongo._id });
+
+      const gist = await this.gistModal.findOne({
+        keyId: id,
+        serverId: serverMongo._id,
+      });
+
+      await this.octokit.request(`DELETE /gists/${gist.gistId}`, {
+        gist_id: `${gist.gistId}`,
+        headers: {
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+      });
+
+      await this.gistModal.findByIdAndDelete(gist._id);
 
       return {
         status: HttpStatus.OK,
