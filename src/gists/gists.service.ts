@@ -1,5 +1,5 @@
 import { OutlineVPN } from 'outlinevpn-api';
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateGistDto } from './dto/create-gist.dto';
 import { UpdateGistDto } from './dto/update-gist.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -45,6 +45,7 @@ export class GistsService {
       for (const serverId of listServerId) {
         const keyCount = await this.keyModal.countDocuments({
           serverId: serverId._id,
+          used: true,
         });
         keyCountByServerId.push({ serverId: serverId._id, keyCount });
       }
@@ -61,12 +62,19 @@ export class GistsService {
       const keysWithLeastKeyServerId = await this.keyModal
         .find({
           serverId: leastKeyServerId,
+          used: false,
         })
         .sort({ endDate: 1 });
+
+      if (keysWithLeastKeyServerId?.length < 1)
+        throw new BadRequestException({
+          message: 'Hiện tại đã hết key trống, vui lòng tạo thêm key',
+        });
 
       await this.keyModal.findByIdAndUpdate(keysWithLeastKeyServerId[0]._id, {
         startDate,
         endDate,
+        used: true,
       });
 
       const gist = await this.octokit.request('POST /gists', {

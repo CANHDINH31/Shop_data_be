@@ -94,6 +94,11 @@ export class ServersService {
 
       await outlineVpn.renameUser(id, renameKeyDto.name);
 
+      await this.keyModal.findOneAndUpdate(
+        { keyId: id },
+        { name: renameKeyDto.name },
+      );
+
       return {
         status: HttpStatus.OK,
         message: 'Cập nhật key thành công',
