@@ -31,13 +31,12 @@ export class GistsService {
   async create(createGistDto: CreateGistDto) {
     try {
       const plan = await this.planModal.findById(createGistDto.planId);
-      const startDate = moment().format('YYYY-MM-DD');
-      const endDate = moment().add(plan.day, 'd').format('YYYY-MM-DD');
+      const startDate = moment();
+      const endDate = moment().add(plan.day, 'd');
 
-      const fileName = `${startDate.replace(/-/g, '')}-${endDate.replace(
-        /-/g,
-        '',
-      )}-${createGistDto.userId}-${plan.name}.txt`;
+      const fileName = `${moment(startDate).format('YYYYMMDD')}-${moment(
+        endDate,
+      ).format('YYYYMMDD')}-${createGistDto.userId}-${plan.name}.txt`;
 
       const listServerId = await this.serverModal.find().select('_id');
 
@@ -65,35 +64,36 @@ export class GistsService {
         })
         .sort({ endDate: 1 });
 
-      return keysWithLeastKeyServerId;
+      await this.keyModal.findByIdAndUpdate(keysWithLeastKeyServerId[0]._id, {
+        startDate,
+        endDate,
+      });
 
-      // return oldestKey;
+      const gist = await this.octokit.request('POST /gists', {
+        description: fileName,
+        public: true,
+        files: {
+          [fileName]: {
+            content: keysWithLeastKeyServerId?.[0]?.accessUrl,
+          },
+        },
+        headers: {
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+      });
 
-      // const gist = await this.octokit.request('POST /gists', {
-      //   description: fileName,
-      //   public: true,
-      //   files: {
-      //     [fileName]: {
-      //       content: 'Hello World',
-      //     },
-      //   },
-      //   headers: {
-      //     'X-GitHub-Api-Version': '2022-11-28',
-      //   },
-      // });
+      await this.gistModal.create({
+        ...createGistDto,
+        startDate,
+        endDate,
+        gistId: gist?.data?.id,
+        fileName,
+      });
 
-      // await this.gistModal.create({
-      //   ...createGistDto,
-      //   startDate,
-      //   endDate,
-      //   gistId: gist?.data?.id,
-      //   fileName,
-      // });
-
-      // return {
-      //   status: HttpStatus.CREATED,
-      //   message: 'Thêm mới thành công',
-      // };
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Thêm mới thành công',
+      };
     } catch (error) {
       throw error;
     }
