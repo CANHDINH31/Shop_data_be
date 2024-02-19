@@ -136,6 +136,8 @@ export class ServersService {
         { dataLimit: 120000000000, enable: true },
       );
 
+      return outlineVpn.getUsers();
+
       return {
         status: HttpStatus.OK,
         message: 'enable key thành công',

@@ -1,3 +1,4 @@
+import { OutlineVPN } from 'outlinevpn-api';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { CreateGistDto } from './dto/create-gist.dto';
 import { UpdateGistDto } from './dto/update-gist.dto';
@@ -8,6 +9,8 @@ import { Octokit } from '@octokit/core';
 import { ConfigService } from '@nestjs/config';
 import * as moment from 'moment';
 import { Plan } from 'src/schemas/plans.schema';
+import { Server } from 'src/schemas/servers.schema';
+import { Key } from 'src/schemas/keys.schema';
 
 @Injectable()
 export class GistsService {
@@ -16,6 +19,8 @@ export class GistsService {
   constructor(
     @InjectModel(Gist.name) private gistModal: Model<Gist>,
     @InjectModel(Plan.name) private planModal: Model<Plan>,
+    @InjectModel(Server.name) private serverModal: Model<Server>,
+    @InjectModel(Key.name) private keyModal: Model<Key>,
     private configService: ConfigService,
   ) {
     this.octokit = new Octokit({
@@ -29,33 +34,66 @@ export class GistsService {
       const startDate = moment().format('YYYY-MM-DD');
       const endDate = moment().add(plan.day, 'd').format('YYYY-MM-DD');
 
-      const fileName = `${startDate}*${endDate}*${createGistDto.userId}*${createGistDto.planId}.txt`;
+      const fileName = `${startDate.replace(/-/g, '')}-${endDate.replace(
+        /-/g,
+        '',
+      )}-${createGistDto.userId}-${plan.name}.txt`;
 
-      const gist = await this.octokit.request('POST /gists', {
-        description: fileName,
-        public: true,
-        files: {
-          [fileName]: {
-            content: 'Hello World',
-          },
-        },
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-      });
+      const listServerId = await this.serverModal.find().select('_id');
 
-      await this.gistModal.create({
-        ...createGistDto,
-        startDate,
-        endDate,
-        gistId: gist?.data?.id,
-        fileName,
-      });
+      const keyCountByServerId = [];
 
-      return {
-        status: HttpStatus.CREATED,
-        message: 'Thêm mới thành công',
-      };
+      for (const serverId of listServerId) {
+        const keyCount = await this.keyModal.countDocuments({
+          serverId: serverId._id,
+        });
+        keyCountByServerId.push({ serverId: serverId._id, keyCount });
+      }
+
+      // Sắp xếp danh sách keyCountByServerId theo số lượng key tăng dần
+      const sortedKeyCountByServerId = keyCountByServerId.sort(
+        (a, b) => a.keyCount - b.keyCount,
+      );
+
+      // Lấy serverId có ít key nhất
+      const leastKeyServerId = sortedKeyCountByServerId[0].serverId;
+
+      // Truy vấn cơ sở dữ liệu để lấy key có serverId tương ứng và sắp xếp theo thời gian tạo giảm dần
+      const keysWithLeastKeyServerId = await this.keyModal
+        .find({
+          serverId: leastKeyServerId,
+        })
+        .sort({ endDate: 1 });
+
+      return keysWithLeastKeyServerId;
+
+      // return oldestKey;
+
+      // const gist = await this.octokit.request('POST /gists', {
+      //   description: fileName,
+      //   public: true,
+      //   files: {
+      //     [fileName]: {
+      //       content: 'Hello World',
+      //     },
+      //   },
+      //   headers: {
+      //     'X-GitHub-Api-Version': '2022-11-28',
+      //   },
+      // });
+
+      // await this.gistModal.create({
+      //   ...createGistDto,
+      //   startDate,
+      //   endDate,
+      //   gistId: gist?.data?.id,
+      //   fileName,
+      // });
+
+      // return {
+      //   status: HttpStatus.CREATED,
+      //   message: 'Thêm mới thành công',
+      // };
     } catch (error) {
       throw error;
     }

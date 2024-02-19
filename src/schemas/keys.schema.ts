@@ -34,6 +34,12 @@ export class Key {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Server' })
   serverId: string;
+
+  @Prop({ default: () => new Date() })
+  startDate: Date;
+
+  @Prop({ default: () => new Date() })
+  endDate: Date;
 }
 
 export const KeySchema = SchemaFactory.createForClass(Key);
