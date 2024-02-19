@@ -34,24 +34,16 @@ export class ServersService {
         serverId: server.serverId,
       });
 
-      const listKeys = await outlineVpn.getUsers();
-
       if (serverMongo) {
         await this.serverModal.findByIdAndUpdate(serverMongo._id, {
           ...server,
           ...syncServerDto,
         });
-
-        await this.keyModal.deleteMany({ serverId: serverMongo._id });
-
-        await this.createKey(listKeys, serverMongo._id.toString());
       } else {
-        const newServer = await this.serverModal.create({
+        await this.serverModal.create({
           ...server,
           ...syncServerDto,
         });
-
-        await this.createKey(listKeys, newServer._id.toString());
       }
 
       return {
@@ -70,7 +62,19 @@ export class ServersService {
         fingerprint: addKeyDto.fingerPrint,
       });
 
-      await outlineVpn.createUser();
+      const user = await outlineVpn.createUser();
+      const { id, ...rest } = user;
+
+      const server = await outlineVpn.getServer();
+      const serverMongo = await this.serverModal.findOne({
+        serverId: server.serverId,
+      });
+
+      await this.keyModal.create({
+        keyId: id,
+        serverId: serverMongo._id,
+        ...rest,
+      });
 
       return {
         status: HttpStatus.OK,
@@ -135,8 +139,6 @@ export class ServersService {
         { keyId: id },
         { dataLimit: 120000000000, enable: true },
       );
-
-      return outlineVpn.getUsers();
 
       return {
         status: HttpStatus.OK,
@@ -232,18 +234,5 @@ export class ServersService {
     } catch (error) {
       throw error;
     }
-  }
-
-  async createKey(listKeys: User[], serverId: string) {
-    try {
-      for (const key of listKeys) {
-        const { id, ...rest } = key;
-        await this.keyModal.create({
-          keyId: id,
-          serverId: serverId,
-          ...rest,
-        });
-      }
-    } catch (error) {}
   }
 }
