@@ -361,4 +361,19 @@ export class ServersService {
       throw error;
     }
   }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  checkCronEveryMinute() {
+    console.log('EVERY_MINUTE');
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
+  checkCronEveryDayAt1AM() {
+    console.log('EVERY_DAY_AT_1AM');
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_2AM)
+  checkCronEveryDayAt2AM() {
+    console.log('EVERY_DAY_AT_2AM');
+  }
 }
