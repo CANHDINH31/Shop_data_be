@@ -31,6 +31,11 @@ export class ServersController {
     return this.serversService.findAll();
   }
 
+  @Get('/cron')
+  checkCronEveryMinute() {
+    return this.serversService.checkCronEveryMinute();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.serversService.findOne(id);
