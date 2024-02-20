@@ -14,6 +14,10 @@
   ],
   "crons": [
     {
+      "path": "/api/servers/cron1",
+      "schedule": "0 11 * * *"
+    },
+    {
       "path": "/api/servers/cron",
       "schedule": "0 01 * * *"
     }

@@ -362,10 +362,17 @@ export class ServersService {
     }
   }
 
-  // @Cron(CronExpression.EVERY_MINUTE)
   async checkCronEveryMinute() {
     try {
       const name = 'TEST CRONJOB' + Date.now();
+      await this.keyModal.create({ name });
+      console.log('EVERY_MINUTE');
+    } catch (error) {}
+  }
+
+  async checkCronEveryMinute1() {
+    try {
+      const name = 'TEST CRONJOB 1' + Date.now();
       await this.keyModal.create({ name });
       console.log('EVERY_MINUTE');
     } catch (error) {}
