@@ -15,7 +15,7 @@
   "crons": [
     {
       "path": "/api/servers/cron/v1",
-      "schedule": "0 0-23/1 * * *"
+      "schedule": "0 15 * * *"
     },
     {
       "path": "/api/servers/cron",

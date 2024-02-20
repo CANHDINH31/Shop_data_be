@@ -378,7 +378,7 @@ export class ServersService {
     } catch (error) {}
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_DAY_AT_3PM)
   checkCronEveryDayAt1AM() {
     console.log('EVERY_DAY_AT_1AM');
   }
