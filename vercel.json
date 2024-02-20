@@ -14,8 +14,8 @@
   ],
   "crons": [
     {
-      "path": "/api/servers/cron1",
-      "schedule": "0 11 * * *"
+      "path": "/api/servers/cron/v1",
+      "schedule": "0 0-23/1 * * *"
     },
     {
       "path": "/api/servers/cron",
