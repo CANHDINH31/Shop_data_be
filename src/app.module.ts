@@ -10,9 +10,11 @@ import { UsersModule } from './users/users.module';
 import { PlansModule } from './plans/plans.module';
 import { GistsModule } from './gists/gists.module';
 import { ServersModule } from './servers/servers.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({

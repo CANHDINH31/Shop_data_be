@@ -15,6 +15,7 @@ import { AddDataLimitDto } from './dto/add-data-limit.dto';
 import { Gist } from 'src/schemas/gists.schema';
 import { Octokit } from '@octokit/core';
 import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class ServersService {
@@ -270,6 +271,45 @@ export class ServersService {
         status: HttpStatus.OK,
         message: 'Thêm data thành công',
       };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
+  async getDataUsage() {
+    try {
+      const listServer = await this.serverModal.find({});
+
+      for (const server of listServer) {
+        const outlineVpn = new OutlineVPN({
+          apiUrl: server.apiUrl,
+          fingerprint: server.fingerPrint,
+        });
+
+        const dataUsage = await outlineVpn.getDataUsage();
+        const bytesTransferredByUserId = dataUsage.bytesTransferredByUserId;
+
+        const arrayDataUsage = Object.entries(bytesTransferredByUserId).map(
+          ([keyId, value]) => ({
+            keyId,
+            value,
+          }),
+        );
+
+        for (const key of arrayDataUsage) {
+          const keyMongo = await this.keyModal.findOne({
+            serverId: server._id,
+            keyId: key.keyId,
+          });
+
+          if (keyMongo) {
+            await this.keyModal.findByIdAndUpdate(keyMongo._id, {
+              dataUsage: key.value,
+            });
+          }
+        }
+      }
     } catch (error) {
       throw error;
     }

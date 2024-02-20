@@ -29,6 +29,9 @@ export class Key {
   @Prop({ default: 120000000000 })
   dataLimit: number;
 
+  @Prop()
+  dataUsage: number;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Server' })
   serverId: string;
 
