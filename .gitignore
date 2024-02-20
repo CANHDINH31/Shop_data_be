@@ -39,3 +39,4 @@ logger.log
 #env
 .env
 
+.vercel
