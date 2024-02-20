@@ -262,14 +262,16 @@ export class ServersService {
         serverId: serverMongo._id,
       });
 
-      await this.octokit.request(`DELETE /gists/${gist.gistId}`, {
-        gist_id: `${gist.gistId}`,
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-      });
+      if (gist) {
+        await this.octokit.request(`DELETE /gists/${gist.gistId}`, {
+          gist_id: `${gist.gistId}`,
+          headers: {
+            'X-GitHub-Api-Version': '2022-11-28',
+          },
+        });
 
-      await this.gistModal.findByIdAndDelete(gist._id);
+        await this.gistModal.findByIdAndDelete(gist._id);
+      }
 
       return {
         status: HttpStatus.OK,
