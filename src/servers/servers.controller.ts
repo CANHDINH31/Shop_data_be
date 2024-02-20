@@ -16,7 +16,6 @@ import { RemoveKeyDto } from './dto/remove-key.dto';
 import { DisableKeyDto } from './dto/disable-key.dto';
 import { EnableKeyDto } from './dto/enable-key.dto';
 import { AddDataLimitDto } from './dto/add-data-limit.dto';
-import { UpdateLimitNumberKeyDto } from './dto/update-limit-number-key.dto';
 
 @Controller('servers')
 export class ServersController {
@@ -35,13 +34,6 @@ export class ServersController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.serversService.findOne(id);
-  }
-
-  @Patch('update-limit-number-key')
-  updateLimitNumberKey(
-    @Body() updateLimitNumberKeyDto: UpdateLimitNumberKeyDto,
-  ) {
-    return this.serversService.updateLimitNumberKey(updateLimitNumberKeyDto);
   }
 
   @Patch(':id')
@@ -72,9 +64,9 @@ export class ServersController {
   @Patch('/add-data-limit/:id')
   addDataLimit(
     @Param('id') id: string,
-    @Body() AddDataLimitDto: AddDataLimitDto,
+    @Body() addDataLimitDto: AddDataLimitDto,
   ) {
-    return this.serversService.addDataLimit(id, AddDataLimitDto);
+    return this.serversService.addDataLimit(id, addDataLimitDto);
   }
 
   @Delete('/remove-key/:id')

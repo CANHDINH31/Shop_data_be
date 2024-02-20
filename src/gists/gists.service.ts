@@ -1,5 +1,4 @@
-import { OutlineVPN } from 'outlinevpn-api';
-import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { CreateGistDto } from './dto/create-gist.dto';
 import { UpdateGistDto } from './dto/update-gist.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -11,6 +10,7 @@ import * as moment from 'moment';
 import { Plan } from 'src/schemas/plans.schema';
 import { Server } from 'src/schemas/servers.schema';
 import { Key } from 'src/schemas/keys.schema';
+import { OutlineVPN } from 'outlinevpn-api';
 
 @Injectable()
 export class GistsService {
@@ -38,16 +38,20 @@ export class GistsService {
         endDate,
       ).format('YYYYMMDD')}-${createGistDto.userId}-${plan.name}.txt`;
 
-      const listServerId = await this.serverModal.find().select('_id');
+      const listServer = await this.serverModal
+        .find()
+        .select(['_id', 'limitNumberKey']);
 
       const keyCountByServerId = [];
 
-      for (const serverId of listServerId) {
+      for (const server of listServer) {
         const keyCount = await this.keyModal.countDocuments({
-          serverId: serverId._id,
-          used: true,
+          serverId: server._id,
         });
-        keyCountByServerId.push({ serverId: serverId._id, keyCount });
+        keyCountByServerId.push({
+          serverId: server._id,
+          keyCount,
+        });
       }
 
       // Sắp xếp danh sách keyCountByServerId theo số lượng key tăng dần
@@ -58,23 +62,22 @@ export class GistsService {
       // Lấy serverId có ít key nhất
       const leastKeyServerId = sortedKeyCountByServerId[0].serverId;
 
-      // Truy vấn cơ sở dữ liệu để lấy key có serverId tương ứng và sắp xếp theo thời gian tạo giảm dần
-      const keysWithLeastKeyServerId = await this.keyModal
-        .find({
-          serverId: leastKeyServerId,
-          used: false,
-        })
-        .sort({ endDate: 1 });
+      const serverMongo = await this.serverModal.findById(leastKeyServerId);
 
-      if (keysWithLeastKeyServerId?.length < 1)
-        throw new BadRequestException({
-          message: 'Hiện tại đã hết key trống, vui lòng tạo thêm key',
-        });
+      const outlineVpn = new OutlineVPN({
+        apiUrl: serverMongo.apiUrl,
+        fingerprint: serverMongo.fingerPrint,
+      });
 
-      await this.keyModal.findByIdAndUpdate(keysWithLeastKeyServerId[0]._id, {
+      const user = await outlineVpn.createUser();
+      const { id, ...rest } = user;
+
+      const key = await this.keyModal.create({
+        keyId: id,
+        serverId: leastKeyServerId,
         startDate,
         endDate,
-        used: true,
+        ...rest,
       });
 
       const gist = await this.octokit.request('POST /gists', {
@@ -82,7 +85,7 @@ export class GistsService {
         public: true,
         files: {
           [fileName]: {
-            content: keysWithLeastKeyServerId?.[0]?.accessUrl,
+            content: user?.accessUrl,
           },
         },
         headers: {
@@ -96,7 +99,7 @@ export class GistsService {
         endDate,
         gistId: gist?.data?.id,
         fileName,
-        keyId: keysWithLeastKeyServerId[0].keyId,
+        keyId: key.keyId,
         serverId: sortedKeyCountByServerId[0].serverId,
       });
 

@@ -23,9 +23,6 @@ export class Key {
   @Prop()
   accessUrl: string;
 
-  @Prop({ default: false })
-  used: boolean;
-
   @Prop({ default: true })
   enable: boolean;
 
