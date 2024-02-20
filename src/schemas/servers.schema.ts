@@ -31,6 +31,9 @@ export class Server {
 
   @Prop()
   hostnameForAccessKeys: string;
+
+  @Prop({ default: 50 })
+  limitNumberKey: number;
 }
 
 export const ServerSchema = SchemaFactory.createForClass(Server);

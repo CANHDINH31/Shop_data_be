@@ -15,6 +15,7 @@ import { AddDataLimitDto } from './dto/add-data-limit.dto';
 import { Gist } from 'src/schemas/gists.schema';
 import { Octokit } from '@octokit/core';
 import { ConfigService } from '@nestjs/config';
+import { UpdateLimitNumberKeyDto } from './dto/update-limit-number-key.dto';
 
 @Injectable()
 export class ServersService {
@@ -187,6 +188,36 @@ export class ServersService {
       const listServer = await this.serverModal.findById(id);
       const listKeys = await this.keyModal.find({ serverId: id });
       return { ...listServer.toObject(), listKeys };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateLimitNumberKey(updateLimitNumberKeyDto: UpdateLimitNumberKeyDto) {
+    try {
+      const outlineVpn = new OutlineVPN({
+        apiUrl: updateLimitNumberKeyDto.apiUrl,
+        fingerprint: updateLimitNumberKeyDto.fingerPrint,
+      });
+
+      const server = await outlineVpn.getServer();
+      const serverMongo = await this.serverModal.findOne({
+        serverId: server.serverId,
+      });
+
+      const data = await this.serverModal.findByIdAndUpdate(
+        serverMongo._id,
+        {
+          limitNumberKey: updateLimitNumberKeyDto.limitNumberKey,
+        },
+        { new: true },
+      );
+
+      return {
+        status: HttpStatus.OK,
+        message: 'update limit key thành công',
+        data,
+      };
     } catch (error) {
       throw error;
     }
