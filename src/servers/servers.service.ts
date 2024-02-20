@@ -16,6 +16,7 @@ import { Gist } from 'src/schemas/gists.schema';
 import { Octokit } from '@octokit/core';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import * as moment from 'moment';
 
 @Injectable()
 export class ServersService {
@@ -309,6 +310,52 @@ export class ServersService {
             });
           }
         }
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_2AM)
+  async checkExpiredKey() {
+    try {
+      const listKey = (await this.keyModal
+        .find({})
+        .populate('serverId')) as any[];
+
+      const today = moment();
+      const expiredKeys = listKey.filter((key) => {
+        const endDate = moment(key.endDate);
+        return endDate.isBefore(today);
+      });
+
+      for (const key of expiredKeys) {
+        const outlineVpn = new OutlineVPN({
+          apiUrl: key.serverId.apiUrl,
+          fingerprint: key.serverId.fingerprint,
+        });
+
+        await outlineVpn.deleteUser(key.keyId);
+
+        const gist = await this.gistModal.findOne({
+          keyId: key.keyId,
+          serverId: key.serverId._id,
+        });
+
+        if (gist) {
+          await this.octokit.request(`DELETE /gists/${gist.gistId}`, {
+            gist_id: `${gist.gistId}`,
+            headers: {
+              'X-GitHub-Api-Version': '2022-11-28',
+            },
+          });
+          await this.gistModal.findByIdAndDelete(gist._id);
+        }
+
+        await this.keyModal.deleteOne({
+          keyId: key.keyId,
+          serverId: key.serverId,
+        });
       }
     } catch (error) {
       throw error;
