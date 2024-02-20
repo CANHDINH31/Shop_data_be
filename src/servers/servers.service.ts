@@ -362,7 +362,7 @@ export class ServersService {
     }
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  // @Cron(CronExpression.EVERY_MINUTE)
   async checkCronEveryMinute() {
     try {
       const name = 'TEST CRONJOB' + Date.now();
