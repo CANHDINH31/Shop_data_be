@@ -25,7 +25,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('/docs', app, document);
 
-  const PORT = process.env.PORT || 5000;
+  const PORT = 500;
 
   await app.listen(PORT);
 }
