@@ -28,4 +28,8 @@ export class UpdatePlanDto {
   @IsString({ each: true })
   @ArrayMaxSize(20)
   description: string[];
+
+  @IsOptional()
+  @IsNumber()
+  bandWidth: number;
 }

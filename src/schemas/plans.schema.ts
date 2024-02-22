@@ -19,6 +19,10 @@ export class Plan {
 
   @Prop()
   day: number;
+
+  @Prop()
+  bandWidth: number;
+  // unit: GB
 }
 
 export const PlanSchema = SchemaFactory.createForClass(Plan);

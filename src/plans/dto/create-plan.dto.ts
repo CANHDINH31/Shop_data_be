@@ -27,4 +27,8 @@ export class CreatePlanDto {
   @IsString({ each: true })
   @ArrayMaxSize(20)
   description: string[];
+
+  @IsNotEmpty()
+  @IsNumber()
+  bandWidth: number;
 }
