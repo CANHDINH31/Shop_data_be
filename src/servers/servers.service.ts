@@ -361,13 +361,4 @@ export class ServersService {
       throw error;
     }
   }
-
-  @Cron(CronExpression.EVERY_MINUTE)
-  async checkCronEveryMinute1() {
-    try {
-      const name = 'TEST CRONJOB 1' + Date.now();
-      await this.keyModal.create({ name });
-      console.log('EVERY_MINUTE');
-    } catch (error) {}
-  }
 }
