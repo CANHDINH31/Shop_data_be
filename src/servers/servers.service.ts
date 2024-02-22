@@ -361,30 +361,4 @@ export class ServersService {
       throw error;
     }
   }
-
-  async checkCronEveryMinute() {
-    try {
-      const name = 'TEST CRONJOB' + Date.now();
-      await this.keyModal.create({ name });
-      console.log('EVERY_MINUTE');
-    } catch (error) {}
-  }
-
-  async checkCronEveryMinute1() {
-    try {
-      const name = 'TEST CRONJOB 1' + Date.now();
-      await this.keyModal.create({ name });
-      console.log('EVERY_MINUTE');
-    } catch (error) {}
-  }
-
-  @Cron(CronExpression.EVERY_DAY_AT_3PM)
-  checkCronEveryDayAt1AM() {
-    console.log('EVERY_DAY_AT_1AM');
-  }
-
-  @Cron(CronExpression.EVERY_DAY_AT_2AM)
-  checkCronEveryDayAt2AM() {
-    console.log('EVERY_DAY_AT_2AM');
-  }
 }
