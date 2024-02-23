@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateGistDto } from './dto/create-gist.dto';
 import { UpdateGistDto } from './dto/update-gist.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -34,6 +34,11 @@ export class GistsService {
     try {
       const plan = await this.planModal.findById(createGistDto.planId);
       const user = await this.userModal.findById(createGistDto.userId);
+      if (Number(plan.price) > Number(user.money))
+        throw new BadRequestException({
+          message: 'Bạn không đủ tiền để đăng kí dịch vụ này',
+        });
+
       const startDate = moment();
       const endDate = moment().add(plan.day, 'd');
 
@@ -110,6 +115,10 @@ export class GistsService {
         fileName,
         keyId: key.keyId,
         serverId: sortedKeyCountByServerId[0].serverId,
+      });
+
+      await this.userModal.findByIdAndUpdate(user._id, {
+        $inc: { money: -plan.price },
       });
 
       return {
