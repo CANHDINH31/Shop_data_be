@@ -1,11 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Transaction } from 'src/schemas/transactions.schema';
+import { GistsService } from 'src/gists/gists.service';
 
 @Injectable()
 export class TransactionsService {
-  create(createTransactionDto: CreateTransactionDto) {
-    return 'This action adds a new transaction';
+  constructor(
+    @InjectModel(Transaction.name) private transactionModal: Model<Transaction>,
+    private gistService: GistsService,
+  ) {}
+
+  async create(createTransactionDto: CreateTransactionDto) {
+    try {
+      return createTransactionDto;
+    } catch (error) {
+      throw error;
+    }
   }
 
   findAll() {
