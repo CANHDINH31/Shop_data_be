@@ -25,9 +25,19 @@ export class CashsService {
     }
   }
 
-  async findAll() {
+  async findAll(req: any) {
     try {
-      return await this.cashModal.find({});
+      let query = {};
+      query = {
+        ...(req?.query?.userId && {
+          userId: req.query.userId,
+        }),
+        ...(req?.query?.approve && {
+          approve: req.query.approve,
+        }),
+      };
+
+      return await this.cashModal.find(query).populate('userId');
     } catch (error) {
       throw error;
     }

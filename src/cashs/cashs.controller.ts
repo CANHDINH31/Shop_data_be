@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { CashsService } from './cashs.service';
 import { CreateCashDto } from './dto/create-cash.dto';
@@ -21,8 +22,8 @@ export class CashsController {
   }
 
   @Get()
-  findAll() {
-    return this.cashsService.findAll();
+  findAll(@Req() req) {
+    return this.cashsService.findAll(req);
   }
 
   @Get('/approve/:id')
