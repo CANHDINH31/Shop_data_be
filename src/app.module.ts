@@ -13,6 +13,7 @@ import { ServersModule } from './servers/servers.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ContactsModule } from './contacts/contacts.module';
 import { DownloadsModule } from './downloads/downloads.module';
+import { CashsModule } from './cashs/cashs.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { DownloadsModule } from './downloads/downloads.module';
     ServersModule,
     ContactsModule,
     DownloadsModule,
+    CashsModule,
   ],
   controllers: [AppController],
   providers: [AppService, JwtService],
