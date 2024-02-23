@@ -40,6 +40,10 @@ export class Key {
 
   @Prop({ default: () => new Date() })
   endDate: Date;
+
+  @Prop({ default: 1 })
+  status: number;
+  // 1:active - 0: inactive
 }
 
 export const KeySchema = SchemaFactory.createForClass(Key);
