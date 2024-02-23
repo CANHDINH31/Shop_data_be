@@ -39,6 +39,9 @@ export class User {
   @Prop()
   referenceCode: string;
   /*Auto generate when create user*/
+
+  @Prop({ default: 0 })
+  money: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

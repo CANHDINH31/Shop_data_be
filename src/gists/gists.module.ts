@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Plan, PlanSchema } from 'src/schemas/plans.schema';
 import { Server, ServerSchema } from 'src/schemas/servers.schema';
 import { Key, KeySchema } from 'src/schemas/keys.schema';
+import { User, UserSchema } from 'src/schemas/users.schema';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { Key, KeySchema } from 'src/schemas/keys.schema';
     MongooseModule.forFeature([{ name: Plan.name, schema: PlanSchema }]),
     MongooseModule.forFeature([{ name: Server.name, schema: ServerSchema }]),
     MongooseModule.forFeature([{ name: Key.name, schema: KeySchema }]),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   controllers: [GistsController],
   providers: [GistsService],

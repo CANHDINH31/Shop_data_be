@@ -28,6 +28,13 @@ export class Gist {
 
   @Prop()
   keyId: string;
+
+  @Prop()
+  extension: string;
+
+  @Prop({ default: 1 })
+  status: number;
+  // 1:active - 0: inactive
 }
 
 export const GistSchema = SchemaFactory.createForClass(Gist);

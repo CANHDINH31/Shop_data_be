@@ -11,6 +11,7 @@ import { Plan } from 'src/schemas/plans.schema';
 import { Server } from 'src/schemas/servers.schema';
 import { Key } from 'src/schemas/keys.schema';
 import { OutlineVPN } from 'outlinevpn-api';
+import { User } from 'src/schemas/users.schema';
 
 @Injectable()
 export class GistsService {
@@ -21,6 +22,7 @@ export class GistsService {
     @InjectModel(Plan.name) private planModal: Model<Plan>,
     @InjectModel(Server.name) private serverModal: Model<Server>,
     @InjectModel(Key.name) private keyModal: Model<Key>,
+    @InjectModel(User.name) private userModal: Model<User>,
     private configService: ConfigService,
   ) {
     this.octokit = new Octokit({
@@ -31,6 +33,7 @@ export class GistsService {
   async create(createGistDto: CreateGistDto) {
     try {
       const plan = await this.planModal.findById(createGistDto.planId);
+      const user = await this.userModal.findById(createGistDto.userId);
       const startDate = moment();
       const endDate = moment().add(plan.day, 'd');
 
@@ -38,15 +41,16 @@ export class GistsService {
         endDate,
       ).format('YYYYMMDD')}-${createGistDto.userId}-${plan.name}.txt`;
 
-      const listServer = await this.serverModal
-        .find()
-        .select(['_id', 'limitNumberKey']);
+      const extension = user.email.split('@')[0];
+
+      const listServer = await this.serverModal.find().select(['_id']);
 
       const keyCountByServerId = [];
 
       for (const server of listServer) {
         const keyCount = await this.keyModal.countDocuments({
           serverId: server._id,
+          status: 1,
         });
         keyCountByServerId.push({
           serverId: server._id,
@@ -69,14 +73,18 @@ export class GistsService {
         fingerprint: serverMongo.fingerPrint,
       });
 
-      const user = await outlineVpn.createUser();
-      const { id, ...rest } = user;
+      const userVpn = await outlineVpn.createUser();
+      const { id, ...rest } = userVpn;
+
+      const data = plan.bandWidth * 1000000000;
+      await outlineVpn.addDataLimit(id, data);
 
       const key = await this.keyModal.create({
         keyId: id,
         serverId: leastKeyServerId,
         startDate,
         endDate,
+        dataLimit: data,
         ...rest,
       });
 
@@ -85,7 +93,7 @@ export class GistsService {
         public: true,
         files: {
           [fileName]: {
-            content: user?.accessUrl,
+            content: userVpn?.accessUrl,
           },
         },
         headers: {
@@ -97,6 +105,7 @@ export class GistsService {
         ...createGistDto,
         startDate,
         endDate,
+        extension,
         gistId: gist?.data?.id,
         fileName,
         keyId: key.keyId,
