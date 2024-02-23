@@ -12,6 +12,7 @@ import { Server } from 'src/schemas/servers.schema';
 import { Key } from 'src/schemas/keys.schema';
 import { OutlineVPN } from 'outlinevpn-api';
 import { User } from 'src/schemas/users.schema';
+import { Transaction } from 'src/schemas/transactions.schema';
 
 @Injectable()
 export class GistsService {
@@ -23,6 +24,8 @@ export class GistsService {
     @InjectModel(Server.name) private serverModal: Model<Server>,
     @InjectModel(Key.name) private keyModal: Model<Key>,
     @InjectModel(User.name) private userModal: Model<User>,
+    @InjectModel(Transaction.name) private transactionModal: Model<Transaction>,
+
     private configService: ConfigService,
   ) {
     this.octokit = new Octokit({
@@ -106,7 +109,7 @@ export class GistsService {
         },
       });
 
-      await this.gistModal.create({
+      const gistMongo = await this.gistModal.create({
         ...createGistDto,
         startDate,
         endDate,
@@ -115,6 +118,13 @@ export class GistsService {
         fileName,
         keyId: key.keyId,
         serverId: sortedKeyCountByServerId[0].serverId,
+      });
+
+      await this.transactionModal.create({
+        userId: createGistDto.userId,
+        money: plan.price,
+        gistId: gistMongo._id,
+        description: `Đăng kí gói ${plan.name}`,
       });
 
       await this.userModal.findByIdAndUpdate(user._id, {
@@ -135,8 +145,7 @@ export class GistsService {
       return await this.gistModal
         .find()
         .sort({ createdAt: -1 })
-        .populate('userId')
-        .populate('planId');
+        .populate('userId');
     } catch (error) {
       throw error;
     }
@@ -144,10 +153,7 @@ export class GistsService {
 
   async findOne(id: string) {
     try {
-      const gistMongo = await this.gistModal
-        .findById(id)
-        .populate('userId')
-        .populate('planId');
+      const gistMongo = await this.gistModal.findById(id).populate('userId');
 
       const gist = await this.octokit.request(
         `GET /gists/${gistMongo.gistId}`,

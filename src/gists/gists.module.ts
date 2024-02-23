@@ -7,6 +7,10 @@ import { Plan, PlanSchema } from 'src/schemas/plans.schema';
 import { Server, ServerSchema } from 'src/schemas/servers.schema';
 import { Key, KeySchema } from 'src/schemas/keys.schema';
 import { User, UserSchema } from 'src/schemas/users.schema';
+import {
+  Transaction,
+  TransactionSchema,
+} from 'src/schemas/transactions.schema';
 
 @Module({
   imports: [
@@ -15,6 +19,9 @@ import { User, UserSchema } from 'src/schemas/users.schema';
     MongooseModule.forFeature([{ name: Server.name, schema: ServerSchema }]),
     MongooseModule.forFeature([{ name: Key.name, schema: KeySchema }]),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([
+      { name: Transaction.name, schema: TransactionSchema },
+    ]),
   ],
   controllers: [GistsController],
   providers: [GistsService],

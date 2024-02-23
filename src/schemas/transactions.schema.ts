@@ -8,6 +8,9 @@ export class Transaction {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   userId: string;
 
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Gist' })
+  gistId: string;
+
   @Prop()
   description: string;
 

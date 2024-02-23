@@ -2,27 +2,37 @@ import { Injectable } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { Transaction } from 'src/schemas/transactions.schema';
-import { GistsService } from 'src/gists/gists.service';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class TransactionsService {
   constructor(
     @InjectModel(Transaction.name) private transactionModal: Model<Transaction>,
-    private gistService: GistsService,
   ) {}
 
-  async create(createTransactionDto: CreateTransactionDto) {
+  create(createTransactionDto: CreateTransactionDto) {
+    return 'This action adds a new transaction';
+  }
+
+  async findAll(req: any) {
     try {
-      return createTransactionDto;
+      let query = {};
+
+      query = {
+        ...(req?.query?.userId && {
+          userId: req.query.userId,
+        }),
+      };
+
+      return await this.transactionModal
+        .find(query)
+        .sort({ createdAt: -1 })
+        .populate('userId')
+        .populate('gistId');
     } catch (error) {
       throw error;
     }
-  }
-
-  findAll() {
-    return `This action returns all transactions`;
   }
 
   findOne(id: number) {
