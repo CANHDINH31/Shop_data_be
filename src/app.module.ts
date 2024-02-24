@@ -16,6 +16,7 @@ import { DownloadsModule } from './downloads/downloads.module';
 import { CashsModule } from './cashs/cashs.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { ExtendPlansModule } from './extend-plans/extend-plans.module';
+import { CommisionsModule } from './commisions/commisions.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ExtendPlansModule } from './extend-plans/extend-plans.module';
     CashsModule,
     TransactionsModule,
     ExtendPlansModule,
+    CommisionsModule,
   ],
   controllers: [AppController],
   providers: [AppService, JwtService],

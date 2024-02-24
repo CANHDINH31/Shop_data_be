@@ -21,7 +21,7 @@ export class ContactsService {
 
       return {
         status: HttpStatus.CREATED,
-        message: 'Đồng bộ thành công thành công',
+        message: 'Đồng bộ thành công',
       };
     } catch (error) {
       throw error;
