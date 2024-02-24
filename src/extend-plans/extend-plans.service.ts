@@ -2,13 +2,13 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { CreateExtendPlanDto } from './dto/create-extend-plan.dto';
 import { UpdateExtendPlanDto } from './dto/update-extend-plan.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { extendPlan } from 'src/schemas/extendPlans.schema';
+import { ExtendPlan } from 'src/schemas/extendPlans.schema';
 import { Model } from 'mongoose';
 
 @Injectable()
 export class ExtendPlansService {
   constructor(
-    @InjectModel(extendPlan.name) private extendPlanModal: Model<extendPlan>,
+    @InjectModel(ExtendPlan.name) private extendPlanModal: Model<ExtendPlan>,
   ) {}
 
   async create(createExtendPlanDto: CreateExtendPlanDto) {

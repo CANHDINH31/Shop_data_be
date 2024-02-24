@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
-export type extendPlanDocument = HydratedDocument<extendPlan>;
+export type extendPlanDocument = HydratedDocument<ExtendPlan>;
 
 @Schema({ timestamps: true })
-export class extendPlan {
+export class ExtendPlan {
   @Prop()
   name: string;
 
@@ -16,4 +16,4 @@ export class extendPlan {
   // unit: GB
 }
 
-export const extendPlanSchema = SchemaFactory.createForClass(extendPlan);
+export const ExtendPlanSchema = SchemaFactory.createForClass(ExtendPlan);
