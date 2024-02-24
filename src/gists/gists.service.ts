@@ -13,6 +13,8 @@ import { Key } from 'src/schemas/keys.schema';
 import { OutlineVPN } from 'outlinevpn-api';
 import { User } from 'src/schemas/users.schema';
 import { Transaction } from 'src/schemas/transactions.schema';
+import { Commision } from 'src/schemas/commisions.schema';
+import { Rose } from 'src/schemas/roses.schema';
 
 @Injectable()
 export class GistsService {
@@ -25,6 +27,8 @@ export class GistsService {
     @InjectModel(Key.name) private keyModal: Model<Key>,
     @InjectModel(User.name) private userModal: Model<User>,
     @InjectModel(Transaction.name) private transactionModal: Model<Transaction>,
+    @InjectModel(Commision.name) private commisionModal: Model<Commision>,
+    @InjectModel(Rose.name) private roseModal: Model<Rose>,
     private configService: ConfigService,
   ) {
     this.octokit = new Octokit({
@@ -34,6 +38,8 @@ export class GistsService {
 
   async create(createGistDto: CreateGistDto) {
     try {
+      const commision = await this.commisionModal.findOne({});
+
       const plan = await this.planModal.findById(createGistDto.planId);
       const user = await this.userModal.findById(createGistDto.userId);
       if (Number(plan.price) > Number(user.money))
@@ -132,6 +138,24 @@ export class GistsService {
       await this.userModal.findByIdAndUpdate(user._id, {
         $inc: { money: -plan.price },
       });
+
+      // Apply commision
+      if (commision.value > 0 && user.introduceCode) {
+        const recive = ((plan.price * commision.value) / 100).toFixed(0);
+
+        await this.roseModal.create({
+          reciveRoseId: user.introduceCode,
+          introducedId: user._id,
+          plan: plan.name,
+          price: plan.price,
+          percent: commision.value,
+          recive,
+        });
+
+        await this.userModal.findByIdAndUpdate(user.introduceCode, {
+          $inc: { money: recive },
+        });
+      }
 
       return {
         status: HttpStatus.CREATED,

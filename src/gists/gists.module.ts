@@ -11,6 +11,8 @@ import {
   Transaction,
   TransactionSchema,
 } from 'src/schemas/transactions.schema';
+import { Commision, CommisionSchema } from 'src/schemas/commisions.schema';
+import { Rose, RoseSchema } from 'src/schemas/roses.schema';
 
 @Module({
   imports: [
@@ -19,6 +21,10 @@ import {
     MongooseModule.forFeature([{ name: Server.name, schema: ServerSchema }]),
     MongooseModule.forFeature([{ name: Key.name, schema: KeySchema }]),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([
+      { name: Commision.name, schema: CommisionSchema },
+    ]),
+    MongooseModule.forFeature([{ name: Rose.name, schema: RoseSchema }]),
     MongooseModule.forFeature([
       { name: Transaction.name, schema: TransactionSchema },
     ]),
