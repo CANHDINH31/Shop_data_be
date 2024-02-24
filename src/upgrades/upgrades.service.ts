@@ -108,11 +108,39 @@ export class UpgradesService {
         'YYYYMMDD',
       )}-${moment(endDate).format('YYYYMMDD')}-${user._id}-${plan.name}.txt`;
 
-      const key = await this.keyModal.findByIdAndUpdate({
-        keyId: id,
+      await this.keyModal.findByIdAndUpdate(gist.keyId._id, {
+        endDate,
       });
 
-      return fileName;
+      await this.octokit.request(`PATCH /gists/${gist.gistId}`, {
+        description: fileName,
+        public: true,
+        files: {
+          [fileName]: {
+            content: gist?.keyId?.accessUrl,
+          },
+        },
+        headers: {
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+      });
+
+      await this.transactionModal.create({
+        userId: user._id,
+        gistId: planUpgradeDto.gistId,
+        planId: plan._id,
+        money: plan.price,
+        description: `Đăng kí gói ${plan.name}`,
+      });
+
+      await this.userModal.findByIdAndUpdate(user._id, {
+        $inc: { money: -plan.price },
+      });
+
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Thêm mới thành công',
+      };
     } catch (error) {
       throw error;
     }
