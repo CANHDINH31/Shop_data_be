@@ -11,6 +11,9 @@ import { OutlineVPN } from 'outlinevpn-api';
 import { Key } from 'src/schemas/keys.schema';
 import { User } from 'src/schemas/users.schema';
 import { Transaction } from 'src/schemas/transactions.schema';
+import { PlanUpgradeDto } from './dto/plan-upgrade.dto';
+import { Plan } from 'src/schemas/plans.schema';
+import * as moment from 'moment';
 
 @Injectable()
 export class UpgradesService {
@@ -20,6 +23,7 @@ export class UpgradesService {
     @InjectModel(Gist.name) private gistModal: Model<Gist>,
     @InjectModel(User.name) private userModal: Model<User>,
     @InjectModel(ExtendPlan.name) private extendModal: Model<ExtendPlan>,
+    @InjectModel(Plan.name) private planModal: Model<Plan>,
     @InjectModel(Key.name) private keyModal: Model<Key>,
     @InjectModel(Transaction.name) private transactionModal: Model<Transaction>,
     private configService: ConfigService,
@@ -77,6 +81,38 @@ export class UpgradesService {
         status: HttpStatus.CREATED,
         message: 'Thêm mới thành công',
       };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async upgradePlan(planUpgradeDto: PlanUpgradeDto) {
+    try {
+      const gist: any = await this.gistModal
+        .findById(planUpgradeDto.gistId)
+        .populate('keyId')
+        .populate('planId');
+      const plan = await this.planModal.findById(gist.planId);
+      const user = await this.userModal.findById(gist.userId._id);
+
+      if (Number(plan.price) > Number(user.money))
+        throw new BadRequestException({
+          message: 'Bạn không đủ tiền để đăng kí dịch vụ này',
+        });
+
+      const lastEndDate = moment(gist.keyId.endDate);
+      const day = gist.planId.day;
+      const endDate = lastEndDate.add(day, 'd');
+
+      const fileName = `${moment(gist.keyId.startDate).format(
+        'YYYYMMDD',
+      )}-${moment(endDate).format('YYYYMMDD')}-${user._id}-${plan.name}.txt`;
+
+      const key = await this.keyModal.findByIdAndUpdate({
+        keyId: id,
+      });
+
+      return fileName;
     } catch (error) {
       throw error;
     }

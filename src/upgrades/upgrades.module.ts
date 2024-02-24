@@ -10,12 +10,14 @@ import {
   Transaction,
   TransactionSchema,
 } from 'src/schemas/transactions.schema';
+import { Plan, PlanSchema } from 'src/schemas/plans.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: ExtendPlan.name, schema: ExtendPlanSchema },
     ]),
+    MongooseModule.forFeature([{ name: Plan.name, schema: PlanSchema }]),
     MongooseModule.forFeature([{ name: Gist.name, schema: GistSchema }]),
     MongooseModule.forFeature([{ name: Key.name, schema: KeySchema }]),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),

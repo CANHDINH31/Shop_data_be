@@ -10,6 +10,7 @@ import {
 import { UpgradesService } from './upgrades.service';
 import { UpdateUpgradeDto } from './dto/update-upgrade.dto';
 import { BandWidthUpgradeDto } from './dto/band-width-upgrade.dto';
+import { PlanUpgradeDto } from './dto/plan-upgrade.dto';
 
 @Controller('upgrades')
 export class UpgradesController {
@@ -18,6 +19,11 @@ export class UpgradesController {
   @Post('band-width')
   upgradeBandwidth(@Body() bandWidthUpgradeDto: BandWidthUpgradeDto) {
     return this.upgradesService.upgradeBandwidth(bandWidthUpgradeDto);
+  }
+
+  @Post('/plan')
+  upgradePlan(@Body() planUpgradeDto: PlanUpgradeDto) {
+    return this.upgradesService.upgradePlan(planUpgradeDto);
   }
 
   @Get()
