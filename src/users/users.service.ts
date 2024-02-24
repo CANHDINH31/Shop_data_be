@@ -37,6 +37,18 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     try {
+      if (createUserDto.introduceCode) {
+        const existIntroduceCode = await this.userModal.findOne({
+          _id: createUserDto.introduceCode,
+        });
+
+        if (!existIntroduceCode) {
+          throw new BadRequestException({
+            message: 'Mã giới thiệu chưa chính xác',
+          });
+        }
+      }
+
       const existUser = await this.userModal.findOne({
         email: createUserDto.email,
       });
@@ -69,6 +81,7 @@ export class UsersService {
     try {
       return await this.userModal
         .find()
+        .populate('introduceCode')
         .select('-password')
         .sort({ createdAt: -1 });
     } catch (error) {
@@ -78,7 +91,7 @@ export class UsersService {
 
   async findOne(id: string) {
     try {
-      return await this.userModal.findById(id);
+      return await this.userModal.findById(id).populate('introduceCode');
     } catch (error) {
       throw error;
     }

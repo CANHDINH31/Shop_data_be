@@ -34,4 +34,8 @@ export class CreateUserDto {
   @IsOptional()
   @IsNumber()
   purpose: number;
+
+  @IsOptional()
+  @IsString()
+  introduceCode: string;
 }

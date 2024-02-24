@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -36,9 +36,8 @@ export class User {
   3. Others
   */
 
-  @Prop()
-  referenceCode: string;
-  /*Auto generate when create user*/
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  introduceCode: string;
 
   @Prop({ default: 0 })
   money: number;
