@@ -14,6 +14,9 @@ export class Transaction {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Plan' })
   planId: string;
 
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'ExtendPlan' })
+  extendPlanId: string;
+
   @Prop()
   description: string;
 

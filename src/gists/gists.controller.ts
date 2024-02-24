@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { GistsService } from './gists.service';
 import { CreateGistDto } from './dto/create-gist.dto';
@@ -21,8 +22,8 @@ export class GistsController {
   }
 
   @Get()
-  findAll() {
-    return this.gistsService.findAll();
+  findAll(@Req() req) {
+    return this.gistsService.findAll(req);
   }
 
   @Get(':id')

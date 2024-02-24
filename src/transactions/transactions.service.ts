@@ -35,7 +35,8 @@ export class TransactionsService {
             path: 'keyId',
           },
         })
-        .populate('planId');
+        .populate('planId')
+        .populate('extendPlanId');
     } catch (error) {
       throw error;
     }

@@ -166,10 +166,21 @@ export class GistsService {
     }
   }
 
-  async findAll() {
+  async findAll(req: any) {
+    let query = {};
+
+    query = {
+      ...(req?.query?.userId && {
+        userId: req.query.userId,
+      }),
+      ...(req?.query?.status && {
+        status: req.query.status,
+      }),
+    };
+
     try {
       return await this.gistModal
-        .find()
+        .find(query)
         .sort({ createdAt: -1 })
         .populate('userId')
         .populate('planId')
