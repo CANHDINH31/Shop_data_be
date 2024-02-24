@@ -77,10 +77,17 @@ export class UsersService {
     }
   }
 
-  async findAll() {
+  async findAll(req: any) {
     try {
+      let query = {};
+      query = {
+        ...(req?.query?.introduceCode && {
+          introduceCode: req.query.introduceCode,
+        }),
+      };
+
       return await this.userModal
-        .find()
+        .find(query)
         .populate('introduceCode')
         .select('-password')
         .sort({ createdAt: -1 });
