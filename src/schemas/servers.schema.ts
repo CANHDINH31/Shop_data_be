@@ -6,6 +6,9 @@ export type ServerDocument = HydratedDocument<Server>;
 @Schema({ timestamps: true })
 export class Server {
   @Prop()
+  serverId: string;
+
+  @Prop()
   apiUrl: string;
 
   @Prop()
@@ -13,9 +16,6 @@ export class Server {
 
   @Prop()
   name: string;
-
-  @Prop()
-  serverId: string;
 
   @Prop()
   metricsEnabled: boolean;
@@ -31,6 +31,9 @@ export class Server {
 
   @Prop()
   hostnameForAccessKeys: string;
+
+  @Prop()
+  numberRecomendKey: number;
 }
 
 export const ServerSchema = SchemaFactory.createForClass(Server);

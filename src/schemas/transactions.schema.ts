@@ -11,11 +11,14 @@ export class Transaction {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Gist' })
   gistId: string;
 
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Plan' })
+  planId: string;
+
   @Prop()
   description: string;
 
   @Prop()
-  money: string;
+  money: number;
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);

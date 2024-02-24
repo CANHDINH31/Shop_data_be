@@ -5,26 +5,14 @@ export type GistDocument = HydratedDocument<Gist>;
 
 @Schema({ timestamps: true })
 export class Gist {
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
-  userId: string;
-
-  @Prop()
-  startDate: string;
-
-  @Prop()
-  endDate: string;
-
   @Prop()
   gistId: string;
 
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Key' })
+  keyId: string;
+
   @Prop()
   fileName: string;
-
-  @Prop()
-  serverId: string;
-
-  @Prop()
-  keyId: string;
 
   @Prop()
   extension: string;
