@@ -37,7 +37,10 @@ export class CashsService {
         }),
       };
 
-      return await this.cashModal.find(query).populate('userId');
+      return await this.cashModal
+        .find(query)
+        .sort({ createdAt: -1 })
+        .populate('userId');
     } catch (error) {
       throw error;
     }
