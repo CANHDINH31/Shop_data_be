@@ -18,7 +18,7 @@ export class CashsService {
       await this.cashModal.create(createCashDto);
       return {
         status: HttpStatus.CREATED,
-        message: 'Nạp tiền thành công',
+        message: 'Nạp tiền thành công. Vui lòng chờ admin phê duyệt',
       };
     } catch (error) {
       throw error;

@@ -25,7 +25,6 @@ export class GistsService {
     @InjectModel(Key.name) private keyModal: Model<Key>,
     @InjectModel(User.name) private userModal: Model<User>,
     @InjectModel(Transaction.name) private transactionModal: Model<Transaction>,
-
     private configService: ConfigService,
   ) {
     this.octokit = new Octokit({
@@ -51,7 +50,9 @@ export class GistsService {
 
       const extension = user.email.split('@')[0];
 
-      const listServer = await this.serverModal.find().select(['_id']);
+      const listServer = await this.serverModal
+        .find()
+        .select(['_id', 'numberRecomendKey']);
 
       const keyCountByServerId = [];
 
@@ -63,12 +64,14 @@ export class GistsService {
         keyCountByServerId.push({
           serverId: server._id,
           keyCount,
+          numberRecomendKey: server.numberRecomendKey,
         });
       }
 
       // Sắp xếp danh sách keyCountByServerId theo số lượng key tăng dần
       const sortedKeyCountByServerId = keyCountByServerId.sort(
-        (a, b) => a.keyCount - b.keyCount,
+        (a, b) =>
+          a.keyCount / a.numberRecomendKey - b.keyCount / b.numberRecomendKey,
       );
 
       // Lấy serverId có ít key nhất
@@ -81,6 +84,7 @@ export class GistsService {
         fingerprint: serverMongo.fingerPrint,
       });
 
+      // Tạo user trên outlineVpn
       const userVpn = await outlineVpn.createUser();
       const { id, ...rest } = userVpn;
 
@@ -111,19 +115,17 @@ export class GistsService {
 
       const gistMongo = await this.gistModal.create({
         ...createGistDto,
-        startDate,
-        endDate,
         extension,
         gistId: gist?.data?.id,
         fileName,
-        keyId: key.keyId,
-        serverId: sortedKeyCountByServerId[0].serverId,
+        keyId: key._id,
       });
 
       await this.transactionModal.create({
         userId: createGistDto.userId,
-        money: plan.price,
         gistId: gistMongo._id,
+        planId: createGistDto.planId,
+        money: plan.price,
         description: `Đăng kí gói ${plan.name}`,
       });
 

@@ -29,7 +29,13 @@ export class TransactionsService {
         .find(query)
         .sort({ createdAt: -1 })
         .populate('userId')
-        .populate('gistId');
+        .populate({
+          path: 'gistId',
+          populate: {
+            path: 'keyId',
+          },
+        })
+        .populate('planId');
     } catch (error) {
       throw error;
     }

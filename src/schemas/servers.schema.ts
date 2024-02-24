@@ -32,7 +32,7 @@ export class Server {
   @Prop()
   hostnameForAccessKeys: string;
 
-  @Prop()
+  @Prop({ default: 50 })
   numberRecomendKey: number;
 }
 
