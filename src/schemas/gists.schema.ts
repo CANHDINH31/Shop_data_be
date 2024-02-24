@@ -8,6 +8,12 @@ export class Gist {
   @Prop()
   gistId: string;
 
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  userId: string;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Plan' })
+  planId: string;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Key' })
   keyId: string;
 

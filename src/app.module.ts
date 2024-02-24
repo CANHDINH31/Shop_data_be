@@ -18,6 +18,7 @@ import { TransactionsModule } from './transactions/transactions.module';
 import { ExtendPlansModule } from './extend-plans/extend-plans.module';
 import { CommisionsModule } from './commisions/commisions.module';
 import { RosesModule } from './roses/roses.module';
+import { UpgradeModule } from './upgrade/upgrade.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { RosesModule } from './roses/roses.module';
     ExtendPlansModule,
     CommisionsModule,
     RosesModule,
+    UpgradeModule,
   ],
   controllers: [AppController],
   providers: [AppService, JwtService],

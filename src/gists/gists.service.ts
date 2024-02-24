@@ -171,7 +171,9 @@ export class GistsService {
       return await this.gistModal
         .find()
         .sort({ createdAt: -1 })
-        .populate('userId');
+        .populate('userId')
+        .populate('planId')
+        .populate('keyId');
     } catch (error) {
       throw error;
     }
@@ -179,7 +181,12 @@ export class GistsService {
 
   async findOne(id: string) {
     try {
-      const gistMongo = await this.gistModal.findById(id).populate('userId');
+      const gistMongo = await this.gistModal
+        .findById(id)
+        .populate('userId')
+        .populate('userId')
+        .populate('planId')
+        .populate('keyId');
 
       const gist = await this.octokit.request(
         `GET /gists/${gistMongo.gistId}`,

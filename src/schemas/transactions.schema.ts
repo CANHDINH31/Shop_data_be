@@ -17,6 +17,9 @@ export class Transaction {
   @Prop()
   description: string;
 
+  @Prop({ default: 1 })
+  amount: number;
+
   @Prop()
   money: number;
 }
