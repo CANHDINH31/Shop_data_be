@@ -92,6 +92,7 @@ export class UpgradesService {
         .findById(planUpgradeDto.gistId)
         .populate('keyId')
         .populate('planId');
+
       const plan = await this.planModal.findById(gist.planId);
       const user = await this.userModal.findById(gist.userId._id);
 
@@ -112,7 +113,7 @@ export class UpgradesService {
         endDate,
       });
 
-      await this.octokit.request(`PATCH /gists/${gist.gistId}`, {
+      const newGist = await this.octokit.request('POST /gists', {
         description: fileName,
         public: true,
         files: {
@@ -123,6 +124,17 @@ export class UpgradesService {
         headers: {
           'X-GitHub-Api-Version': '2022-11-28',
         },
+      });
+
+      await this.octokit.request(`DELETE /gists/${gist.gistId}`, {
+        gist_id: gist.gistId,
+        headers: {
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+      });
+
+      await this.gistModal.findByIdAndUpdate(planUpgradeDto.gistId, {
+        gistId: newGist?.data?.id,
       });
 
       await this.transactionModal.create({
