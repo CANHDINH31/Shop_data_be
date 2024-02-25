@@ -14,6 +14,7 @@ import { Transaction } from 'src/schemas/transactions.schema';
 import { PlanUpgradeDto } from './dto/plan-upgrade.dto';
 import { Plan } from 'src/schemas/plans.schema';
 import * as moment from 'moment';
+import { Collab } from 'src/schemas/collabs.schema';
 
 @Injectable()
 export class UpgradesService {
@@ -26,6 +27,7 @@ export class UpgradesService {
     @InjectModel(Plan.name) private planModal: Model<Plan>,
     @InjectModel(Key.name) private keyModal: Model<Key>,
     @InjectModel(Transaction.name) private transactionModal: Model<Transaction>,
+    @InjectModel(Collab.name) private collabModal: Model<Collab>,
     private configService: ConfigService,
   ) {
     this.octokit = new Octokit({
@@ -65,16 +67,30 @@ export class UpgradesService {
 
       await this.keyModal.findByIdAndUpdate(gist.keyId, { dataLimit: data });
 
+      const collab = await this.collabModal.findOne({});
+
+      const disccount =
+        user.level === 1
+          ? collab['level1']
+          : user.level === 2
+          ? collab['level2']
+          : user.level === 3
+          ? collab['level3']
+          : 0;
+
+      const money = ((extendPlan.price * (100 - disccount)) / 100).toFixed(0);
+
       await this.transactionModal.create({
         userId: user._id,
         gistId: bandWidthUpgradeDto.gistId,
         extendPlanId: bandWidthUpgradeDto.extendPlanId,
-        money: extendPlan.price,
+        money: money,
+        discount: disccount,
         description: `Đăng kí gói ${extendPlan.name}`,
       });
 
       await this.userModal.findByIdAndUpdate(user._id, {
-        $inc: { money: -extendPlan.price },
+        $inc: { money: -money },
       });
 
       return {
@@ -137,16 +153,29 @@ export class UpgradesService {
         gistId: newGist?.data?.id,
       });
 
+      const collab = await this.collabModal.findOne({});
+
+      const disccount =
+        user.level === 1
+          ? collab['level1']
+          : user.level === 2
+          ? collab['level2']
+          : user.level === 3
+          ? collab['level3']
+          : 0;
+
+      const money = ((plan.price * (100 - disccount)) / 100).toFixed(0);
+
       await this.transactionModal.create({
         userId: user._id,
         gistId: planUpgradeDto.gistId,
         planId: plan._id,
-        money: plan.price,
+        money: money,
         description: `Đăng kí gói ${plan.name}`,
       });
 
       await this.userModal.findByIdAndUpdate(user._id, {
-        $inc: { money: -plan.price },
+        $inc: { money: -money },
       });
 
       return {

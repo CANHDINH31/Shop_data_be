@@ -11,6 +11,7 @@ import {
   TransactionSchema,
 } from 'src/schemas/transactions.schema';
 import { Plan, PlanSchema } from 'src/schemas/plans.schema';
+import { Collab, CollabSchema } from 'src/schemas/collabs.schema';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { Plan, PlanSchema } from 'src/schemas/plans.schema';
     MongooseModule.forFeature([{ name: Gist.name, schema: GistSchema }]),
     MongooseModule.forFeature([{ name: Key.name, schema: KeySchema }]),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([{ name: Collab.name, schema: CollabSchema }]),
     MongooseModule.forFeature([
       { name: Transaction.name, schema: TransactionSchema },
     ]),

@@ -16,6 +16,7 @@ import { Transaction } from 'src/schemas/transactions.schema';
 import { Commision } from 'src/schemas/commisions.schema';
 import { Rose } from 'src/schemas/roses.schema';
 import { UpdateExtensionGistDto } from './dto/update-extension-gist.dto';
+import { Collab } from 'src/schemas/collabs.schema';
 
 @Injectable()
 export class GistsService {
@@ -30,6 +31,7 @@ export class GistsService {
     @InjectModel(Transaction.name) private transactionModal: Model<Transaction>,
     @InjectModel(Commision.name) private commisionModal: Model<Commision>,
     @InjectModel(Rose.name) private roseModal: Model<Rose>,
+    @InjectModel(Collab.name) private collabModal: Model<Collab>,
     private configService: ConfigService,
   ) {
     this.octokit = new Octokit({
@@ -128,16 +130,30 @@ export class GistsService {
         keyId: key._id,
       });
 
+      const collab = await this.collabModal.findOne({});
+
+      const disccount =
+        user.level === 1
+          ? collab['level1']
+          : user.level === 2
+          ? collab['level2']
+          : user.level === 3
+          ? collab['level3']
+          : 0;
+
+      const money = ((plan.price * (100 - disccount)) / 100).toFixed(0);
+
       await this.transactionModal.create({
         userId: createGistDto.userId,
         gistId: gistMongo._id,
         planId: createGistDto.planId,
-        money: plan.price,
+        money: money,
+        discount: disccount,
         description: `Đăng kí gói ${plan.name}`,
       });
 
       await this.userModal.findByIdAndUpdate(user._id, {
-        $inc: { money: -plan.price },
+        $inc: { money: -money },
       });
 
       // Apply commision
