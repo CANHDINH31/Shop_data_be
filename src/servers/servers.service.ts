@@ -185,86 +185,28 @@ export class ServersService {
     }
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_1AM)
+  @Cron(CronExpression.EVERY_MINUTE)
   async getDataUsage() {
     try {
-      const listServer = await this.serverModal.find({});
+      console.log('start cron data usage');
+      const listKey: any = await this.keyModal
+        .find({ status: 1 })
+        .populate('serverId');
 
-      for (const server of listServer) {
+      for (const key of listKey) {
         const outlineVpn = new OutlineVPN({
-          apiUrl: server.apiUrl,
-          fingerprint: server.fingerPrint,
+          apiUrl: key.serverId.apiUrl,
+          fingerprint: key.serverId.fingerPrint,
         });
 
         const dataUsage = await outlineVpn.getDataUsage();
         const bytesTransferredByUserId = dataUsage.bytesTransferredByUserId;
 
-        const arrayDataUsage = Object.entries(bytesTransferredByUserId).map(
-          ([keyId, value]) => ({
-            keyId,
-            value,
-          }),
-        );
-
-        for (const key of arrayDataUsage) {
-          const keyMongo = await this.keyModal.findOne({
-            serverId: server._id,
-            keyId: key.keyId,
-          });
-
-          if (keyMongo) {
-            await this.keyModal.findByIdAndUpdate(keyMongo._id, {
-              dataUsage: key.value,
-            });
-          }
-        }
-      }
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  @Cron(CronExpression.EVERY_DAY_AT_2AM)
-  async checkExpiredKey() {
-    try {
-      const listKey = (await this.keyModal
-        .find({})
-        .populate('serverId')) as any[];
-
-      const today = moment();
-      const expiredKeys = listKey.filter((key) => {
-        const endDate = moment(key.endDate);
-        return endDate.isBefore(today);
-      });
-
-      for (const key of expiredKeys) {
-        const outlineVpn = new OutlineVPN({
-          apiUrl: key.serverId.apiUrl,
-          fingerprint: key.serverId.fingerprint,
-        });
-
-        await outlineVpn.deleteUser(key.keyId);
-
-        const gist = await this.gistModal.findOne({
-          keyId: key.keyId,
-          serverId: key.serverId._id,
-        });
-
-        if (gist) {
-          await this.octokit.request(`DELETE /gists/${gist.gistId}`, {
-            gist_id: `${gist.gistId}`,
-            headers: {
-              'X-GitHub-Api-Version': '2022-11-28',
-            },
-          });
-          await this.gistModal.findByIdAndDelete(gist._id);
-        }
-
-        await this.keyModal.deleteOne({
-          keyId: key.keyId,
-          serverId: key.serverId,
+        await this.keyModal.findByIdAndUpdate(key._id, {
+          dataUsage: bytesTransferredByUserId[key.keyId],
         });
       }
+      console.log('finnish cron data usage');
     } catch (error) {
       throw error;
     }

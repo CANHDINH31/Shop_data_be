@@ -26,6 +26,11 @@ export class KeysController {
     return this.keysService.findAll(req);
   }
 
+  @Get('/cron')
+  cron() {
+    return this.keysService.checkExpiredKey();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.keysService.findOne(+id);

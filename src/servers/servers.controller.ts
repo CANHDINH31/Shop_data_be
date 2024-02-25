@@ -27,11 +27,6 @@ export class ServersController {
     return this.serversService.findAll(req);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.serversService.findOne(id);
-  }
-
   @Patch('/location/:id')
   updateLocation(
     @Param('id') id: string,
@@ -51,5 +46,15 @@ export class ServersController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.serversService.remove(id);
+  }
+
+  @Get('/cron')
+  cron() {
+    return this.serversService.getDataUsage();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.serversService.findOne(id);
   }
 }

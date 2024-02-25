@@ -12,6 +12,7 @@ import { Octokit } from '@octokit/core';
 import { Transaction } from 'src/schemas/transactions.schema';
 import { Collab } from 'src/schemas/collabs.schema';
 import { OutlineVPN } from 'outlinevpn-api';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class KeysService {
@@ -181,6 +182,27 @@ export class KeysService {
         status: HttpStatus.OK,
         message: 'Xóa thành công',
       };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_1PM)
+  async checkExpiredKey() {
+    try {
+      console.log('start cron check expire key');
+      const listKey = (await this.keyModal
+        .find({ status: 1 })
+        .populate('serverId')) as any[];
+      const today = moment();
+      const expiredKeys = listKey.filter((key) => {
+        const endDate = moment(key.endDate);
+        return endDate.isBefore(today);
+      });
+      for (const key of expiredKeys) {
+        await this.remove(key._id);
+      }
+      console.log('finnish cron check expire key');
     } catch (error) {
       throw error;
     }
