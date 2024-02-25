@@ -27,7 +27,7 @@ export class PlansService {
       let query = {};
       query = {
         ...(req?.query?.name && {
-          name: req.query.name,
+          name: { $regex: req.query.name, $options: 'i' },
         }),
       };
 
