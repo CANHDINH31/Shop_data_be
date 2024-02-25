@@ -38,6 +38,6 @@ export class KeysController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.keysService.remove(+id);
+    return this.keysService.remove(id);
   }
 }

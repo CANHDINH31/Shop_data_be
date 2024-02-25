@@ -46,6 +46,7 @@ export class ServersService {
 
       const serverMongo = await this.serverModal.findOne({
         serverId: server.serverId,
+        status: 1,
       });
 
       if (serverMongo) {
@@ -250,8 +251,37 @@ export class ServersService {
 
   async remove(id: string) {
     try {
-      await this.serverModal.deleteOne({ _id: id });
-      await this.keyModal.deleteMany({ serverId: id });
+      const listKey: any = await this.keyModal
+        .find({ serverId: id, status: 1 })
+        .populate('serverId');
+
+      if (listKey?.length > 0) {
+        const outlineVpn = new OutlineVPN({
+          apiUrl: listKey[0].serverId.apiUrl,
+          fingerprint: listKey[0]?.serverId?.fingerPrint,
+        });
+
+        await this.serverModal.findByIdAndUpdate(id, { status: 0 });
+
+        for (const key of listKey) {
+          const gist: any = await this.gistModal.findOne({
+            keyId: key._id,
+            status: 1,
+          });
+
+          await outlineVpn.deleteUser(key.keyId);
+          await this.keyModal.findByIdAndUpdate(key._id, { status: 0 });
+          await this.gistModal.findByIdAndUpdate(gist._id, { status: 0 });
+
+          await this.octokit.request(`DELETE /gists/${gist.gistId}`, {
+            gist_id: `${gist.gistId}`,
+            headers: {
+              'X-GitHub-Api-Version': '2022-11-28',
+            },
+          });
+        }
+      }
+
       return {
         status: HttpStatus.OK,
         message: 'Xóa thành công',

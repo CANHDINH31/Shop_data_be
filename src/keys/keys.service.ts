@@ -47,7 +47,9 @@ export class KeysService {
           account: { $regex: req.query.account, $options: 'i' },
         }),
 
-        status: 1,
+        ...(req?.query?.status && {
+          status: req.query.status,
+        }),
       };
 
       return await this.keyModal
@@ -149,7 +151,10 @@ export class KeysService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} key`;
+  async remove(id: string) {
+    try {
+    } catch (error) {
+      throw error;
+    }
   }
 }

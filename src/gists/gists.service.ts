@@ -60,7 +60,7 @@ export class GistsService {
       const extension = user.email.split('@')[0];
 
       const listServer = await this.serverModal
-        .find()
+        .find({ status: 1 })
         .select(['_id', 'numberRecomendKey']);
 
       const keyCountByServerId = [];
