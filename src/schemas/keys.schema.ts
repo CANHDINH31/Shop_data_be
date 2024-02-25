@@ -35,6 +35,9 @@ export class Key {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Server' })
   serverId: string;
 
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  userId: string;
+
   @Prop({ default: () => new Date() })
   startDate: Date;
 

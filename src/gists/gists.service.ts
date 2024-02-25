@@ -102,6 +102,7 @@ export class GistsService {
 
       const key = await this.keyModal.create({
         keyId: id,
+        userId: user._id,
         serverId: leastKeyServerId,
         startDate,
         endDate,
