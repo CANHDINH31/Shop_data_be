@@ -190,6 +190,19 @@ export class ServersService {
     updateLocationServerDto: UpdateLocationServerDto,
   ) {
     try {
+      const data = await this.serverModal.findByIdAndUpdate(
+        id,
+        {
+          location: updateLocationServerDto.location,
+        },
+        { new: true },
+      );
+
+      return {
+        status: HttpStatus.OK,
+        message: 'Cập nhật địa chỉ thành công',
+        data,
+      };
     } catch (error) {
       throw error;
     }

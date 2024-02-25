@@ -37,7 +37,7 @@ export class ServersController {
     return this.serversService.findOne(id);
   }
 
-  @Patch('/update-location/:id')
+  @Patch('/location/:id')
   updateLocation(
     @Param('id') id: string,
     @Body() updateLocationServerDto: UpdateLocationServerDto,
