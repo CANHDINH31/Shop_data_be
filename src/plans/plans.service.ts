@@ -22,9 +22,16 @@ export class PlansService {
     }
   }
 
-  async findAll() {
+  async findAll(req: any) {
     try {
-      return await this.planModal.find().sort({ createdAt: -1 });
+      let query = {};
+      query = {
+        ...(req?.query?.name && {
+          name: req.query.name,
+        }),
+      };
+
+      return await this.planModal.find(query).sort({ createdAt: -1 });
     } catch (error) {
       throw error;
     }
