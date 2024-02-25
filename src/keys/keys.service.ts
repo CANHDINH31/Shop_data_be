@@ -187,7 +187,8 @@ export class KeysService {
     }
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_1PM)
+  // @Cron(CronExpression.EVERY_DAY_AT_1PM)
+  @Cron(CronExpression.EVERY_5_SECONDS)
   async checkExpiredKey() {
     try {
       console.log('start cron check expire key');
