@@ -168,9 +168,18 @@ export class ServersService {
     }
   }
 
-  async findAll() {
+  async findAll(req: any) {
     try {
-      return await this.serverModal.find().sort({ createdAt: -1 });
+      let query = {};
+      query = {
+        ...(req?.query?.name && {
+          name: { $regex: req.query.name, $options: 'i' },
+        }),
+        ...(req?.query?.location && {
+          location: { $regex: req.query.location, $options: 'i' },
+        }),
+      };
+      return await this.serverModal.find(query).sort({ createdAt: -1 });
     } catch (error) {
       throw error;
     }
@@ -178,9 +187,7 @@ export class ServersService {
 
   async findOne(id: string) {
     try {
-      const listServer = await this.serverModal.findById(id);
-      const listKeys = await this.keyModal.find({ serverId: id });
-      return { ...listServer.toObject(), listKeys };
+      return await this.serverModal.findById(id);
     } catch (error) {
       throw error;
     }

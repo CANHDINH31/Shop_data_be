@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { ServersService } from './servers.service';
 import { UpdateServerDto } from './dto/update-server.dto';
@@ -29,8 +30,8 @@ export class ServersController {
   }
 
   @Get()
-  findAll() {
-    return this.serversService.findAll();
+  findAll(@Req() req) {
+    return this.serversService.findAll(req);
   }
 
   @Get(':id')
