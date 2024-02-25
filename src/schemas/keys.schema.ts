@@ -38,6 +38,9 @@ export class Key {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   userId: string;
 
+  @Prop()
+  account: string;
+
   @Prop({ default: () => new Date() })
   startDate: Date;
 

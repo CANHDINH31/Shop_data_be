@@ -21,6 +21,7 @@ import { RosesModule } from './roses/roses.module';
 import { UpgradesModule } from './upgrades/upgrades.module';
 import { SatisfyModule } from './satisfy/satisfy.module';
 import { CollabModule } from './collab/collab.module';
+import { KeysModule } from './keys/keys.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { CollabModule } from './collab/collab.module';
     UpgradesModule,
     SatisfyModule,
     CollabModule,
+    KeysModule,
   ],
   controllers: [AppController],
   providers: [AppService, JwtService],
