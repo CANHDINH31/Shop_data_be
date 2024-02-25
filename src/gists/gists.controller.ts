@@ -1,3 +1,4 @@
+import { UpdateExtensionGistDto } from './dto/update-extension-gist.dto';
 import {
   Controller,
   Get,
@@ -29,6 +30,14 @@ export class GistsController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.gistsService.findOne(id);
+  }
+
+  @Patch('/extension/:id')
+  updateExtension(
+    @Param('id') id: string,
+    @Body() updateExtensionGistDto: UpdateExtensionGistDto,
+  ) {
+    return this.gistsService.updateExtension(id, updateExtensionGistDto);
   }
 
   @Patch(':id')

@@ -15,6 +15,7 @@ import { User } from 'src/schemas/users.schema';
 import { Transaction } from 'src/schemas/transactions.schema';
 import { Commision } from 'src/schemas/commisions.schema';
 import { Rose } from 'src/schemas/roses.schema';
+import { UpdateExtensionGistDto } from './dto/update-extension-gist.dto';
 
 @Injectable()
 export class GistsService {
@@ -236,6 +237,29 @@ export class GistsService {
       return {
         status: HttpStatus.CREATED,
         message: 'Cập nhật thông tin thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateExtension(
+    id: string,
+    updateExtensionGistDto: UpdateExtensionGistDto,
+  ) {
+    try {
+      const gist = await this.gistModal.findByIdAndUpdate(
+        id,
+        {
+          extension: updateExtensionGistDto.extension,
+        },
+        { new: true },
+      );
+
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Cập nhật thông tin thành công',
+        gist,
       };
     } catch (error) {
       throw error;
