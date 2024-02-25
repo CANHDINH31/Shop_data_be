@@ -1,15 +1,21 @@
 import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { User } from 'src/schemas/users.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
+import { Transaction } from 'src/schemas/transactions.schema';
+import { Cash } from 'src/schemas/cashs.schema';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModal: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModal: Model<User>,
+    @InjectModel(Transaction.name) private transactionModal: Model<Transaction>,
+    @InjectModel(Cash.name) private cashModal: Model<Cash>,
+  ) {}
 
   async login(loginDto: LoginDto) {
     try {
@@ -84,13 +90,42 @@ export class UsersService {
         ...(req?.query?.introduceCode && {
           introduceCode: req.query.introduceCode,
         }),
+        ...(req?.query?.email && {
+          email: { $regex: req.query.email, $options: 'i' },
+        }),
       };
 
-      return await this.userModal
+      const listUser = await this.userModal
         .find(query)
         .populate('introduceCode')
         .select('-password')
         .sort({ createdAt: -1 });
+
+      const resultList = [];
+
+      for (const user of listUser) {
+        const transaction = await this.transactionModal.find({
+          userId: user._id,
+        });
+
+        const cash = await this.cashModal.aggregate([
+          {
+            $match: {
+              userId: new mongoose.Types.ObjectId(user._id),
+              approve: true,
+            },
+          },
+          { $group: { _id: user._id, money: { $sum: '$money' } } },
+        ]);
+
+        resultList.push({
+          ...user.toObject(),
+          transaction: transaction?.length,
+          cash: cash?.[0].money,
+        });
+      }
+
+      return resultList;
     } catch (error) {
       throw error;
     }

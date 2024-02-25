@@ -8,6 +8,9 @@ export class Server {
   @Prop()
   serverId: string;
 
+  @Prop({ default: '' })
+  location: string;
+
   @Prop()
   apiUrl: string;
 
@@ -34,6 +37,9 @@ export class Server {
 
   @Prop({ default: 50 })
   numberRecomendKey: number;
+
+  @Prop()
+  deleteAt: Date;
 }
 
 export const ServerSchema = SchemaFactory.createForClass(Server);
