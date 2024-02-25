@@ -18,6 +18,7 @@ import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import * as moment from 'moment';
 import { UpdateLocationServerDto } from './dto/update-location-server.dto';
+import { UpdateNameServerDto } from './dto/update-name-server.dto';
 
 @Injectable()
 export class ServersService {
@@ -201,6 +202,35 @@ export class ServersService {
       return {
         status: HttpStatus.OK,
         message: 'Cập nhật địa chỉ thành công',
+        data,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateNameServer(id: string, updateNameServerDto: UpdateNameServerDto) {
+    try {
+      const server = await this.serverModal.findById(id);
+
+      const outlineVpn = new OutlineVPN({
+        apiUrl: server.apiUrl,
+        fingerprint: server.fingerPrint,
+      });
+
+      await outlineVpn.renameServer(updateNameServerDto.name);
+
+      const data = await this.serverModal.findByIdAndUpdate(
+        id,
+        {
+          name: updateNameServerDto.name,
+        },
+        { new: true },
+      );
+
+      return {
+        status: HttpStatus.OK,
+        message: 'Cập nhật name server thành công',
         data,
       };
     } catch (error) {
