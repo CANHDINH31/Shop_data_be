@@ -38,7 +38,7 @@ export class SatisfyService {
         cash,
         rose,
         transaction,
-        currentMoney: user.money,
+        currentMoney: user?.money,
         numberIntoduce: introduceUser?.length,
       };
     } catch (error) {
