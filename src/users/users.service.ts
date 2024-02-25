@@ -121,7 +121,7 @@ export class UsersService {
         resultList.push({
           ...user.toObject(),
           transaction: transaction?.length,
-          cash: cash?.[0].money,
+          cash: cash?.[0]?.money,
         });
       }
 
