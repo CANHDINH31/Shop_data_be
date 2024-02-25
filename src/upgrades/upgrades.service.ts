@@ -171,6 +171,7 @@ export class UpgradesService {
         gistId: planUpgradeDto.gistId,
         planId: plan._id,
         money: money,
+        discount: disccount,
         description: `Đăng kí gói ${plan.name}`,
       });
 

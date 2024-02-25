@@ -31,9 +31,9 @@ export class KeysController {
     return this.keysService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateKeyDto: UpdateKeyDto) {
-    return this.keysService.update(+id, updateKeyDto);
+  @Patch('/upgrade/:id')
+  upgrade(@Param('id') id: string) {
+    return this.keysService.upgrade(id);
   }
 
   @Delete(':id')
