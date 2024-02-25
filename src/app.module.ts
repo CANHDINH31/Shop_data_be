@@ -20,6 +20,7 @@ import { CommisionsModule } from './commisions/commisions.module';
 import { RosesModule } from './roses/roses.module';
 import { UpgradesModule } from './upgrades/upgrades.module';
 import { SatisfyModule } from './satisfy/satisfy.module';
+import { CollabModule } from './collab/collab.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { SatisfyModule } from './satisfy/satisfy.module';
     RosesModule,
     UpgradesModule,
     SatisfyModule,
+    CollabModule,
   ],
   controllers: [AppController],
   providers: [AppService, JwtService],

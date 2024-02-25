@@ -22,4 +22,8 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsOptional()
   @IsNumber()
   purpose: number;
+
+  @IsOptional()
+  @IsNumber()
+  level: number;
 }
