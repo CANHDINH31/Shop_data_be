@@ -23,6 +23,9 @@ export class Transaction {
   @Prop({ default: 1 })
   amount: number;
 
+  @Prop({ default: 0 })
+  discount: number;
+
   @Prop()
   money: number;
 }

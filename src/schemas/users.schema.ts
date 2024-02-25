@@ -40,6 +40,9 @@ export class User {
   introduceCode: string;
 
   @Prop({ default: 0 })
+  level: number;
+
+  @Prop({ default: 0 })
   money: number;
 }
 
