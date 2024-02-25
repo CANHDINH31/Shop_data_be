@@ -40,6 +40,9 @@ export class Server {
 
   @Prop()
   deleteAt: Date;
+
+  @Prop({ default: 1 })
+  status: number;
 }
 
 export const ServerSchema = SchemaFactory.createForClass(Server);

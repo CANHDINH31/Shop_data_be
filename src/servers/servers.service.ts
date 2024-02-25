@@ -172,6 +172,9 @@ export class ServersService {
     try {
       let query = {};
       query = {
+        ...(req?.query?.status && {
+          status: req.query.status,
+        }),
         ...(req?.query?.name && {
           name: { $regex: req.query.name, $options: 'i' },
         }),
