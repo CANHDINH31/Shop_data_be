@@ -185,7 +185,7 @@ export class ServersService {
     }
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_12_HOURS)
   async getDataUsage() {
     try {
       console.log('start cron data usage');
