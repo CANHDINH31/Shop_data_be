@@ -16,6 +16,7 @@ import { RemoveKeyDto } from './dto/remove-key.dto';
 import { DisableKeyDto } from './dto/disable-key.dto';
 import { EnableKeyDto } from './dto/enable-key.dto';
 import { AddDataLimitDto } from './dto/add-data-limit.dto';
+import { UpdateLocationServerDto } from './dto/update-location-server.dto';
 
 @Controller('servers')
 export class ServersController {
@@ -36,9 +37,12 @@ export class ServersController {
     return this.serversService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateServerDto: UpdateServerDto) {
-    return this.serversService.update(+id, updateServerDto);
+  @Patch('/update-location/:id')
+  updateLocation(
+    @Param('id') id: string,
+    @Body() updateLocationServerDto: UpdateLocationServerDto,
+  ) {
+    return this.serversService.updateLocation(id, updateLocationServerDto);
   }
 
   @Post('/add-key')

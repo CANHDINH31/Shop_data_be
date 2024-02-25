@@ -9,6 +9,10 @@ export class SyncServerDto {
   @IsString()
   fingerPrint: string;
 
+  @IsNotEmpty()
+  @IsOptional()
+  location: string;
+
   @IsOptional()
   @IsNumber()
   numberRecomendKey: number;

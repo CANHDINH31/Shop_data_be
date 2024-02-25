@@ -17,6 +17,7 @@ import { Octokit } from '@octokit/core';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import * as moment from 'moment';
+import { UpdateLocationServerDto } from './dto/update-location-server.dto';
 
 @Injectable()
 export class ServersService {
@@ -168,17 +169,7 @@ export class ServersService {
 
   async findAll() {
     try {
-      const listServer = await this.serverModal.find().sort({ createdAt: -1 });
-      const resultList = [];
-      for (const server of listServer) {
-        const listKeys = await this.keyModal.find({ serverId: server._id });
-        resultList.push({
-          ...server.toObject(),
-          listKeys,
-        });
-      }
-
-      return resultList;
+      return await this.serverModal.find().sort({ createdAt: -1 });
     } catch (error) {
       throw error;
     }
@@ -194,8 +185,14 @@ export class ServersService {
     }
   }
 
-  update(id: number, updateServerDto: UpdateServerDto) {
-    return `This action updates a #${id} server`;
+  async updateLocation(
+    id: string,
+    updateLocationServerDto: UpdateLocationServerDto,
+  ) {
+    try {
+    } catch (error) {
+      throw error;
+    }
   }
 
   async remove(id: string) {
