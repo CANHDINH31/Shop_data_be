@@ -21,4 +21,10 @@ import { Cash, CashSchema } from 'src/schemas/cashs.schema';
   controllers: [UsersController],
   providers: [UsersService],
 })
-export class UsersModule {}
+export class UsersModule {
+  constructor(private readonly usersService: UsersService) {}
+
+  async onModuleInit() {
+    await this.usersService.createDefaultAdmin();
+  }
+}

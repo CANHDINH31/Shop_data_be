@@ -11,4 +11,9 @@ import { Collab, CollabSchema } from 'src/schemas/collabs.schema';
   controllers: [CollabController],
   providers: [CollabService],
 })
-export class CollabModule {}
+export class CollabModule {
+  constructor(private readonly collabService: CollabService) {}
+  async onModuleInit() {
+    await this.collabService.createDefaulCollab();
+  }
+}

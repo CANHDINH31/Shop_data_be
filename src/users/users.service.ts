@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -15,7 +16,24 @@ export class UsersService {
     @InjectModel(User.name) private userModal: Model<User>,
     @InjectModel(Transaction.name) private transactionModal: Model<Transaction>,
     @InjectModel(Cash.name) private cashModal: Model<Cash>,
+    private configService: ConfigService,
   ) {}
+
+  async createDefaultAdmin() {
+    try {
+      const existAdmin = await this.userModal.findOne({
+        email: this.configService.get('ADMIN_EMAIL'),
+      });
+
+      if (existAdmin) return;
+
+      await this.userModal.create({
+        email: this.configService.get('ADMIN_EMAIL'),
+        password: this.configService.get('ADMIN_PASSWORD'),
+        role: 1,
+      });
+    } catch (error) {}
+  }
 
   async login(loginDto: LoginDto) {
     try {

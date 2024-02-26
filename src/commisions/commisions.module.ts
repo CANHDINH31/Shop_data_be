@@ -13,4 +13,10 @@ import { Commision, CommisionSchema } from 'src/schemas/commisions.schema';
   controllers: [CommisionsController],
   providers: [CommisionsService],
 })
-export class CommisionsModule {}
+export class CommisionsModule {
+  constructor(private readonly commisionsService: CommisionsService) {}
+
+  async onModuleInit() {
+    await this.commisionsService.createDefaultCommision();
+  }
+}

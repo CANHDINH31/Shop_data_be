@@ -16,8 +16,8 @@ async function bootstrap() {
   app.use(urlencoded({ extended: true, limit: '50mb' }));
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   const options = new DocumentBuilder()
-    .setTitle('Tutor api ')
-    .setDescription('The Tutor api  description')
+    .setTitle('Vpn api ')
+    .setDescription('The Vpn api  description')
     .setVersion('1.0')
     .setBasePath('api')
     .addBearerAuth()
