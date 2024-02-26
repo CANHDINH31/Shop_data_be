@@ -49,12 +49,10 @@ export class UsersService {
           message: 'Email / Username hoặc password không tồn tại',
         });
 
-      const { password, ...data } = existAccount.toObject();
-
       return {
         status: HttpStatus.OK,
         message: 'Đăng nhập thành công',
-        data,
+        data: existAccount,
       };
     } catch (error) {
       throw error;
@@ -123,7 +121,6 @@ export class UsersService {
       const listUser = await this.userModal
         .find(query)
         .populate('introduceUserId')
-        .select('-password')
         .sort({ createdAt: -1 });
 
       const resultList = [];
