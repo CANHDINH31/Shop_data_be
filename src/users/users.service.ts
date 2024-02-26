@@ -63,18 +63,7 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     try {
-      if (createUserDto.introduceCode) {
-        const existIntroduceCode = await this.userModal.findOne({
-          _id: createUserDto.introduceCode,
-        });
-
-        if (!existIntroduceCode) {
-          throw new BadRequestException({
-            message: 'Mã giới thiệu chưa chính xác',
-          });
-        }
-      }
-
+      // Check exist user
       const existUser = await this.userModal.findOne({
         $or: [
           { email: createUserDto.email },
@@ -87,8 +76,24 @@ export class UsersService {
           message: 'Email hoặc password đã tồn tại',
         });
 
+      // Check exist introduce code
+      let existIntroduceCode = {} as any;
+      if (createUserDto.introduceCode) {
+        existIntroduceCode = await this.userModal.findOne({
+          introduceCode: createUserDto.introduceCode,
+        });
+
+        if (!existIntroduceCode) {
+          throw new BadRequestException({
+            message: 'Mã giới thiệu chưa chính xác',
+          });
+        }
+      }
+
       const userCreated = await this.userModal.create({
         ...createUserDto,
+        ...(existIntroduceCode && { introduceUserId: existIntroduceCode?._id }),
+        introduceCode: this.generateRandomString(7),
       });
 
       const { password, ...data } = userCreated.toObject();
@@ -117,7 +122,7 @@ export class UsersService {
 
       const listUser = await this.userModal
         .find(query)
-        .populate('introduceCode')
+        .populate('introduceUserId')
         .select('-password')
         .sort({ createdAt: -1 });
 
@@ -153,7 +158,7 @@ export class UsersService {
 
   async findOne(id: string) {
     try {
-      return await this.userModal.findById(id).populate('introduceCode');
+      return await this.userModal.findById(id).populate('introduceUserId');
     } catch (error) {
       throw error;
     }
@@ -184,5 +189,15 @@ export class UsersService {
     } catch (error) {
       throw error;
     }
+  }
+
+  generateRandomString(length) {
+    let randomString = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      randomString += characters.charAt(randomIndex);
+    }
+    return randomString;
   }
 }

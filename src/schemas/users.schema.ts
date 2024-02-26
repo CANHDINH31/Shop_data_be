@@ -39,8 +39,13 @@ export class User {
   3. Others
   */
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  @Prop()
   introduceCode: string;
+  // Mã giới thiệu
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  introduceUserId: string;
+  // Người giới thiệu
 
   @Prop({ default: 0 })
   level: number;
