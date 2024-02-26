@@ -38,13 +38,15 @@ export class UsersService {
   async login(loginDto: LoginDto) {
     try {
       const existAccount = await this.userModal.findOne({
-        email: loginDto.email,
-        password: loginDto.password,
+        $or: [
+          { email: loginDto.account, password: loginDto.password },
+          { username: loginDto.account, password: loginDto.password },
+        ],
       });
 
       if (!existAccount)
         throw new BadRequestException({
-          message: 'Email hoặc password không tồn tại',
+          message: 'Email / Username hoặc password không tồn tại',
         });
 
       const { password, ...data } = existAccount.toObject();
