@@ -6,7 +6,6 @@ import mongoose, { Model } from 'mongoose';
 import { User } from 'src/schemas/users.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { LoginDto } from './dto/login.dto';
-import * as bcrypt from 'bcrypt';
 import { Transaction } from 'src/schemas/transactions.schema';
 import { Cash } from 'src/schemas/cashs.schema';
 
@@ -30,6 +29,7 @@ export class UsersService {
       await this.userModal.create({
         email: this.configService.get('ADMIN_EMAIL'),
         password: this.configService.get('ADMIN_PASSWORD'),
+        username: this.configService.get('ADMIN_USERNAME'),
         role: 1,
       });
     } catch (error) {}
@@ -74,19 +74,19 @@ export class UsersService {
       }
 
       const existUser = await this.userModal.findOne({
-        email: createUserDto.email,
+        $or: [
+          { email: createUserDto.email },
+          { username: createUserDto.username },
+        ],
       });
 
       if (existUser)
         throw new BadRequestException({
-          message: 'Email đã tồn tại',
+          message: 'Email hoặc password đã tồn tại',
         });
-
-      const referenceCode = await bcrypt.genSaltSync(10);
 
       const userCreated = await this.userModal.create({
         ...createUserDto,
-        referenceCode,
       });
 
       const { password, ...data } = userCreated.toObject();
