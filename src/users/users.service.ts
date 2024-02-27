@@ -1,3 +1,4 @@
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { ConfigService } from '@nestjs/config';
 import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -156,6 +157,35 @@ export class UsersService {
   async findOne(id: string) {
     try {
       return await this.userModal.findById(id).populate('introduceUserId');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async changePassword(id: string, changePasswordDto: ChangePasswordDto) {
+    try {
+      const user = await this.userModal.findById(id);
+      const isCorrectOldPassword =
+        user.password === changePasswordDto.oldPassword;
+      if (!isCorrectOldPassword) {
+        throw new BadRequestException({
+          message: 'Mật khẩu cũ không chính xác',
+        });
+      }
+
+      const data = await this.userModal.findByIdAndUpdate(
+        user._id,
+        {
+          password: changePasswordDto.newPassword,
+        },
+        { new: true },
+      );
+
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Cập nhật mật khẩu thành công',
+        data,
+      };
     } catch (error) {
       throw error;
     }
