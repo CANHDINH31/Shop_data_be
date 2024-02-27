@@ -22,6 +22,7 @@ import { UpgradesModule } from './upgrades/upgrades.module';
 import { SatisfyModule } from './satisfy/satisfy.module';
 import { CollabModule } from './collab/collab.module';
 import { KeysModule } from './keys/keys.module';
+import { MailerModule } from '@nest-modules/mailer';
 
 @Module({
   imports: [
@@ -35,6 +36,22 @@ import { KeysModule } from './keys/keys.module';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
+    }),
+    MailerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        transport: {
+          host: configService.get('MAIL_HOST'),
+          secure: false,
+          auth: {
+            user: configService.get('MAIL_USER'),
+            pass: configService.get('MAIL_PASSWORD'),
+          },
+        },
+        defaults: {
+          from: `"VPN" <${configService.get('MAIL_FROM')}>`,
+        },
+      }),
     }),
     ConfigModule.forRoot({ isGlobal: true }),
     UsersModule,

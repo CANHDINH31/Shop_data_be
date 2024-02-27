@@ -8,6 +8,8 @@ import {
   TransactionSchema,
 } from 'src/schemas/transactions.schema';
 import { Cash, CashSchema } from 'src/schemas/cashs.schema';
+import { JwtService } from '@nestjs/jwt';
+import { MailerService } from '@nest-modules/mailer';
 
 @Module({
   imports: [
@@ -19,7 +21,7 @@ import { Cash, CashSchema } from 'src/schemas/cashs.schema';
   ],
 
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [UsersService, JwtService],
 })
 export class UsersModule {
   constructor(private readonly usersService: UsersService) {}

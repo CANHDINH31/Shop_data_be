@@ -33,6 +33,11 @@ export class UsersController {
     return this.usersService.findAll(req);
   }
 
+  @Get('/forgot-password/:id')
+  forgotPassword(@Param('id') id: string) {
+    return this.usersService.forgotPassword(id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);

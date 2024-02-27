@@ -9,6 +9,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { LoginDto } from './dto/login.dto';
 import { Transaction } from 'src/schemas/transactions.schema';
 import { Cash } from 'src/schemas/cashs.schema';
+import { JwtService } from '@nestjs/jwt';
+import { MailerService } from '@nest-modules/mailer';
 
 @Injectable()
 export class UsersService {
@@ -17,6 +19,8 @@ export class UsersService {
     @InjectModel(Transaction.name) private transactionModal: Model<Transaction>,
     @InjectModel(Cash.name) private cashModal: Model<Cash>,
     private configService: ConfigService,
+    private jwtService: JwtService,
+    private mailerService: MailerService,
   ) {}
 
   async createDefaultAdmin() {
@@ -185,6 +189,38 @@ export class UsersService {
         status: HttpStatus.CREATED,
         message: 'Cập nhật mật khẩu thành công',
         data,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async forgotPassword(id: string) {
+    try {
+      const user = await this.userModal.findById(id);
+      if (!user)
+        throw new BadRequestException({
+          message: 'User không tồn tại',
+        });
+      const { password, ...data } = user.toObject();
+
+      const token = await this.jwtService.signAsync(data, {
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: '5m',
+      });
+
+      await this.mailerService.sendMail({
+        to: user.email,
+        subject: 'Thay đổi mật khẩu',
+        text: `${this.configService.get(
+          'DOMAIN_WEB',
+        )}/reset-password?token=${token}`,
+      });
+
+      return {
+        status: HttpStatus.OK,
+        message:
+          'Vui lòng vào mail click vào link để đổi mật khẩu. Hạn đổi mật khẩu là 5 phút kể từ lúc nhận email',
       };
     } catch (error) {
       throw error;
