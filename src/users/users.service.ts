@@ -1,3 +1,4 @@
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ConfigService } from '@nestjs/config';
 import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
@@ -192,6 +193,27 @@ export class UsersService {
       };
     } catch (error) {
       throw error;
+    }
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    try {
+      const decode = await this.jwtService.verify(resetPasswordDto.token, {
+        secret: this.configService.get('JWT_SECRET'),
+      });
+
+      await this.userModal.findByIdAndUpdate(decode._id, {
+        password: resetPasswordDto.newPassword,
+      });
+
+      return {
+        status: HttpStatus.OK,
+        message: 'Cập nhật mật khẩu thành công',
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        'Hết thời gian thay đổi mật khẩu hoặc token chưa chính xác',
+      );
     }
   }
 

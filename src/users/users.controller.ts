@@ -13,6 +13,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginDto } from './dto/login.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('users')
 export class UsersController {
@@ -41,6 +42,11 @@ export class UsersController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
+  }
+
+  @Patch('reset-password')
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return await this.usersService.resetPassword(resetPasswordDto);
   }
 
   @Patch('/change-password/:id')
