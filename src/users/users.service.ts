@@ -1,3 +1,4 @@
+import { ForgotPasswordDto } from './dto/forgot-password';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ConfigService } from '@nestjs/config';
@@ -217,13 +218,17 @@ export class UsersService {
     }
   }
 
-  async forgotPassword(id: string) {
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
     try {
-      const user = await this.userModal.findById(id);
+      const user = await this.userModal.findOne({
+        email: forgotPasswordDto.email,
+      });
+
       if (!user)
         throw new BadRequestException({
           message: 'User không tồn tại',
         });
+
       const { password, ...data } = user.toObject();
 
       const token = await this.jwtService.signAsync(data, {

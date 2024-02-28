@@ -14,6 +14,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginDto } from './dto/login.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ForgotPasswordDto } from './dto/forgot-password';
 
 @Controller('users')
 export class UsersController {
@@ -34,9 +35,9 @@ export class UsersController {
     return this.usersService.findAll(req);
   }
 
-  @Get('/forgot-password/:id')
-  forgotPassword(@Param('id') id: string) {
-    return this.usersService.forgotPassword(id);
+  @Post('/forgot-password')
+  forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.usersService.forgotPassword(forgotPasswordDto);
   }
 
   @Get(':id')
