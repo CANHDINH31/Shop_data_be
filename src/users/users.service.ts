@@ -13,6 +13,7 @@ import { Transaction } from 'src/schemas/transactions.schema';
 import { Cash } from 'src/schemas/cashs.schema';
 import { JwtService } from '@nestjs/jwt';
 import { MailerService } from '@nest-modules/mailer';
+import { generateRandomString } from 'src/utils';
 
 @Injectable()
 export class UsersService {
@@ -98,7 +99,7 @@ export class UsersService {
       const userCreated = await this.userModal.create({
         ...createUserDto,
         ...(existIntroduceCode && { introduceUserId: existIntroduceCode?._id }),
-        introduceCode: this.generateRandomString(7),
+        introduceCode: generateRandomString(7),
       });
 
       const { password, ...data } = userCreated.toObject();
@@ -279,15 +280,5 @@ export class UsersService {
     } catch (error) {
       throw error;
     }
-  }
-
-  generateRandomString(length) {
-    let randomString = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * characters.length);
-      randomString += characters.charAt(randomIndex);
-    }
-    return randomString;
   }
 }

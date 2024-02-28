@@ -17,6 +17,7 @@ import { Commision } from 'src/schemas/commisions.schema';
 import { Rose } from 'src/schemas/roses.schema';
 import { UpdateExtensionGistDto } from './dto/update-extension-gist.dto';
 import { Collab } from 'src/schemas/collabs.schema';
+import { generateRandomString } from 'src/utils';
 
 @Injectable()
 export class GistsService {
@@ -52,16 +53,25 @@ export class GistsService {
 
       const startDate = moment();
       const endDate = moment().add(plan.day, 'd');
+      const randomKey = generateRandomString(4);
 
-      const fileName = `${moment(startDate).format('YYYYMMDD')}-${moment(
-        endDate,
-      ).format('YYYYMMDD')}-${createGistDto.userId}-${plan.name}.txt`;
+      const fileName = `${moment(startDate).format('YYYYMMDD')}-[${
+        plan.name
+      }]-${user.username}-[${randomKey}].txt`;
 
-      const extension = user.email.split('@')[0];
+      const extension = `${plan.name}-${user.username}-${moment(
+        startDate,
+      ).format('MMDD')}`;
 
       const listServer = await this.serverModal
         .find({ status: 1 })
         .select(['_id', 'numberRecomendKey']);
+
+      if (listServer?.length < 1) {
+        throw new BadRequestException({
+          message: 'Hiện chưa có server nào hoạt động. Vui lòng quay lại sau',
+        });
+      }
 
       const keyCountByServerId = [];
 
@@ -80,7 +90,8 @@ export class GistsService {
       // Sắp xếp danh sách keyCountByServerId theo số lượng key tăng dần
       const sortedKeyCountByServerId = keyCountByServerId.sort(
         (a, b) =>
-          a.keyCount / a.numberRecomendKey - b.keyCount / b.numberRecomendKey,
+          Number(a.keyCount) / Number(a.numberRecomendKey) -
+          Number(b.keyCount) / Number(b.numberRecomendKey),
       );
 
       // Lấy serverId có ít key nhất
@@ -103,7 +114,7 @@ export class GistsService {
       const key = await this.keyModal.create({
         keyId: id,
         userId: user._id,
-        account: user.email,
+        account: user.username,
         serverId: leastKeyServerId,
         startDate,
         endDate,
@@ -159,11 +170,11 @@ export class GistsService {
       });
 
       // Apply commision
-      if (commision.value > 0 && user.introduceCode) {
+      if (commision.value > 0 && user.introduceUserId) {
         const recive = ((plan.price * commision.value) / 100).toFixed(0);
 
         await this.roseModal.create({
-          reciveRoseId: user.introduceCode,
+          reciveRoseId: user.introduceUserId,
           introducedId: user._id,
           plan: plan.name,
           price: plan.price,
@@ -171,7 +182,7 @@ export class GistsService {
           recive,
         });
 
-        await this.userModal.findByIdAndUpdate(user.introduceCode, {
+        await this.userModal.findByIdAndUpdate(user.introduceUserId, {
           $inc: { money: recive },
         });
       }
