@@ -11,8 +11,12 @@ export class Cash {
   @Prop()
   money: number;
 
-  @Prop({ default: false })
-  approve: boolean;
+  @Prop({ default: 2 })
+  status: number;
+  // 2:pending 1:approve 0:reject
+
+  @Prop()
+  description: string;
 }
 
 export const CashSchema = SchemaFactory.createForClass(Cash);

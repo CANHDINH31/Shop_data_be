@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { CashsService } from './cashs.service';
 import { CreateCashDto } from './dto/create-cash.dto';
-import { UpdateCashDto } from './dto/update-cash.dto';
+import { RejectCashDto } from './dto/reject-cash.dto';
 
 @Controller('cashs')
 export class CashsController {
@@ -31,9 +31,9 @@ export class CashsController {
     return this.cashsService.approve(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCashDto: UpdateCashDto) {
-    return this.cashsService.update(+id, updateCashDto);
+  @Post('/reject/:id')
+  reject(@Param('id') id: string, @Body() rejectCashDto: RejectCashDto) {
+    return this.cashsService.reject(id, rejectCashDto);
   }
 
   @Delete(':id')

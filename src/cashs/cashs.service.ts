@@ -1,6 +1,6 @@
+import { RejectCashDto } from './dto/reject-cash.dto';
 import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateCashDto } from './dto/create-cash.dto';
-import { UpdateCashDto } from './dto/update-cash.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Cash } from 'src/schemas/cashs.schema';
 import { Model } from 'mongoose';
@@ -32,8 +32,8 @@ export class CashsService {
         ...(req?.query?.userId && {
           userId: req.query.userId,
         }),
-        ...(req?.query?.approve && {
-          approve: req.query.approve,
+        ...(req?.query?.status && {
+          status: req.query.status,
         }),
       };
 
@@ -49,16 +49,15 @@ export class CashsService {
   async approve(id: string) {
     try {
       const cash = await this.cashModal.findOne({ _id: id });
-      if (cash.approve)
+
+      if (cash.status !== 2)
         throw new BadRequestException({
-          message: 'Hóa đơn đã được phê duyệt',
+          message: 'Hóa đơn đã được phê duyệt hoặc từ chối',
         });
 
-      const user = await this.userModal.findOne({ _id: cash.userId });
+      await this.cashModal.findByIdAndUpdate(cash._id, { status: 1 });
 
-      await this.cashModal.findByIdAndUpdate(cash._id, { approve: true });
-
-      await this.userModal.findByIdAndUpdate(user._id, {
+      await this.userModal.findByIdAndUpdate(cash.userId, {
         $inc: { money: cash.money },
       });
 
@@ -71,8 +70,27 @@ export class CashsService {
     }
   }
 
-  update(id: number, updateCashDto: UpdateCashDto) {
-    return `This action updates a #${id} cash`;
+  async reject(id: string, rejectCashDto: RejectCashDto) {
+    try {
+      const cash = await this.cashModal.findOne({ _id: id });
+
+      if (cash.status !== 2)
+        throw new BadRequestException({
+          message: 'Hóa đơn đã được phê duyệt hoặc từ chối',
+        });
+
+      await this.cashModal.findByIdAndUpdate(cash._id, {
+        status: 0,
+        ...rejectCashDto,
+      });
+
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Hóa đơn đã bị từ chối',
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   remove(id: number) {
