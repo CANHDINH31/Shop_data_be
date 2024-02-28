@@ -121,36 +121,8 @@ export class UpgradesService {
       const day = gist.planId.day;
       const endDate = lastEndDate.add(day, 'd');
 
-      const fileName = `${moment(gist.keyId.startDate).format(
-        'YYYYMMDD',
-      )}-${moment(endDate).format('YYYYMMDD')}-${user._id}-${plan.name}.txt`;
-
       await this.keyModal.findByIdAndUpdate(gist.keyId._id, {
         endDate,
-      });
-
-      const newGist = await this.octokit.request('POST /gists', {
-        description: fileName,
-        public: true,
-        files: {
-          [fileName]: {
-            content: gist?.keyId?.accessUrl,
-          },
-        },
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-      });
-
-      await this.octokit.request(`DELETE /gists/${gist.gistId}`, {
-        gist_id: gist.gistId,
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-      });
-
-      await this.gistModal.findByIdAndUpdate(planUpgradeDto.gistId, {
-        gistId: newGist?.data?.id,
       });
 
       const collab = await this.collabModal.findOne({});
@@ -172,7 +144,7 @@ export class UpgradesService {
         planId: plan._id,
         money: money,
         discount: disccount,
-        description: `Đăng kí gói ${plan.name}`,
+        description: `Gia hạn gói ${plan.name}`,
       });
 
       await this.userModal.findByIdAndUpdate(user._id, {
@@ -181,7 +153,7 @@ export class UpgradesService {
 
       return {
         status: HttpStatus.CREATED,
-        message: 'Thêm mới thành công',
+        message: 'Gia hạn thành công',
       };
     } catch (error) {
       throw error;
