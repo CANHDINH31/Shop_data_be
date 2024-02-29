@@ -17,7 +17,7 @@ export class SatisfyService {
   async findOne(id: string) {
     try {
       const cash = await this.cashModal.aggregate([
-        { $match: { userId: new mongoose.Types.ObjectId(id), approve: true } },
+        { $match: { userId: new mongoose.Types.ObjectId(id), approve: 1 } },
         { $group: { _id: id, money: { $sum: '$money' } } },
       ]);
 
