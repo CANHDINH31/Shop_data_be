@@ -5,5 +5,5 @@ export const generateRandomString = (length) => {
     const randomIndex = Math.floor(Math.random() * characters.length);
     randomString += characters.charAt(randomIndex);
   }
-  return randomString;
+  return randomString.toLowerCase();
 };

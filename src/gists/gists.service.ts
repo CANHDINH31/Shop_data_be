@@ -55,11 +55,11 @@ export class GistsService {
       const endDate = moment().add(plan.day, 'd');
       const randomKey = generateRandomString(4);
 
-      const fileName = `${moment(startDate).format('YYYYMMDD')}-[${
-        plan.name
-      }]-${user.username}-[${randomKey}].txt`;
+      const fileName = `${moment(startDate).format(
+        'YYYYMMDD',
+      )}-${plan.name?.toLowerCase()}-${user.username}-${randomKey}.txt`;
 
-      const extension = `${plan.name}-${user.username}-${moment(
+      const extension = `${plan.name?.toLowerCase()}-${user.username}-${moment(
         startDate,
       ).format('MMDD')}`;
 
