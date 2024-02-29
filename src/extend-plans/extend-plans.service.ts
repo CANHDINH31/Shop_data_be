@@ -26,9 +26,19 @@ export class ExtendPlansService {
     }
   }
 
-  async findAll() {
+  async findAll(req: any) {
     try {
-      return await this.extendPlanModal.find().sort({ createdAt: -1 });
+      let query = {};
+      query = {
+        ...(req?.query?.name && {
+          name: { $regex: req.query.name, $options: 'i' },
+        }),
+        ...(req?.query?.status && {
+          status: req.query.status,
+        }),
+      };
+
+      return await this.extendPlanModal.find(query).sort({ createdAt: -1 });
     } catch (error) {
       throw error;
     }
@@ -64,7 +74,7 @@ export class ExtendPlansService {
 
   async remove(id: string) {
     try {
-      await this.extendPlanModal.deleteOne({ _id: id });
+      await this.extendPlanModal.findByIdAndUpdate(id, { status: 0 });
       return {
         status: HttpStatus.OK,
         message: 'Xóa thành công',

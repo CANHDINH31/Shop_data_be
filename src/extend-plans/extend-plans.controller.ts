@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { ExtendPlansService } from './extend-plans.service';
 import { CreateExtendPlanDto } from './dto/create-extend-plan.dto';
@@ -21,8 +22,8 @@ export class ExtendPlansController {
   }
 
   @Get()
-  findAll() {
-    return this.extendPlansService.findAll();
+  findAll(@Req() req) {
+    return this.extendPlansService.findAll(req);
   }
 
   @Get(':id')

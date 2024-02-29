@@ -14,6 +14,18 @@ export class ExtendPlan {
   @Prop()
   bandWidth: number;
   // unit: GB
+
+  @Prop({ default: 0 })
+  level1: number;
+
+  @Prop({ default: 0 })
+  level2: number;
+
+  @Prop({ default: 0 })
+  level3: number;
+
+  @Prop({ default: 1 })
+  status: number;
 }
 
 export const ExtendPlanSchema = SchemaFactory.createForClass(ExtendPlan);
