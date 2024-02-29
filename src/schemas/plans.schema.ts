@@ -26,6 +26,9 @@ export class Plan {
 
   @Prop({ default: 0 })
   display: number;
+
+  @Prop({ default: 1 })
+  status: number;
 }
 
 export const PlanSchema = SchemaFactory.createForClass(Plan);

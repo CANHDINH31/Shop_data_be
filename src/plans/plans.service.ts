@@ -32,6 +32,9 @@ export class PlansService {
         ...(req?.query?.display && {
           display: req.query.display,
         }),
+        ...(req?.query?.status && {
+          status: req.query.status,
+        }),
       };
 
       return await this.planModal.find(query).sort({ createdAt: -1 });
@@ -66,7 +69,7 @@ export class PlansService {
 
   async remove(id: string) {
     try {
-      await this.planModal.deleteOne({ _id: id });
+      await this.planModal.findByIdAndUpdate(id, { status: 0 });
       return {
         status: HttpStatus.OK,
         message: 'Xóa thành công',
