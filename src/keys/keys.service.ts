@@ -86,36 +86,8 @@ export class KeysService {
       const day = gist.planId.day;
       const endDate = lastEndDate.add(day, 'd');
 
-      const fileName = `${moment(gist.keyId.startDate).format(
-        'YYYYMMDD',
-      )}-${moment(endDate).format('YYYYMMDD')}-${user._id}-${plan.name}.txt`;
-
       await this.keyModal.findByIdAndUpdate(gist.keyId._id, {
         endDate,
-      });
-
-      const newGist = await this.octokit.request('POST /gists', {
-        description: fileName,
-        public: true,
-        files: {
-          [fileName]: {
-            content: gist?.keyId?.accessUrl,
-          },
-        },
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-      });
-
-      await this.octokit.request(`DELETE /gists/${gist.gistId}`, {
-        gist_id: gist.gistId,
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-      });
-
-      await this.gistModal.findByIdAndUpdate(gist._id, {
-        gistId: newGist?.data?.id,
       });
 
       const collab = await this.collabModal.findOne({});
