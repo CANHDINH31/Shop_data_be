@@ -23,6 +23,9 @@ export class Plan {
   @Prop()
   bandWidth: number;
   // unit: GB
+
+  @Prop({ default: 0 })
+  display: number;
 }
 
 export const PlanSchema = SchemaFactory.createForClass(Plan);

@@ -1,8 +1,10 @@
 import {
   ArrayMaxSize,
   IsArray,
+  IsBoolean,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
 } from 'class-validator';
 
@@ -31,4 +33,8 @@ export class CreatePlanDto {
   @IsNotEmpty()
   @IsNumber()
   bandWidth: number;
+
+  @IsOptional()
+  @IsNumber()
+  display?: number;
 }

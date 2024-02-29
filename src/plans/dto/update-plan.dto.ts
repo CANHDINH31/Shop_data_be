@@ -1,6 +1,7 @@
 import {
   ArrayMaxSize,
   IsArray,
+  IsBoolean,
   IsNumber,
   IsOptional,
   IsString,
@@ -32,4 +33,8 @@ export class UpdatePlanDto {
   @IsOptional()
   @IsNumber()
   bandWidth: number;
+
+  @IsOptional()
+  @IsNumber()
+  display?: number;
 }

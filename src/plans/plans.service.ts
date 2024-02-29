@@ -29,6 +29,9 @@ export class PlansService {
         ...(req?.query?.name && {
           name: { $regex: req.query.name, $options: 'i' },
         }),
+        ...(req?.query?.display && {
+          display: req.query.display,
+        }),
       };
 
       return await this.planModal.find(query).sort({ createdAt: -1 });
