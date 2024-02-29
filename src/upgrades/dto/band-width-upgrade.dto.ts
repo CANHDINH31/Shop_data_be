@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class BandWidthUpgradeDto {
   @IsNotEmpty()
@@ -8,4 +8,8 @@ export class BandWidthUpgradeDto {
   @IsNotEmpty()
   @IsString()
   extendPlanId: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  month: number;
 }

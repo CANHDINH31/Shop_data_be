@@ -65,7 +65,41 @@ export class UpgradesService {
 
       await outlineVpn.addDataLimit(gist.keyId.keyId, data);
 
-      await this.keyModal.findByIdAndUpdate(gist.keyId, { dataLimit: data });
+      let endExpandDate;
+      const today = moment();
+
+      if (!gist.keyId.endExpandDate) {
+        endExpandDate = today.add(bandWidthUpgradeDto.month, 'M');
+      } else {
+        if (
+          moment(gist.keyId.endExpandDate)
+            .add(1, 'd')
+            .isAfter(moment(gist.keyId.endDate))
+        )
+          return {
+            status: HttpStatus.CREATED,
+            message:
+              'Bạn đã đăng kí mở rộng băng thông đến hết kì hạn gói. Vui lòng gia hạn thêm gói',
+          };
+
+        if (today.isBefore(moment(gist.keyId.endExpandDate))) {
+          endExpandDate = moment(gist.keyId.endExpandDate).add(
+            bandWidthUpgradeDto.month,
+            'M',
+          );
+        } else {
+          endExpandDate = today.add(bandWidthUpgradeDto.month, 'M');
+        }
+      }
+
+      endExpandDate = moment(endExpandDate).isAfter(moment(gist.keyId.endDate))
+        ? gist.keyId.endDate
+        : endExpandDate;
+
+      await this.keyModal.findByIdAndUpdate(gist.keyId, {
+        dataLimit: data,
+        endExpandDate,
+      });
 
       const collab = await this.collabModal.findOne({});
 
@@ -78,20 +112,31 @@ export class UpgradesService {
           ? collab['level3']
           : 0;
 
-      const money = ((extendPlan.price * (100 - disccount)) / 100).toFixed(0);
+      const discount1 =
+        bandWidthUpgradeDto.month > 12
+          ? extendPlan['level3']
+          : bandWidthUpgradeDto.month > 6
+          ? extendPlan['level2']
+          : extendPlan['level1'];
+
+      const totalDiscount = disccount + discount1;
+
+      const money = ((extendPlan.price * (100 - totalDiscount)) / 100).toFixed(
+        0,
+      );
 
       await this.transactionModal.create({
         userId: user._id,
         gistId: bandWidthUpgradeDto.gistId,
         extendPlanId: bandWidthUpgradeDto.extendPlanId,
         money: money,
-        discount: disccount,
+        discount: totalDiscount,
         description: `Đăng kí gói ${extendPlan.name}`,
       });
 
-      await this.userModal.findByIdAndUpdate(user._id, {
-        $inc: { money: -money },
-      });
+      // await this.userModal.findByIdAndUpdate(user._id, {
+      //   $inc: { money: -money },
+      // });
 
       return {
         status: HttpStatus.CREATED,
