@@ -56,6 +56,18 @@ export class UpgradesService {
           message: 'Bạn không đủ tiền để đăng kí dịch vụ này',
         });
 
+      const today = moment();
+
+      if (
+        gist.keyId.endExpandDate &&
+        today.isBefore(moment(gist.keyId.endExpandDate))
+      ) {
+        throw new BadRequestException({
+          message:
+            'Bạn phải chờ hết thời gian mở rộng băng thông cũ, mới có thể mua thêm băng thông',
+        });
+      }
+
       const outlineVpn = new OutlineVPN({
         apiUrl: gist.keyId.serverId.apiUrl,
         fingerprint: gist.keyId.serverId.fingerPrint,
@@ -66,38 +78,14 @@ export class UpgradesService {
       await outlineVpn.addDataLimit(gist.keyId.keyId, data);
 
       let endExpandDate;
-      const today = moment();
-
-      if (!gist.keyId.endExpandDate) {
-        endExpandDate = today.add(bandWidthUpgradeDto.month, 'M');
-      } else {
-        if (
-          moment(gist.keyId.endExpandDate)
-            .add(1, 'd')
-            .isAfter(moment(gist.keyId.endDate))
-        )
-          return {
-            status: HttpStatus.CREATED,
-            message:
-              'Bạn đã đăng kí mở rộng băng thông đến hết kì hạn gói. Vui lòng gia hạn thêm gói',
-          };
-
-        if (today.isBefore(moment(gist.keyId.endExpandDate))) {
-          endExpandDate = moment(gist.keyId.endExpandDate).add(
-            bandWidthUpgradeDto.month,
-            'M',
-          );
-        } else {
-          endExpandDate = today.add(bandWidthUpgradeDto.month, 'M');
-        }
-      }
+      endExpandDate = today.add(bandWidthUpgradeDto.month, 'M');
 
       endExpandDate = moment(endExpandDate).isAfter(moment(gist.keyId.endDate))
         ? gist.keyId.endDate
         : endExpandDate;
 
       await this.keyModal.findByIdAndUpdate(gist.keyId, {
-        dataLimit: data,
+        dataExpand: data,
         endExpandDate,
       });
 
@@ -113,30 +101,32 @@ export class UpgradesService {
           : 0;
 
       const discount1 =
-        bandWidthUpgradeDto.month > 12
+        bandWidthUpgradeDto.month > 6
           ? extendPlan['level3']
-          : bandWidthUpgradeDto.month > 6
+          : bandWidthUpgradeDto.month > 3
           ? extendPlan['level2']
           : extendPlan['level1'];
 
-      const totalDiscount = disccount + discount1;
-
-      const money = ((extendPlan.price * (100 - totalDiscount)) / 100).toFixed(
-        0,
-      );
+      const money = (
+        (extendPlan.price *
+          Number(bandWidthUpgradeDto.month) *
+          (100 - disccount) *
+          (100 - discount1)) /
+        (100 * 100)
+      ).toFixed(0);
 
       await this.transactionModal.create({
         userId: user._id,
         gistId: bandWidthUpgradeDto.gistId,
         extendPlanId: bandWidthUpgradeDto.extendPlanId,
         money: money,
-        discount: totalDiscount,
+        discount: disccount,
         description: `Đăng kí gói ${extendPlan.name}`,
       });
 
-      // await this.userModal.findByIdAndUpdate(user._id, {
-      //   $inc: { money: -money },
-      // });
+      await this.userModal.findByIdAndUpdate(user._id, {
+        $inc: { money: -money },
+      });
 
       return {
         status: HttpStatus.CREATED,

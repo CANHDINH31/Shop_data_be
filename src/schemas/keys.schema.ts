@@ -32,6 +32,9 @@ export class Key {
   @Prop({ default: 0 })
   dataUsage: number;
 
+  @Prop({ default: 0 })
+  dataExpand: number;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Server' })
   serverId: string;
 
@@ -46,9 +49,6 @@ export class Key {
 
   @Prop({ default: () => new Date() })
   endDate: Date;
-
-  @Prop()
-  startExpandDate: Date;
 
   @Prop()
   endExpandDate: Date;
