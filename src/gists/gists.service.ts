@@ -89,7 +89,12 @@ export class GistsService {
               status: 1,
             },
           },
-          { $group: { _id: server._id, dataLimit: { $sum: '$dataLimit' } } },
+          {
+            $group: {
+              _id: server._id,
+              dataLimit: { $sum: '$dataExpand' },
+            },
+          },
         ]);
 
         keyCountByServerId.push({
@@ -115,6 +120,7 @@ export class GistsService {
         apiUrl: serverMongo.apiUrl,
         fingerprint: serverMongo.fingerPrint,
       });
+
       // Tạo user trên outlineVpn
       const userVpn = await outlineVpn.createUser();
       const { id, ...rest } = userVpn;
@@ -147,6 +153,7 @@ export class GistsService {
         startDate,
         endDate,
         dataLimit: data,
+        dataExpand: data,
         ...rest,
       });
       // Tạo trên gist
