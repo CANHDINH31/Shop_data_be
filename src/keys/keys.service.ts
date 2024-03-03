@@ -15,6 +15,7 @@ import { OutlineVPN } from 'outlinevpn-api';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Aws } from 'src/schemas/awses.schema';
 import * as AWS from 'aws-sdk';
+import { MigrateKeyDto } from './dto/migrate-key.dto';
 
 @Injectable()
 export class KeysService {
@@ -43,6 +44,26 @@ export class KeysService {
 
   create(createKeyDto: CreateKeyDto) {
     return 'This action adds a new key';
+  }
+
+  async migrate(migrateKeyDto: MigrateKeyDto) {
+    try {
+      const data = await this.keyModal.findByIdAndUpdate(
+        migrateKeyDto.keyId,
+        {
+          serverId: migrateKeyDto.serverId,
+        },
+        {
+          new: true,
+        },
+      );
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Migrate key thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findAll(req: any) {

@@ -10,11 +10,16 @@ import {
 } from '@nestjs/common';
 import { KeysService } from './keys.service';
 import { CreateKeyDto } from './dto/create-key.dto';
-import { UpdateKeyDto } from './dto/update-key.dto';
+import { MigrateKeyDto } from './dto/migrate-key.dto';
 
 @Controller('keys')
 export class KeysController {
   constructor(private readonly keysService: KeysService) {}
+
+  @Post()
+  migrate(@Body() migrateKeyDto: MigrateKeyDto) {
+    return this.keysService.migrate(migrateKeyDto);
+  }
 
   @Post()
   create(@Body() createKeyDto: CreateKeyDto) {
