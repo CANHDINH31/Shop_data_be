@@ -13,10 +13,13 @@ import { Transaction } from 'src/schemas/transactions.schema';
 import { Collab } from 'src/schemas/collabs.schema';
 import { OutlineVPN } from 'outlinevpn-api';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { Aws } from 'src/schemas/awses.schema';
+import * as AWS from 'aws-sdk';
 
 @Injectable()
 export class KeysService {
   private readonly octokit;
+  private readonly S3;
 
   constructor(
     @InjectModel(Key.name) private keyModal: Model<Key>,
@@ -25,10 +28,16 @@ export class KeysService {
     @InjectModel(User.name) private userModal: Model<User>,
     @InjectModel(Transaction.name) private transactionModal: Model<Transaction>,
     @InjectModel(Collab.name) private collabModal: Model<Collab>,
+    @InjectModel(Aws.name) private awsModal: Model<Aws>,
     private configService: ConfigService,
   ) {
     this.octokit = new Octokit({
       auth: configService.get('PERSONAL_GIST_TOKEN'),
+    });
+    this.S3 = new AWS.S3({
+      accessKeyId: configService.get('S3_ACCESS_KEY'),
+      secretAccessKey: configService.get('S3_ACCESS_SECRET'),
+      region: configService.get('S3_REGION'),
     });
   }
 
@@ -128,7 +137,10 @@ export class KeysService {
 
   async remove(id: string) {
     try {
-      const key: any = await this.keyModal.findById(id).populate('serverId');
+      const key: any = await this.keyModal
+        .findById(id)
+        .populate('serverId')
+        .populate('awsId');
       const outlineVpn = new OutlineVPN({
         apiUrl: key.serverId.apiUrl,
         fingerprint: key?.serverId?.fingerPrint,
@@ -141,6 +153,7 @@ export class KeysService {
 
       await this.keyModal.findByIdAndUpdate(key._id, { status: 0 });
       await this.gistModal.findByIdAndUpdate(gist._id, { status: 0 });
+      await this.awsModal.findByIdAndUpdate(key?.awsId?._id, { status: 0 });
 
       await this.octokit.request(`DELETE /gists/${gist.gistId}`, {
         gist_id: `${gist.gistId}`,
@@ -150,6 +163,11 @@ export class KeysService {
       });
 
       await outlineVpn.deleteUser(key.keyId);
+
+      this.S3.deleteObject({
+        Bucket: this.configService.get('S3_BUCKET'),
+        Key: key?.awsId?.awsId,
+      }).promise();
 
       return {
         status: HttpStatus.OK,

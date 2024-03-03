@@ -11,6 +11,7 @@ import {
   TransactionSchema,
 } from 'src/schemas/transactions.schema';
 import { Collab, CollabSchema } from 'src/schemas/collabs.schema';
+import { AWSSchema, Aws } from 'src/schemas/awses.schema';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { Collab, CollabSchema } from 'src/schemas/collabs.schema';
     MongooseModule.forFeature([
       { name: Transaction.name, schema: TransactionSchema },
     ]),
+    MongooseModule.forFeature([{ name: Aws.name, schema: AWSSchema }]),
     MongooseModule.forFeature([{ name: Collab.name, schema: CollabSchema }]),
   ],
   controllers: [KeysController],
