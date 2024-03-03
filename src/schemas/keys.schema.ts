@@ -29,8 +29,8 @@ export class Key {
   @Prop({ default: 120000000000 })
   dataLimit: number;
 
-  @Prop({ default: 0 })
-  dataUsage: number;
+  @Prop()
+  dataUsage: number[];
 
   @Prop({ default: 0 })
   dataExpand: number;

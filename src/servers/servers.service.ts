@@ -69,10 +69,10 @@ export class ServersService {
         fingerprint: syncServerDto.fingerPrint,
       });
 
-      const server = await outlineVpn.getServer();
+      const server: any = await outlineVpn.getServer();
 
       const serverMongo = await this.serverModal.findOne({
-        serverId: server.serverId,
+        hostnameForAccessKeys: server.hostnameForAccessKeys,
         status: 1,
       });
 
