@@ -12,10 +12,12 @@ import {
 } from 'src/schemas/transactions.schema';
 import { Collab, CollabSchema } from 'src/schemas/collabs.schema';
 import { AWSSchema, Aws } from 'src/schemas/awses.schema';
+import { Server, ServerSchema } from 'src/schemas/servers.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Key.name, schema: KeySchema }]),
+    MongooseModule.forFeature([{ name: Server.name, schema: ServerSchema }]),
     MongooseModule.forFeature([{ name: Gist.name, schema: GistSchema }]),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     MongooseModule.forFeature([{ name: Plan.name, schema: PlanSchema }]),

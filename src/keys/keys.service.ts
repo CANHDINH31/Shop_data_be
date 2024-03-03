@@ -16,6 +16,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { Aws } from 'src/schemas/awses.schema';
 import * as AWS from 'aws-sdk';
 import { MigrateKeyDto } from './dto/migrate-key.dto';
+import { Server } from 'src/schemas/servers.schema';
 
 @Injectable()
 export class KeysService {
@@ -24,6 +25,7 @@ export class KeysService {
 
   constructor(
     @InjectModel(Key.name) private keyModal: Model<Key>,
+    @InjectModel(Server.name) private serverModal: Model<Server>,
     @InjectModel(Gist.name) private gistModal: Model<Key>,
     @InjectModel(Plan.name) private planModal: Model<Plan>,
     @InjectModel(User.name) private userModal: Model<User>,
@@ -48,15 +50,106 @@ export class KeysService {
 
   async migrate(migrateKeyDto: MigrateKeyDto) {
     try {
-      const data = await this.keyModal.findByIdAndUpdate(
-        migrateKeyDto.keyId,
-        {
-          serverId: migrateKeyDto.serverId,
+      const key: any = await this.keyModal
+        .findById(migrateKeyDto.keyId)
+        .populate('awsId')
+        .populate('serverId');
+
+      const gist: any = await this.gistModal.findOne({
+        keyId: migrateKeyDto.keyId,
+      });
+
+      const aws: any = await this.awsModal.findById(key?.awsId?._id);
+
+      // Cập nhật status = 0
+      await this.keyModal.findByIdAndUpdate(key._id, { status: 0 });
+      await this.gistModal.findByIdAndUpdate(gist._id, { status: 0 });
+      await this.awsModal.findByIdAndUpdate(aws._id, { status: 0 });
+
+      const newServer = await this.serverModal.findById(migrateKeyDto.serverId);
+      const outlineVpn = new OutlineVPN({
+        apiUrl: newServer.apiUrl,
+        fingerprint: newServer.fingerPrint,
+      });
+
+      // Tạo user trên server mới
+      const userVpn = await outlineVpn.createUser();
+      const { id, ...rest } = userVpn;
+
+      // Cập nhật lại key trên aws, và tạo mới trên mongo
+      const keyAws = await this.S3.upload({
+        Bucket: this.configService.get('S3_BUCKET'),
+        Key: gist.fileName.replace('txt', 'json'),
+        Body: JSON.stringify({
+          server: newServer.hostnameForAccessKeys,
+          server_port: newServer.portForNewAccessKeys,
+          password: rest.password,
+          method: rest.method,
+        }),
+        ContentType: 'application/json',
+      }).promise();
+
+      const keyAwsMongo = await this.awsModal.create({
+        awsId: keyAws.Key,
+        fileName: keyAws.Location,
+      });
+
+      //Xóa user trên outline cũ
+      const oldOutlineVpn = new OutlineVPN({
+        apiUrl: key?.serverId?.apiUrl,
+        fingerprint: key?.serverId?.fingerPrint,
+      });
+
+      await oldOutlineVpn.deleteUser(key.keyId);
+
+      // Tạo key mới
+      const newKey = await this.keyModal.create({
+        keyId: id,
+        userId: key.userId,
+        awsId: keyAwsMongo._id,
+        account: key.account,
+        serverId: migrateKeyDto.serverId,
+        startDate: key.startDate,
+        endDate: key.endDate,
+        dataLimit: key.dataLimit,
+        dataExpand: key.dataExpand,
+        name: rest.name,
+        password: rest.password,
+        port: rest.port,
+        method: rest.method,
+        accessUrl: rest.accessUrl,
+      });
+
+      await this.octokit.request(`DELETE /gists/${gist.gistId}`, {
+        gist_id: gist.gistId,
+        headers: {
+          'X-GitHub-Api-Version': '2022-11-28',
         },
-        {
-          new: true,
+      });
+
+      // Tạo trên gist
+      const newGist = await this.octokit.request('POST /gists', {
+        description: gist.fileName,
+        public: true,
+        files: {
+          [gist.fileName]: {
+            content: userVpn?.accessUrl,
+          },
         },
-      );
+        headers: {
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+      });
+
+      await this.gistModal.create({
+        gistId: newGist?.data?.id,
+        userId: gist?.userId,
+        planId: key.planId,
+        keyId: newKey._id,
+        fileName: gist.fileName,
+        extension: gist.extension,
+      });
+
       return {
         status: HttpStatus.CREATED,
         message: 'Migrate key thành công',

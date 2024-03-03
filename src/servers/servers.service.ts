@@ -13,6 +13,7 @@ import { UpdateLocationServerDto } from './dto/update-location-server.dto';
 import { UpdateNameServerDto } from './dto/update-name-server.dto';
 import { Aws } from 'src/schemas/awses.schema';
 import * as AWS from 'aws-sdk';
+import { MigrateServerDto } from './dto/migrate-server.dto';
 
 @Injectable()
 export class ServersService {
@@ -34,6 +35,28 @@ export class ServersService {
       secretAccessKey: configService.get('S3_ACCESS_SECRET'),
       region: configService.get('S3_REGION'),
     });
+  }
+
+  async migrate(migrateServerDto: MigrateServerDto) {
+    try {
+      const listKey = await this.keyModal.find({
+        serverId: migrateServerDto.oldServerId,
+        status: 1,
+      });
+
+      for (const key of listKey) {
+        await this.keyModal.findByIdAndUpdate(key._id, {
+          serverId: migrateServerDto.newServerId,
+        });
+      }
+
+      return {
+        status: HttpStatus.OK,
+        message: 'Migrate server thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   async sync(syncServerDto: SyncServerDto) {

@@ -12,10 +12,16 @@ import { ServersService } from './servers.service';
 import { SyncServerDto } from './dto/sync-server.dto';
 import { UpdateLocationServerDto } from './dto/update-location-server.dto';
 import { UpdateNameServerDto } from './dto/update-name-server.dto';
+import { MigrateServerDto } from './dto/migrate-server.dto';
 
 @Controller('servers')
 export class ServersController {
   constructor(private readonly serversService: ServersService) {}
+
+  @Post('/migrate')
+  migrate(@Body() migrateServerDto: MigrateServerDto) {
+    return this.serversService.migrate(migrateServerDto);
+  }
 
   @Post()
   create(@Body() syncServerDto: SyncServerDto) {
