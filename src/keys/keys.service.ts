@@ -149,7 +149,7 @@ export class KeysService {
       await this.gistModal.create({
         gistId: newGist?.data?.id,
         userId: gist?.userId,
-        planId: key.planId,
+        planId: gist.planId,
         keyId: newKey._id,
         fileName: gist.fileName,
         extension: gist.extension,
