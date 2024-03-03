@@ -14,6 +14,7 @@ import {
 import { Commision, CommisionSchema } from 'src/schemas/commisions.schema';
 import { Rose, RoseSchema } from 'src/schemas/roses.schema';
 import { Collab, CollabSchema } from 'src/schemas/collabs.schema';
+import { AWSSchema, Aws } from 'src/schemas/awses.schema';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { Collab, CollabSchema } from 'src/schemas/collabs.schema';
     ]),
     MongooseModule.forFeature([{ name: Rose.name, schema: RoseSchema }]),
     MongooseModule.forFeature([{ name: Collab.name, schema: CollabSchema }]),
+    MongooseModule.forFeature([{ name: Aws.name, schema: AWSSchema }]),
     MongooseModule.forFeature([
       { name: Transaction.name, schema: TransactionSchema },
     ]),

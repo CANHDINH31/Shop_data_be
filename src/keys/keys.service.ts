@@ -57,7 +57,8 @@ export class KeysService {
       return await this.keyModal
         .find(query)
         .populate('userId')
-        .populate('serverId');
+        .populate('serverId')
+        .populate('awsId');
     } catch (error) {
       throw error;
     }

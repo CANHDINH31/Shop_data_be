@@ -41,6 +41,9 @@ export class Key {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   userId: string;
 
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Aws' })
+  awsId: string;
+
   @Prop()
   account: string;
 

@@ -36,6 +36,7 @@
     "@nestjs/typeorm": "^9.0.1",
     "@octokit/core": "^5.1.0",
     "@prisma/client": "^5.0.0",
+    "aws-sdk": "^2.1569.0",
     "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
     "class-transformer": "^0.5.1",

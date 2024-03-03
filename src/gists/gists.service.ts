@@ -18,10 +18,13 @@ import { Rose } from 'src/schemas/roses.schema';
 import { UpdateExtensionGistDto } from './dto/update-extension-gist.dto';
 import { Collab } from 'src/schemas/collabs.schema';
 import { generateRandomString } from 'src/utils';
+import * as AWS from 'aws-sdk';
+import { Aws } from 'src/schemas/awses.schema';
 
 @Injectable()
 export class GistsService {
   private readonly octokit;
+  private readonly S3;
 
   constructor(
     @InjectModel(Gist.name) private gistModal: Model<Gist>,
@@ -33,48 +36,51 @@ export class GistsService {
     @InjectModel(Commision.name) private commisionModal: Model<Commision>,
     @InjectModel(Rose.name) private roseModal: Model<Rose>,
     @InjectModel(Collab.name) private collabModal: Model<Collab>,
+    @InjectModel(Aws.name) private awsModal: Model<Aws>,
     private configService: ConfigService,
   ) {
     this.octokit = new Octokit({
       auth: configService.get('PERSONAL_GIST_TOKEN'),
+    });
+    this.S3 = new AWS.S3({
+      accessKeyId: configService.get('S3_ACCESS_KEY'),
+      secretAccessKey: configService.get('S3_ACCESS_SECRET'),
+      region: configService.get('S3_REGION'),
     });
   }
 
   async create(createGistDto: CreateGistDto) {
     try {
       const commision = await this.commisionModal.findOne({});
-
       const plan = await this.planModal.findById(createGistDto.planId);
       const user = await this.userModal.findById(createGistDto.userId);
       if (Number(plan.price) > Number(user.money))
         throw new BadRequestException({
           message: 'Bạn không đủ tiền để đăng kí dịch vụ này',
         });
-
       const startDate = moment();
       const endDate = moment().add(plan.day, 'd');
       const randomKey = generateRandomString(4);
-
       const fileName = `${moment(startDate).format(
         'YYYYMMDD',
       )}-${plan.name?.toLowerCase()}-${user.username}-${randomKey}.txt`;
-
       const extension = `${plan.name?.toLowerCase()}-${user.username}-${moment(
         startDate,
       ).format('MMDD')}`;
-
       const listServer = await this.serverModal
         .find({ status: 1 })
-        .select(['_id', 'numberRecomendKey']);
-
+        .select([
+          '_id',
+          'numberRecomendKey',
+          'hostnameForAccessKeys',
+          'portForNewAccessKeys',
+        ]);
       if (listServer?.length < 1) {
         throw new BadRequestException({
           message: 'Hiện chưa có server nào hoạt động. Vui lòng quay lại sau',
         });
       }
-
       const keyCountByServerId = [];
-
       for (const server of listServer) {
         const keyCount = await this.keyModal.countDocuments({
           serverId: server._id,
@@ -84,21 +90,19 @@ export class GistsService {
           serverId: server._id,
           keyCount,
           numberRecomendKey: server.numberRecomendKey,
+          serverIp: server.hostnameForAccessKeys,
+          serverPort: server.portForNewAccessKeys,
         });
       }
-
       // Sắp xếp danh sách keyCountByServerId theo số lượng key tăng dần
       const sortedKeyCountByServerId = keyCountByServerId.sort(
         (a, b) =>
           Number(a.keyCount) / Number(a.numberRecomendKey) -
           Number(b.keyCount) / Number(b.numberRecomendKey),
       );
-
       // Lấy serverId có ít key nhất
       const leastKeyServerId = sortedKeyCountByServerId[0].serverId;
-
       const serverMongo = await this.serverModal.findById(leastKeyServerId);
-
       const outlineVpn = new OutlineVPN({
         apiUrl: serverMongo.apiUrl,
         fingerprint: serverMongo.fingerPrint,
@@ -108,12 +112,33 @@ export class GistsService {
       const userVpn = await outlineVpn.createUser();
       const { id, ...rest } = userVpn;
 
+      // Tạo key trên aws
+      const keyAws = await this.S3.upload({
+        Bucket: this.configService.get('S3_BUCKET'),
+        Key: fileName.replace('txt', 'json'),
+        Body: JSON.stringify({
+          server: sortedKeyCountByServerId[0].serverIp,
+          server_port: sortedKeyCountByServerId[0].serverPort,
+          password: rest.password,
+          method: rest.method,
+        }),
+        ContentType: 'application/json',
+      }).promise();
+
+      // Tạo keyaws mongo
+      const keyAwsMongo = await this.awsModal.create({
+        awsId: keyAws.Key,
+        fileName: keyAws.Location,
+      });
+
       const data = plan.bandWidth * 1000000000;
       await outlineVpn.addDataLimit(id, data);
 
+      // Tạo key Mongo
       const key = await this.keyModal.create({
         keyId: id,
         userId: user._id,
+        awsId: keyAwsMongo._id,
         account: user.username,
         serverId: leastKeyServerId,
         startDate,
@@ -122,6 +147,7 @@ export class GistsService {
         ...rest,
       });
 
+      // Tạo trên gist
       const gist = await this.octokit.request('POST /gists', {
         description: fileName,
         public: true,
@@ -135,6 +161,7 @@ export class GistsService {
         },
       });
 
+      // Tạo gist Mongo
       const gistMongo = await this.gistModal.create({
         ...createGistDto,
         extension,
@@ -142,9 +169,7 @@ export class GistsService {
         fileName,
         keyId: key._id,
       });
-
       const collab = await this.collabModal.findOne({});
-
       const disccount =
         user.level === 1
           ? collab['level1']
@@ -153,9 +178,7 @@ export class GistsService {
           : user.level === 3
           ? collab['level3']
           : 0;
-
       const money = ((plan.price * (100 - disccount)) / 100).toFixed(0);
-
       await this.transactionModal.create({
         userId: createGistDto.userId,
         gistId: gistMongo._id,
@@ -164,15 +187,12 @@ export class GistsService {
         discount: disccount,
         description: `Đăng kí gói ${plan.name}`,
       });
-
       await this.userModal.findByIdAndUpdate(user._id, {
         $inc: { money: -money },
       });
-
       // Apply commision
       if (commision.value > 0 && user.introduceUserId) {
         const recive = ((plan.price * commision.value) / 100).toFixed(0);
-
         await this.roseModal.create({
           reciveRoseId: user.introduceUserId,
           introducedId: user._id,
@@ -181,12 +201,10 @@ export class GistsService {
           percent: commision.value,
           recive,
         });
-
         await this.userModal.findByIdAndUpdate(user.introduceUserId, {
           $inc: { money: recive },
         });
       }
-
       return {
         status: HttpStatus.CREATED,
         message: 'Thêm mới thành công',
@@ -214,7 +232,12 @@ export class GistsService {
         .sort({ createdAt: -1 })
         .populate('userId')
         .populate('planId')
-        .populate('keyId');
+        .populate({
+          path: 'keyId',
+          populate: {
+            path: 'awsId',
+          },
+        });
     } catch (error) {
       throw error;
     }
@@ -227,7 +250,12 @@ export class GistsService {
         .populate('userId')
         .populate('userId')
         .populate('planId')
-        .populate('keyId');
+        .populate({
+          path: 'keyId',
+          populate: {
+            path: 'awsId',
+          },
+        });
 
       const gist = await this.octokit.request(
         `GET /gists/${gistMongo.gistId}`,
