@@ -164,7 +164,7 @@ export class KeysService {
 
       await outlineVpn.deleteUser(key.keyId);
 
-      this.S3.deleteObject({
+      await this.S3.deleteObject({
         Bucket: this.configService.get('S3_BUCKET'),
         Key: key?.awsId?.awsId,
       }).promise();
