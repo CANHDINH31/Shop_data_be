@@ -5,6 +5,10 @@ import { Cash } from 'src/schemas/cashs.schema';
 import { Rose } from 'src/schemas/roses.schema';
 import { Transaction } from 'src/schemas/transactions.schema';
 import { User } from 'src/schemas/users.schema';
+import { CashDto } from './dto/cash.dto';
+import * as moment from 'moment';
+import { TransactionPlanDto } from './dto/transaction-plan.dto';
+import { TransactionExtendPlanDto } from './dto/transaction-extend-plan.dto';
 
 @Injectable()
 export class SatisfyService {
@@ -40,6 +44,86 @@ export class SatisfyService {
         transaction,
         currentMoney: user?.money,
         numberIntoduce: introduceUser?.length,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async cash(cashDto: CashDto) {
+    try {
+      const cash = await this.cashModal.aggregate([
+        {
+          $match: {
+            status: 1,
+            createdAt: {
+              $gte: new Date(moment(cashDto.startDate).format('YYYY-MM-DD')),
+              $lte: new Date(moment(cashDto.endDate).format('YYYY-MM-DD')),
+            },
+          },
+        },
+        { $group: { _id: 'cash', money: { $sum: '$money' } } },
+      ]);
+      return {
+        cash,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async transactionPlan(transactionPlanDto: TransactionPlanDto) {
+    try {
+      const transactionPlan = await this.transactionModal.aggregate([
+        {
+          $match: {
+            planId: new mongoose.Types.ObjectId(transactionPlanDto.planId),
+            createdAt: {
+              $gte: new Date(
+                moment(transactionPlanDto.startDate).format('YYYY-MM-DD'),
+              ),
+              $lte: new Date(
+                moment(transactionPlanDto.endDate).format('YYYY-MM-DD'),
+              ),
+            },
+          },
+        },
+        { $group: { _id: 'transaction-plan', money: { $sum: '$money' } } },
+      ]);
+      return {
+        transactionPlan,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async transactionExtendPlan(
+    transactionExtendPlanDto: TransactionExtendPlanDto,
+  ) {
+    try {
+      const transactionExtendPlan = await this.transactionModal.aggregate([
+        {
+          $match: {
+            extendPlanId: new mongoose.Types.ObjectId(
+              transactionExtendPlanDto.extendPlanId,
+            ),
+            createdAt: {
+              $gte: new Date(
+                moment(transactionExtendPlanDto.startDate).format('YYYY-MM-DD'),
+              ),
+              $lte: new Date(
+                moment(transactionExtendPlanDto.endDate).format('YYYY-MM-DD'),
+              ),
+            },
+          },
+        },
+        {
+          $group: { _id: 'transaction-extend-plan', money: { $sum: '$money' } },
+        },
+      ]);
+      return {
+        transactionExtendPlan,
       };
     } catch (error) {
       throw error;
