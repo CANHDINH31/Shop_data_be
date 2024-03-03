@@ -61,12 +61,12 @@ export class GistsService {
       const startDate = moment();
       const endDate = moment().add(plan.day, 'd');
       const randomKey = generateRandomString(4);
-      const fileName = `${moment(startDate).format(
-        'YYYYMMDD',
-      )}-${plan.name?.toLowerCase()}-${user.username}-${randomKey}.txt`;
-      const extension = `${plan.name?.toLowerCase()}-${user.username}-${moment(
-        startDate,
-      ).format('MMDD')}`;
+      const fileName = `${moment(startDate).format('YYYYMMDD')}-${plan.name
+        ?.replace(/[^a-zA-Z0-9]/g, '')
+        ?.toLowerCase()}-${user.username}-${randomKey}.txt`;
+      const extension = `${plan.name
+        ?.replace(/[^a-zA-Z0-9]/g, '')
+        ?.toLowerCase()}-${user.username}-${moment(startDate).format('MMDD')}`;
       const listServer = await this.serverModal
         .find({ status: 1 })
         .select([
@@ -107,11 +107,9 @@ export class GistsService {
         apiUrl: serverMongo.apiUrl,
         fingerprint: serverMongo.fingerPrint,
       });
-
       // Tạo user trên outlineVpn
       const userVpn = await outlineVpn.createUser();
       const { id, ...rest } = userVpn;
-
       // Tạo key trên aws
       const keyAws = await this.S3.upload({
         Bucket: this.configService.get('S3_BUCKET'),
@@ -124,16 +122,13 @@ export class GistsService {
         }),
         ContentType: 'application/json',
       }).promise();
-
       // Tạo keyaws mongo
       const keyAwsMongo = await this.awsModal.create({
         awsId: keyAws.Key,
         fileName: keyAws.Location,
       });
-
       const data = plan.bandWidth * 1000000000;
       await outlineVpn.addDataLimit(id, data);
-
       // Tạo key Mongo
       const key = await this.keyModal.create({
         keyId: id,
@@ -146,7 +141,6 @@ export class GistsService {
         dataLimit: data,
         ...rest,
       });
-
       // Tạo trên gist
       const gist = await this.octokit.request('POST /gists', {
         description: fileName,
@@ -160,7 +154,6 @@ export class GistsService {
           'X-GitHub-Api-Version': '2022-11-28',
         },
       });
-
       // Tạo gist Mongo
       const gistMongo = await this.gistModal.create({
         ...createGistDto,
