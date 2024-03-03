@@ -76,6 +76,8 @@ export class KeysService {
       const userVpn = await outlineVpn.createUser();
       const { id, ...rest } = userVpn;
 
+      await outlineVpn.addDataLimit(id, key?.dataExpand);
+
       // Cập nhật lại key trên aws, và tạo mới trên mongo
       const keyAws = await this.S3.upload({
         Bucket: this.configService.get('S3_BUCKET'),
@@ -105,23 +107,26 @@ export class KeysService {
       // Tạo key mới
       const newKey = await this.keyModal.create({
         keyId: id,
-        userId: key.userId,
-        awsId: keyAwsMongo._id,
-        account: key.account,
-        serverId: migrateKeyDto.serverId,
-        startDate: key.startDate,
-        endDate: key.endDate,
-        dataLimit: key.dataLimit,
-        dataExpand: key.dataExpand,
-        name: rest.name,
-        password: rest.password,
-        port: rest.port,
-        method: rest.method,
-        accessUrl: rest.accessUrl,
+        userId: key?.userId,
+        awsId: keyAwsMongo?._id,
+        account: key?.account,
+        serverId: migrateKeyDto?.serverId,
+        startDate: key?.startDate,
+        endDate: key?.endDate,
+        dataLimit: key?.dataLimit,
+        dataUsage: key?.dataUsage,
+        endExpandDate: key?.endExpandDate,
+        enable: key?.enable,
+        dataExpand: key?.dataExpand,
+        name: rest?.name,
+        password: rest?.password,
+        port: rest?.port,
+        method: rest?.method,
+        accessUrl: rest?.accessUrl,
       });
 
-      await this.octokit.request(`DELETE /gists/${gist.gistId}`, {
-        gist_id: gist.gistId,
+      await this.octokit.request(`DELETE /gists/${gist?.gistId}`, {
+        gist_id: gist?.gistId,
         headers: {
           'X-GitHub-Api-Version': '2022-11-28',
         },

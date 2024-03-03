@@ -14,6 +14,7 @@ import { UpdateNameServerDto } from './dto/update-name-server.dto';
 import { Aws } from 'src/schemas/awses.schema';
 import * as AWS from 'aws-sdk';
 import { MigrateServerDto } from './dto/migrate-server.dto';
+import { KeysService } from 'src/keys/keys.service';
 
 @Injectable()
 export class ServersService {
@@ -25,6 +26,7 @@ export class ServersService {
     @InjectModel(Key.name) private keyModal: Model<Key>,
     @InjectModel(Gist.name) private gistModal: Model<Gist>,
     @InjectModel(Aws.name) private awsModal: Model<Aws>,
+    private keyService: KeysService,
     private configService: ConfigService,
   ) {
     this.octokit = new Octokit({
@@ -45,7 +47,8 @@ export class ServersService {
       });
 
       for (const key of listKey) {
-        await this.keyModal.findByIdAndUpdate(key._id, {
+        await this.keyService.migrate({
+          keyId: key._id?.toString(),
           serverId: migrateServerDto.newServerId,
         });
       }
