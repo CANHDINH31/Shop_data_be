@@ -3,7 +3,7 @@ import { CreateGistDto } from './dto/create-gist.dto';
 import { UpdateGistDto } from './dto/update-gist.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Gist } from 'src/schemas/gists.schema';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { Octokit } from '@octokit/core';
 import { ConfigService } from '@nestjs/config';
 import * as moment from 'moment';
@@ -71,9 +71,9 @@ export class GistsService {
         .find({ status: 1 })
         .select([
           '_id',
-          'numberRecomendKey',
           'hostnameForAccessKeys',
           'portForNewAccessKeys',
+          'totalBandWidth',
         ]);
       if (listServer?.length < 1) {
         throw new BadRequestException({
@@ -82,24 +82,32 @@ export class GistsService {
       }
       const keyCountByServerId = [];
       for (const server of listServer) {
-        const keyCount = await this.keyModal.countDocuments({
-          serverId: server._id,
-          status: 1,
-        });
+        const dataLimit = await this.keyModal.aggregate([
+          {
+            $match: {
+              serverId: new mongoose.Types.ObjectId(server._id),
+              status: 1,
+            },
+          },
+          { $group: { _id: server._id, dataLimit: { $sum: '$dataLimit' } } },
+        ]);
+
         keyCountByServerId.push({
           serverId: server._id,
-          keyCount,
-          numberRecomendKey: server.numberRecomendKey,
+          dataLimit: dataLimit?.[0]?.dataLimit || 0,
           serverIp: server.hostnameForAccessKeys,
           serverPort: server.portForNewAccessKeys,
+          totalBandWidth: server.totalBandWidth,
         });
       }
+
       // Sắp xếp danh sách keyCountByServerId theo số lượng key tăng dần
       const sortedKeyCountByServerId = keyCountByServerId.sort(
         (a, b) =>
-          Number(a.keyCount) / Number(a.numberRecomendKey) -
-          Number(b.keyCount) / Number(b.numberRecomendKey),
+          Number(a.dataLimit) / Number(a.totalBandWidth) -
+          Number(b.dataLimit) / Number(b.totalBandWidth),
       );
+
       // Lấy serverId có ít key nhất
       const leastKeyServerId = sortedKeyCountByServerId[0].serverId;
       const serverMongo = await this.serverModal.findById(leastKeyServerId);
@@ -183,8 +191,9 @@ export class GistsService {
       await this.userModal.findByIdAndUpdate(user._id, {
         $inc: { money: -money },
       });
-      // Apply commision
-      if (commision.value > 0 && user.introduceUserId) {
+
+      // Apply commision for user isnot collab
+      if (commision.value > 0 && user.introduceUserId && user.level === 0) {
         const recive = ((plan.price * commision.value) / 100).toFixed(0);
         await this.roseModal.create({
           reciveRoseId: user.introduceUserId,

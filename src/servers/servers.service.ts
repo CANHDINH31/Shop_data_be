@@ -9,7 +9,6 @@ import { Gist } from 'src/schemas/gists.schema';
 import { Octokit } from '@octokit/core';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import * as moment from 'moment';
 import { UpdateLocationServerDto } from './dto/update-location-server.dto';
 import { UpdateNameServerDto } from './dto/update-name-server.dto';
 
@@ -46,11 +45,27 @@ export class ServersService {
         await this.serverModal.findByIdAndUpdate(serverMongo._id, {
           ...server,
           ...syncServerDto,
+          totalBandWidth:
+            syncServerDto?.totalBandWidth > 0
+              ? syncServerDto?.totalBandWidth * 1000000000
+              : 6000000000000,
+          defaultBandWidth:
+            syncServerDto?.defaultBandWidth > 0
+              ? syncServerDto?.defaultBandWidth * 1000000000
+              : 120000000000,
         });
       } else {
         await this.serverModal.create({
           ...server,
           ...syncServerDto,
+          totalBandWidth:
+            syncServerDto?.totalBandWidth > 0
+              ? syncServerDto?.totalBandWidth * 1000000000
+              : 6000000000000,
+          defaultBandWidth:
+            syncServerDto?.defaultBandWidth > 0
+              ? syncServerDto?.defaultBandWidth * 1000000000
+              : 120000000000,
         });
       }
 

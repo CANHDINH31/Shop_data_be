@@ -15,5 +15,9 @@ export class SyncServerDto {
 
   @IsOptional()
   @IsNumber()
-  numberRecomendKey: number;
+  totalBandWidth?: number;
+
+  @IsOptional()
+  @IsNumber()
+  defaultBandWidth?: number;
 }
