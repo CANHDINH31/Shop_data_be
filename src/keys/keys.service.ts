@@ -17,6 +17,7 @@ import { Aws } from 'src/schemas/awses.schema';
 import * as AWS from 'aws-sdk';
 import { MigrateKeyDto } from './dto/migrate-key.dto';
 import { Server } from 'src/schemas/servers.schema';
+import { Test } from 'src/schemas/tests.schema';
 
 @Injectable()
 export class KeysService {
@@ -24,6 +25,7 @@ export class KeysService {
   private readonly S3;
 
   constructor(
+    @InjectModel(Test.name) private testModal: Model<Test>,
     @InjectModel(Key.name) private keyModal: Model<Key>,
     @InjectModel(Server.name) private serverModal: Model<Server>,
     @InjectModel(Gist.name) private gistModal: Model<Key>,
@@ -318,8 +320,12 @@ export class KeysService {
     }
   }
 
-  @Cron(CronExpression.EVERY_SECOND)
-  checkCron() {
-    console.log(Date.now());
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async checkCron() {
+    try {
+      await this.testModal.create({ value: Date.now() });
+    } catch (error) {
+      throw error;
+    }
   }
 }
