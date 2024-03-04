@@ -317,4 +317,9 @@ export class KeysService {
       throw error;
     }
   }
+
+  @Cron(CronExpression.EVERY_SECOND)
+  checkCron() {
+    console.log(Date.now());
+  }
 }
