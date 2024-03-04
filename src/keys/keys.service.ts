@@ -299,33 +299,33 @@ export class KeysService {
     }
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_1PM)
-  async checkExpiredKey() {
-    try {
-      console.log('start cron check expire key');
-      const listKey = (await this.keyModal
-        .find({ status: 1 })
-        .populate('serverId')) as any[];
-      const today = moment();
-      const expiredKeys = listKey.filter((key) => {
-        const endDate = moment(key.endDate);
-        return endDate.isBefore(today);
-      });
-      for (const key of expiredKeys) {
-        await this.remove(key._id);
-      }
-      console.log('finnish cron check expire key');
-    } catch (error) {
-      throw error;
-    }
-  }
+  // @Cron(CronExpression.EVERY_DAY_AT_1PM)
+  // async checkExpiredKey() {
+  //   try {
+  //     console.log('start cron check expire key');
+  //     const listKey = (await this.keyModal
+  //       .find({ status: 1 })
+  //       .populate('serverId')) as any[];
+  //     const today = moment();
+  //     const expiredKeys = listKey.filter((key) => {
+  //       const endDate = moment(key.endDate);
+  //       return endDate.isBefore(today);
+  //     });
+  //     for (const key of expiredKeys) {
+  //       await this.remove(key._id);
+  //     }
+  //     console.log('finnish cron check expire key');
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
-  async checkCron() {
-    try {
-      await this.testModal.create({ value: Date.now() });
-    } catch (error) {
-      throw error;
-    }
-  }
+  // @Cron(CronExpression.EVERY_10_MINUTES)
+  // async checkCron() {
+  //   try {
+  //     await this.testModal.create({ value: Date.now() });
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
 }

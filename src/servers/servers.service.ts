@@ -242,31 +242,30 @@ export class ServersService {
     }
   }
 
-  @Cron(CronExpression.EVERY_12_HOURS)
-  // @Cron(CronExpression.EVERY_MINUTE)
-  async getDataUsage() {
-    try {
-      console.log('start cron data usage');
-      const listKey: any = await this.keyModal
-        .find({ status: 1 })
-        .populate('serverId');
+  // @Cron(CronExpression.EVERY_12_HOURS)
+  // async getDataUsage() {
+  //   try {
+  //     console.log('start cron data usage');
+  //     const listKey: any = await this.keyModal
+  //       .find({ status: 1 })
+  //       .populate('serverId');
 
-      for (const key of listKey) {
-        const outlineVpn = new OutlineVPN({
-          apiUrl: key.serverId.apiUrl,
-          fingerprint: key.serverId.fingerPrint,
-        });
+  //     for (const key of listKey) {
+  //       const outlineVpn = new OutlineVPN({
+  //         apiUrl: key.serverId.apiUrl,
+  //         fingerprint: key.serverId.fingerPrint,
+  //       });
 
-        const dataUsage = await outlineVpn.getDataUsage();
-        const bytesTransferredByUserId = dataUsage.bytesTransferredByUserId;
+  //       const dataUsage = await outlineVpn.getDataUsage();
+  //       const bytesTransferredByUserId = dataUsage.bytesTransferredByUserId;
 
-        await this.keyModal.findByIdAndUpdate(key._id, {
-          dataUsage: bytesTransferredByUserId[key.keyId],
-        });
-      }
-      console.log('finnish cron data usage');
-    } catch (error) {
-      throw error;
-    }
-  }
+  //       await this.keyModal.findByIdAndUpdate(key._id, {
+  //         dataUsage: bytesTransferredByUserId[key.keyId],
+  //       });
+  //     }
+  //     console.log('finnish cron data usage');
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
 }
