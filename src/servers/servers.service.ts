@@ -15,6 +15,8 @@ import { Aws } from 'src/schemas/awses.schema';
 import * as AWS from 'aws-sdk';
 import { MigrateServerDto } from './dto/migrate-server.dto';
 import { KeysService } from 'src/keys/keys.service';
+import { SettingBandwidth } from 'src/schemas/settingBandwidths.schema';
+import { SettingBandWidthDefaultDto } from './dto/setting-bandwidth-default.dto';
 
 @Injectable()
 export class ServersService {
@@ -26,6 +28,8 @@ export class ServersService {
     @InjectModel(Key.name) private keyModal: Model<Key>,
     @InjectModel(Gist.name) private gistModal: Model<Gist>,
     @InjectModel(Aws.name) private awsModal: Model<Aws>,
+    @InjectModel(SettingBandwidth.name)
+    private settingBandwidthModal: Model<SettingBandwidth>,
     private keyService: KeysService,
     private configService: ConfigService,
   ) {
@@ -37,6 +41,43 @@ export class ServersService {
       secretAccessKey: configService.get('S3_ACCESS_SECRET'),
       region: configService.get('S3_REGION'),
     });
+  }
+
+  async settingBandWidthDefault(
+    settingBandWidthDefaultDto: SettingBandWidthDefaultDto,
+  ) {
+    try {
+      const settingBandwidthDefault = await this.settingBandwidthModal.findOne(
+        {},
+      );
+      if (settingBandwidthDefault) {
+        await this.settingBandwidthModal.findByIdAndUpdate(
+          settingBandwidthDefault._id,
+          {
+            value: Number(settingBandWidthDefaultDto.value) * 1000000000,
+          },
+        );
+      } else {
+        await this.settingBandwidthModal.create({
+          value: Number(settingBandWidthDefaultDto.value) * 1000000000,
+        });
+      }
+
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Thiết lập bandwidth thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findSettingBandWidthDefault() {
+    try {
+      return await this.settingBandwidthModal.findOne();
+    } catch (error) {
+      throw error;
+    }
   }
 
   async migrate(migrateServerDto: MigrateServerDto) {
@@ -84,10 +125,6 @@ export class ServersService {
             syncServerDto?.totalBandWidth > 0
               ? syncServerDto?.totalBandWidth * 1000000000
               : 6000000000000,
-          defaultBandWidth:
-            syncServerDto?.defaultBandWidth > 0
-              ? syncServerDto?.defaultBandWidth * 1000000000
-              : 120000000000,
         });
       } else {
         await this.serverModal.create({
@@ -97,10 +134,6 @@ export class ServersService {
             syncServerDto?.totalBandWidth > 0
               ? syncServerDto?.totalBandWidth * 1000000000
               : 6000000000000,
-          defaultBandWidth:
-            syncServerDto?.defaultBandWidth > 0
-              ? syncServerDto?.defaultBandWidth * 1000000000
-              : 120000000000,
         });
       }
 
@@ -200,13 +233,13 @@ export class ServersService {
         .populate('serverId')
         .populate('awsId');
 
+      await this.serverModal.findByIdAndUpdate(id, { status: 0 });
+
       if (listKey?.length > 0) {
         const outlineVpn = new OutlineVPN({
           apiUrl: listKey[0].serverId.apiUrl,
           fingerprint: listKey[0]?.serverId?.fingerPrint,
         });
-
-        await this.serverModal.findByIdAndUpdate(id, { status: 0 });
 
         for (const key of listKey) {
           const gist: any = await this.gistModal.findOne({
@@ -237,6 +270,21 @@ export class ServersService {
         status: HttpStatus.OK,
         message: 'Xóa thành công',
       };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async createDefaulBandWidth() {
+    try {
+      const settingBandWidthDefault =
+        await this.settingBandwidthModal.findOne();
+
+      if (settingBandWidthDefault) return;
+
+      await this.settingBandwidthModal.create({
+        value: Number(this.configService.get('BANDWIDTH_DEFAULT')) * 1000000000,
+      });
     } catch (error) {
       throw error;
     }

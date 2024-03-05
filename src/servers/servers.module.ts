@@ -15,6 +15,10 @@ import {
 } from 'src/schemas/transactions.schema';
 import { Collab, CollabSchema } from 'src/schemas/collabs.schema';
 import { Test, TestSchema } from 'src/schemas/tests.schema';
+import {
+  SettingBandwidth,
+  SettingBandwidthSchema,
+} from 'src/schemas/settingBandwidths.schema';
 
 @Module({
   imports: [
@@ -26,6 +30,9 @@ import { Test, TestSchema } from 'src/schemas/tests.schema';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     MongooseModule.forFeature([{ name: Test.name, schema: TestSchema }]),
     MongooseModule.forFeature([
+      { name: SettingBandwidth.name, schema: SettingBandwidthSchema },
+    ]),
+    MongooseModule.forFeature([
       { name: Transaction.name, schema: TransactionSchema },
     ]),
     MongooseModule.forFeature([{ name: Collab.name, schema: CollabSchema }]),
@@ -33,4 +40,10 @@ import { Test, TestSchema } from 'src/schemas/tests.schema';
   controllers: [ServersController],
   providers: [ServersService, KeysService],
 })
-export class ServersModule {}
+export class ServersModule {
+  constructor(private readonly serversService: ServersService) {}
+
+  async onModuleInit() {
+    await this.serversService.createDefaulBandWidth();
+  }
+}

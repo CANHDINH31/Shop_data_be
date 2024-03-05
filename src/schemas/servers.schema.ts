@@ -38,9 +38,6 @@ export class Server {
   @Prop({ default: 6000000000000 })
   totalBandWidth: number;
 
-  @Prop({ default: 120000000000 })
-  defaultBandWidth: number;
-
   @Prop()
   deleteAt: Date;
 

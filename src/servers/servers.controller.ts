@@ -13,10 +13,20 @@ import { SyncServerDto } from './dto/sync-server.dto';
 import { UpdateLocationServerDto } from './dto/update-location-server.dto';
 import { UpdateNameServerDto } from './dto/update-name-server.dto';
 import { MigrateServerDto } from './dto/migrate-server.dto';
+import { SettingBandWidthDefaultDto } from './dto/setting-bandwidth-default.dto';
 
 @Controller('servers')
 export class ServersController {
   constructor(private readonly serversService: ServersService) {}
+
+  @Post('/setting-bandwidth-default')
+  settingBandWidthDefault(
+    @Body() settingBandWidthDefaultDto: SettingBandWidthDefaultDto,
+  ) {
+    return this.serversService.settingBandWidthDefault(
+      settingBandWidthDefaultDto,
+    );
+  }
 
   @Post('/migrate')
   migrate(@Body() migrateServerDto: MigrateServerDto) {
@@ -26,6 +36,11 @@ export class ServersController {
   @Post()
   create(@Body() syncServerDto: SyncServerDto) {
     return this.serversService.sync(syncServerDto);
+  }
+
+  @Get('/setting-bandwidth-default')
+  findSettingBandwidthDefault() {
+    return this.serversService.findSettingBandWidthDefault();
   }
 
   @Get()

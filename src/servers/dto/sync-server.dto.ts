@@ -16,8 +16,4 @@ export class SyncServerDto {
   @IsOptional()
   @IsNumber()
   totalBandWidth?: number;
-
-  @IsOptional()
-  @IsNumber()
-  defaultBandWidth?: number;
 }
