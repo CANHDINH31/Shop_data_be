@@ -98,13 +98,13 @@ export class KeysService {
         fileName: keyAws.Location,
       });
 
-      //Xóa user trên outline cũ
-      const oldOutlineVpn = new OutlineVPN({
-        apiUrl: key?.serverId?.apiUrl,
-        fingerprint: key?.serverId?.fingerPrint,
-      });
+      // //Xóa user trên outline cũ
+      // const oldOutlineVpn = new OutlineVPN({
+      //   apiUrl: key?.serverId?.apiUrl,
+      //   fingerprint: key?.serverId?.fingerPrint,
+      // });
 
-      await oldOutlineVpn.deleteUser(key.keyId);
+      // await oldOutlineVpn.deleteUser(key.keyId);
 
       // Tạo key mới
       const newKey = await this.keyModal.create({
