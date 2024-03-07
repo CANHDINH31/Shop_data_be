@@ -156,24 +156,24 @@ export class GistsService {
         dataExpand: data,
         ...rest,
       });
-      // Tạo trên gist
-      const gist = await this.octokit.request('POST /gists', {
-        description: fileName,
-        public: true,
-        files: {
-          [fileName]: {
-            content: userVpn?.accessUrl,
-          },
-        },
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-      });
+      // // Tạo trên gist
+      // const gist = await this.octokit.request('POST /gists', {
+      //   description: fileName,
+      //   public: true,
+      //   files: {
+      //     [fileName]: {
+      //       content: userVpn?.accessUrl,
+      //     },
+      //   },
+      //   headers: {
+      //     'X-GitHub-Api-Version': '2022-11-28',
+      //   },
+      // });
       // Tạo gist Mongo
       const gistMongo = await this.gistModal.create({
         ...createGistDto,
         extension,
-        gistId: gist?.data?.id,
+        gistId: '',
         fileName,
         keyId: key._id,
       });

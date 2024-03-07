@@ -52,23 +52,8 @@ export class KeysService {
 
   async migrate(migrateKeyDto: MigrateKeyDto) {
     try {
-      const key: any = await this.keyModal
-        .findById(migrateKeyDto.keyId)
-        .populate('awsId')
-        .populate('serverId');
-
-      const gist: any = await this.gistModal.findOne({
-        keyId: migrateKeyDto.keyId,
-      });
-
-      const aws: any = await this.awsModal.findById(key?.awsId?._id);
-
-      // Cập nhật status = 0
-      await this.keyModal.findByIdAndUpdate(key._id, { status: 0 });
-      await this.gistModal.findByIdAndUpdate(gist._id, { status: 0 });
-      await this.awsModal.findByIdAndUpdate(aws._id, { status: 0 });
-
       const newServer = await this.serverModal.findById(migrateKeyDto.serverId);
+
       const outlineVpn = new OutlineVPN({
         apiUrl: newServer.apiUrl,
         fingerprint: newServer.fingerPrint,
@@ -78,7 +63,16 @@ export class KeysService {
       const userVpn = await outlineVpn.createUser();
       const { id, ...rest } = userVpn;
 
+      const key: any = await this.keyModal
+        .findById(migrateKeyDto.keyId)
+        .populate('awsId')
+        .populate('serverId');
+
       await outlineVpn.addDataLimit(id, key?.dataExpand);
+
+      const gist: any = await this.gistModal.findOne({
+        keyId: migrateKeyDto.keyId,
+      });
 
       // Cập nhật lại key trên aws, và tạo mới trên mongo
       const keyAws = await this.S3.upload({
@@ -92,6 +86,13 @@ export class KeysService {
         }),
         ContentType: 'application/json',
       }).promise();
+
+      const aws: any = await this.awsModal.findById(key?.awsId?._id);
+
+      // Cập nhật status = 0
+      await this.keyModal.findByIdAndUpdate(key._id, { status: 0 });
+      await this.gistModal.findByIdAndUpdate(gist._id, { status: 0 });
+      await this.awsModal.findByIdAndUpdate(aws._id, { status: 0 });
 
       const keyAwsMongo = await this.awsModal.create({
         awsId: keyAws.Key,
@@ -127,29 +128,29 @@ export class KeysService {
         accessUrl: rest?.accessUrl,
       });
 
-      await this.octokit.request(`DELETE /gists/${gist?.gistId}`, {
-        gist_id: gist?.gistId,
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-      });
+      // await this.octokit.request(`DELETE /gists/${gist?.gistId}`, {
+      //   gist_id: gist?.gistId,
+      //   headers: {
+      //     'X-GitHub-Api-Version': '2022-11-28',
+      //   },
+      // });
 
       // Tạo trên gist
-      const newGist = await this.octokit.request('POST /gists', {
-        description: gist.fileName,
-        public: true,
-        files: {
-          [gist.fileName]: {
-            content: userVpn?.accessUrl,
-          },
-        },
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-      });
+      // const newGist = await this.octokit.request('POST /gists', {
+      //   description: gist.fileName,
+      //   public: true,
+      //   files: {
+      //     [gist.fileName]: {
+      //       content: userVpn?.accessUrl,
+      //     },
+      //   },
+      //   headers: {
+      //     'X-GitHub-Api-Version': '2022-11-28',
+      //   },
+      // });
 
       await this.gistModal.create({
-        gistId: newGist?.data?.id,
+        gistId: gist._id,
         userId: gist?.userId,
         planId: gist.planId,
         keyId: newKey._id,
@@ -272,16 +273,10 @@ export class KeysService {
         status: 1,
       });
 
-      await this.keyModal.findByIdAndUpdate(key._id, { status: 0 });
-      await this.gistModal.findByIdAndUpdate(gist._id, { status: 0 });
-      await this.awsModal.findByIdAndUpdate(key?.awsId?._id, { status: 0 });
-
-      await this.octokit.request(`DELETE /gists/${gist.gistId}`, {
-        gist_id: `${gist.gistId}`,
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-      });
+      key && (await this.keyModal.findByIdAndUpdate(key._id, { status: 0 }));
+      gist && (await this.gistModal.findByIdAndUpdate(gist._id, { status: 0 }));
+      key &&
+        (await this.awsModal.findByIdAndUpdate(key?.awsId?._id, { status: 0 }));
 
       await outlineVpn.deleteUser(key.keyId);
 
@@ -289,6 +284,13 @@ export class KeysService {
         Bucket: this.configService.get('S3_BUCKET'),
         Key: key?.awsId?.awsId,
       }).promise();
+
+      // await this.octokit.request(`DELETE /gists/${gist.gistId}`, {
+      //   gist_id: `${gist.gistId}`,
+      //   headers: {
+      //     'X-GitHub-Api-Version': '2022-11-28',
+      //   },
+      // });
 
       return {
         status: HttpStatus.OK,
