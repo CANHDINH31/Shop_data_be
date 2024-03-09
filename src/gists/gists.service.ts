@@ -4,7 +4,6 @@ import { UpdateGistDto } from './dto/update-gist.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Gist } from 'src/schemas/gists.schema';
 import mongoose, { Model } from 'mongoose';
-import { Octokit } from '@octokit/core';
 import { ConfigService } from '@nestjs/config';
 import * as moment from 'moment';
 import { Plan } from 'src/schemas/plans.schema';
@@ -23,7 +22,6 @@ import { Aws } from 'src/schemas/awses.schema';
 
 @Injectable()
 export class GistsService {
-  private readonly octokit;
   private readonly S3;
 
   constructor(
@@ -39,9 +37,6 @@ export class GistsService {
     @InjectModel(Aws.name) private awsModal: Model<Aws>,
     private configService: ConfigService,
   ) {
-    this.octokit = new Octokit({
-      auth: configService.get('PERSONAL_GIST_TOKEN'),
-    });
     this.S3 = new AWS.S3({
       accessKeyId: configService.get('S3_ACCESS_KEY'),
       secretAccessKey: configService.get('S3_ACCESS_SECRET'),
@@ -124,6 +119,9 @@ export class GistsService {
       // Tạo user trên outlineVpn
       const userVpn = await outlineVpn.createUser();
       const { id, ...rest } = userVpn;
+      const data = plan.bandWidth * 1000000000;
+      await outlineVpn.addDataLimit(id, data);
+
       // Tạo key trên aws
       const keyAws = await this.S3.upload({
         Bucket: this.configService.get('S3_BUCKET'),
@@ -136,13 +134,13 @@ export class GistsService {
         }),
         ContentType: 'application/json',
       }).promise();
+
       // Tạo keyaws mongo
       const keyAwsMongo = await this.awsModal.create({
         awsId: keyAws.Key,
         fileName: keyAws.Location,
       });
-      const data = plan.bandWidth * 1000000000;
-      await outlineVpn.addDataLimit(id, data);
+
       // Tạo key Mongo
       const key = await this.keyModal.create({
         keyId: id,
@@ -156,27 +154,15 @@ export class GistsService {
         dataExpand: data,
         ...rest,
       });
-      // // Tạo trên gist
-      // const gist = await this.octokit.request('POST /gists', {
-      //   description: fileName,
-      //   public: true,
-      //   files: {
-      //     [fileName]: {
-      //       content: userVpn?.accessUrl,
-      //     },
-      //   },
-      //   headers: {
-      //     'X-GitHub-Api-Version': '2022-11-28',
-      //   },
-      // });
+
       // Tạo gist Mongo
       const gistMongo = await this.gistModal.create({
         ...createGistDto,
         extension,
-        gistId: '',
         fileName,
         keyId: key._id,
       });
+
       const collab = await this.collabModal.findOne({});
       const disccount =
         user.level === 1
@@ -187,6 +173,7 @@ export class GistsService {
           ? collab['level3']
           : 0;
       const money = ((plan.price * (100 - disccount)) / 100).toFixed(0);
+
       await this.transactionModal.create({
         userId: createGistDto.userId,
         gistId: gistMongo._id,
@@ -266,19 +253,8 @@ export class GistsService {
           },
         });
 
-      const gist = await this.octokit.request(
-        `GET /gists/${gistMongo.gistId}`,
-        {
-          gist_id: gistMongo.gistId,
-          headers: {
-            'X-GitHub-Api-Version': '2022-11-28',
-          },
-        },
-      );
-
       return {
         ...gistMongo.toObject(),
-        gistInfo: gist.data,
       };
     } catch (error) {
       throw error;
@@ -287,19 +263,6 @@ export class GistsService {
 
   async update(id: string, updateGistDto: UpdateGistDto) {
     try {
-      const gist = await this.gistModal.findById(id);
-      await this.octokit.request(`PATCH /gists/${gist.gistId}`, {
-        gist_id: gist.gistId,
-        description: '',
-        files: {
-          [gist.fileName]: {
-            content: updateGistDto.content,
-          },
-        },
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-      });
       return {
         status: HttpStatus.CREATED,
         message: 'Cập nhật thông tin thành công',
@@ -334,14 +297,6 @@ export class GistsService {
 
   async remove(id: string) {
     try {
-      const gist = await this.gistModal.findById(id);
-      await this.octokit.request(`DELETE /gists/${gist.gistId}`, {
-        gist_id: `${gist.gistId}`,
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-      });
-
       await this.gistModal.deleteOne({ _id: id });
 
       return {

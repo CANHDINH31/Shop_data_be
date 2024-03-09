@@ -1,7 +1,6 @@
 import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { UpdateUpgradeDto } from './dto/update-upgrade.dto';
 import { BandWidthUpgradeDto } from './dto/band-width-upgrade.dto';
-import { Octokit } from '@octokit/core';
 import { ConfigService } from '@nestjs/config';
 import { Gist } from 'src/schemas/gists.schema';
 import { Model } from 'mongoose';
@@ -18,8 +17,6 @@ import { Collab } from 'src/schemas/collabs.schema';
 
 @Injectable()
 export class UpgradesService {
-  private readonly octokit;
-
   constructor(
     @InjectModel(Gist.name) private gistModal: Model<Gist>,
     @InjectModel(User.name) private userModal: Model<User>,
@@ -29,11 +26,7 @@ export class UpgradesService {
     @InjectModel(Transaction.name) private transactionModal: Model<Transaction>,
     @InjectModel(Collab.name) private collabModal: Model<Collab>,
     private configService: ConfigService,
-  ) {
-    this.octokit = new Octokit({
-      auth: configService.get('PERSONAL_GIST_TOKEN'),
-    });
-  }
+  ) {}
   async upgradeBandwidth(bandWidthUpgradeDto: BandWidthUpgradeDto) {
     try {
       const extendPlan = await this.extendModal.findById(

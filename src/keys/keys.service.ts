@@ -8,7 +8,6 @@ import { Plan } from 'src/schemas/plans.schema';
 import { User } from 'src/schemas/users.schema';
 import * as moment from 'moment';
 import { ConfigService } from '@nestjs/config';
-import { Octokit } from '@octokit/core';
 import { Transaction } from 'src/schemas/transactions.schema';
 import { Collab } from 'src/schemas/collabs.schema';
 import { OutlineVPN } from 'outlinevpn-api';
@@ -21,7 +20,6 @@ import { Test } from 'src/schemas/tests.schema';
 
 @Injectable()
 export class KeysService {
-  private readonly octokit;
   private readonly S3;
 
   constructor(
@@ -36,9 +34,6 @@ export class KeysService {
     @InjectModel(Aws.name) private awsModal: Model<Aws>,
     private configService: ConfigService,
   ) {
-    this.octokit = new Octokit({
-      auth: configService.get('PERSONAL_GIST_TOKEN'),
-    });
     this.S3 = new AWS.S3({
       accessKeyId: configService.get('S3_ACCESS_KEY'),
       secretAccessKey: configService.get('S3_ACCESS_SECRET'),
@@ -127,27 +122,6 @@ export class KeysService {
         method: rest?.method,
         accessUrl: rest?.accessUrl,
       });
-
-      // await this.octokit.request(`DELETE /gists/${gist?.gistId}`, {
-      //   gist_id: gist?.gistId,
-      //   headers: {
-      //     'X-GitHub-Api-Version': '2022-11-28',
-      //   },
-      // });
-
-      // Tạo trên gist
-      // const newGist = await this.octokit.request('POST /gists', {
-      //   description: gist.fileName,
-      //   public: true,
-      //   files: {
-      //     [gist.fileName]: {
-      //       content: userVpn?.accessUrl,
-      //     },
-      //   },
-      //   headers: {
-      //     'X-GitHub-Api-Version': '2022-11-28',
-      //   },
-      // });
 
       await this.gistModal.create({
         gistId: gist._id,
@@ -284,13 +258,6 @@ export class KeysService {
         Bucket: this.configService.get('S3_BUCKET'),
         Key: key?.awsId?.awsId,
       }).promise();
-
-      // await this.octokit.request(`DELETE /gists/${gist.gistId}`, {
-      //   gist_id: `${gist.gistId}`,
-      //   headers: {
-      //     'X-GitHub-Api-Version': '2022-11-28',
-      //   },
-      // });
 
       return {
         status: HttpStatus.OK,

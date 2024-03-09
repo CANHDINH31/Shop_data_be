@@ -6,7 +6,6 @@ import { OutlineVPN } from 'outlinevpn-api';
 import { Key } from 'src/schemas/keys.schema';
 import { SyncServerDto } from './dto/sync-server.dto';
 import { Gist } from 'src/schemas/gists.schema';
-import { Octokit } from '@octokit/core';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { UpdateLocationServerDto } from './dto/update-location-server.dto';
@@ -20,7 +19,6 @@ import { SettingBandWidthDefaultDto } from './dto/setting-bandwidth-default.dto'
 
 @Injectable()
 export class ServersService {
-  private readonly octokit;
   private readonly S3;
 
   constructor(
@@ -33,9 +31,6 @@ export class ServersService {
     private keyService: KeysService,
     private configService: ConfigService,
   ) {
-    this.octokit = new Octokit({
-      auth: configService.get('PERSONAL_GIST_TOKEN'),
-    });
     this.S3 = new AWS.S3({
       accessKeyId: configService.get('S3_ACCESS_KEY'),
       secretAccessKey: configService.get('S3_ACCESS_SECRET'),
@@ -251,13 +246,6 @@ export class ServersService {
           await this.keyModal.findByIdAndUpdate(key._id, { status: 0 });
           await this.gistModal.findByIdAndUpdate(gist._id, { status: 0 });
           await this.awsModal.findByIdAndUpdate(key?.awsId?._id, { status: 0 });
-
-          await this.octokit.request(`DELETE /gists/${gist.gistId}`, {
-            gist_id: `${gist.gistId}`,
-            headers: {
-              'X-GitHub-Api-Version': '2022-11-28',
-            },
-          });
 
           await this.S3.deleteObject({
             Bucket: this.configService.get('S3_BUCKET'),
