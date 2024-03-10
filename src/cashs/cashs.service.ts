@@ -20,6 +20,7 @@ export class CashsService {
       const code = `${moment().format('YYYYMMDD')}-${generateRandomString(
         4,
       ).toLowerCase()}`;
+
       await this.cashModal.create({ ...createCashDto, code });
 
       return {

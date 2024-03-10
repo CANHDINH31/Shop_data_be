@@ -65,6 +65,7 @@ export class KeysService {
         .populate('serverId');
 
       await outlineVpn.addDataLimit(id, key?.dataExpand);
+      await outlineVpn.renameUser(id, key?.name);
 
       const gist: any = await this.gistModal.findOne({
         keyId: migrateKeyDto.keyId,
@@ -83,25 +84,10 @@ export class KeysService {
         ContentType: 'application/json',
       }).promise();
 
-      const aws: any = await this.awsModal.findById(key?.awsId?._id);
-
-      // Cập nhật status = 0
-      await this.keyModal.findByIdAndUpdate(key._id, { status: 0 });
-      await this.gistModal.findByIdAndUpdate(gist._id, { status: 0 });
-      await this.awsModal.findByIdAndUpdate(aws._id, { status: 0 });
-
       const keyAwsMongo = await this.awsModal.create({
         awsId: keyAws.Key,
         fileName: keyAws.Location,
       });
-
-      // //Xóa user trên outline cũ
-      // const oldOutlineVpn = new OutlineVPN({
-      //   apiUrl: key?.serverId?.apiUrl,
-      //   fingerprint: key?.serverId?.fingerPrint,
-      // });
-
-      // await oldOutlineVpn.deleteUser(key.keyId);
 
       // Tạo key mới
       const newKey = await this.keyModal.create({
@@ -117,7 +103,7 @@ export class KeysService {
         endExpandDate: key?.endExpandDate,
         enable: key?.enable,
         dataExpand: key?.dataExpand,
-        name: rest?.name,
+        name: key?.name,
         password: rest?.password,
         port: rest?.port,
         method: rest?.method,
@@ -125,6 +111,7 @@ export class KeysService {
       });
 
       await this.gistModal.create({
+        code: gist.code,
         gistId: gist._id,
         userId: gist?.userId,
         planId: gist.planId,
@@ -132,6 +119,20 @@ export class KeysService {
         fileName: gist.fileName,
         extension: gist.extension,
       });
+
+      // Cập nhật status = 0
+      const aws: any = await this.awsModal.findById(key?.awsId?._id);
+      await this.keyModal.findByIdAndUpdate(key._id, { status: 0 });
+      await this.gistModal.findByIdAndUpdate(gist._id, { status: 0 });
+      await this.awsModal.findByIdAndUpdate(aws._id, { status: 0 });
+
+      // //Xóa user trên outline cũ
+      // const oldOutlineVpn = new OutlineVPN({
+      //   apiUrl: key?.serverId?.apiUrl,
+      //   fingerprint: key?.serverId?.fingerPrint,
+      // });
+
+      // await oldOutlineVpn.deleteUser(key.keyId);
 
       return {
         status: HttpStatus.CREATED,
@@ -243,10 +244,13 @@ export class KeysService {
         .findById(id)
         .populate('serverId')
         .populate('awsId');
+
       const outlineVpn = new OutlineVPN({
         apiUrl: key.serverId.apiUrl,
         fingerprint: key?.serverId?.fingerPrint,
       });
+
+      await outlineVpn.deleteUser(key.keyId);
 
       const gist: any = await this.gistModal.findOne({
         keyId: key._id,
@@ -257,8 +261,6 @@ export class KeysService {
       gist && (await this.gistModal.findByIdAndUpdate(gist._id, { status: 0 }));
       key &&
         (await this.awsModal.findByIdAndUpdate(key?.awsId?._id, { status: 0 }));
-
-      await outlineVpn.deleteUser(key.keyId);
 
       await this.S3.deleteObject({
         Bucket: this.configService.get('S3_BUCKET'),

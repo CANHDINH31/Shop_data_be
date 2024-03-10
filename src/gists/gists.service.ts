@@ -136,7 +136,8 @@ export class GistsService {
       const nameKey = `${plan.name.toLowerCase()}-${user.username.toLowerCase()}-${moment(
         startDate,
       ).format('YYYYMMDD')}-${amount + 1}`;
-      outlineVpn.renameUser(id, nameKey);
+
+      await outlineVpn.renameUser(id, nameKey);
 
       // Tạo key trên aws
       const keyAws = await this.S3.upload({

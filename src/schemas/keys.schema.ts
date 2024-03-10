@@ -30,7 +30,7 @@ export class Key {
   dataLimit: number;
 
   @Prop()
-  dataUsage: number[];
+  dataUsage: number;
 
   @Prop({ default: 0 })
   dataExpand: number;
