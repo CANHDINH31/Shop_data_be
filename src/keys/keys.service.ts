@@ -237,6 +237,11 @@ export class KeysService {
       await outlineVpn.enableUser(key?.keyId);
       const data = addDataLimitKey.data * 1000000000;
       await outlineVpn.addDataLimit(key?.keyId, Number(data));
+      await this.keyModal.findByIdAndUpdate(key._id, {
+        enable: true,
+        dataLimit: data,
+        dataExpand: data,
+      });
 
       return {
         status: HttpStatus.OK,
