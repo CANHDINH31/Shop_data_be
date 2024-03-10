@@ -70,6 +70,7 @@ export class UpgradesService {
       const data = gist.keyId.dataLimit + extendPlan.bandWidth * 1000000000;
 
       await outlineVpn.addDataLimit(gist.keyId.keyId, data);
+      await outlineVpn.enableUser(gist.keyId.keyId);
 
       let endExpandDate;
       endExpandDate = today.add(bandWidthUpgradeDto.month, 'M');
@@ -81,6 +82,7 @@ export class UpgradesService {
       await this.keyModal.findByIdAndUpdate(gist.keyId, {
         dataExpand: data,
         endExpandDate,
+        enable: true,
       });
 
       const collab = await this.collabModal.findOne({});
