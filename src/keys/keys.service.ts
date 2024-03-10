@@ -171,6 +171,55 @@ export class KeysService {
     }
   }
 
+  async disable(id: string) {
+    try {
+      const key: any = await this.keyModal
+        .findById(id)
+        .populate('serverId')
+        .populate('awsId');
+
+      const outlineVpn = new OutlineVPN({
+        apiUrl: key.serverId.apiUrl,
+        fingerprint: key?.serverId?.fingerPrint,
+      });
+
+      await outlineVpn.disableUser(key?.keyId);
+      await this.keyModal.findByIdAndUpdate(key._id, { enable: false });
+
+      return {
+        status: HttpStatus.OK,
+        message: 'Disable key thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async enable(id: string) {
+    try {
+      const key: any = await this.keyModal
+        .findById(id)
+        .populate('serverId')
+        .populate('awsId');
+
+      const outlineVpn = new OutlineVPN({
+        apiUrl: key.serverId.apiUrl,
+        fingerprint: key?.serverId?.fingerPrint,
+      });
+
+      await outlineVpn.enableUser(key?.keyId);
+      await outlineVpn.addDataLimit(key?.keyId, key?.dataExpand);
+      await this.keyModal.findByIdAndUpdate(key._id, { enable: true });
+
+      return {
+        status: HttpStatus.OK,
+        message: 'Enable key thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} key`;
   }

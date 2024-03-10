@@ -31,6 +31,16 @@ export class KeysController {
     return this.keysService.findAll(req);
   }
 
+  @Get('/disable/:id')
+  disable(@Param('id') id: string) {
+    return this.keysService.disable(id);
+  }
+
+  @Get('/enable/:id')
+  enable(@Param('id') id: string) {
+    return this.keysService.enable(id);
+  }
+
   @Get('/cron')
   cron() {
     return this.keysService.checkExpiredKey();
