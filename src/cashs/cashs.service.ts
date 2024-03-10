@@ -5,6 +5,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Cash } from 'src/schemas/cashs.schema';
 import { Model } from 'mongoose';
 import { User } from 'src/schemas/users.schema';
+import * as moment from 'moment';
+import { generateRandomString } from 'src/utils';
 
 @Injectable()
 export class CashsService {
@@ -15,7 +17,11 @@ export class CashsService {
 
   async create(createCashDto: CreateCashDto) {
     try {
-      await this.cashModal.create(createCashDto);
+      const code = `${moment().format('YYYYMMDD')}-${generateRandomString(
+        4,
+      ).toLowerCase()}`;
+      await this.cashModal.create({ ...createCashDto, code });
+
       return {
         status: HttpStatus.CREATED,
         message: 'Nạp tiền thành công. Vui lòng chờ admin phê duyệt',

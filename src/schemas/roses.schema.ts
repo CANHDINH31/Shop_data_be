@@ -5,6 +5,9 @@ export type RoseDocument = HydratedDocument<Rose>;
 
 @Schema({ timestamps: true })
 export class Rose {
+  @Prop()
+  code: string;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   reciveRoseId: string;
 

@@ -5,6 +5,9 @@ export type CashDocument = HydratedDocument<Cash>;
 
 @Schema({ timestamps: true })
 export class Cash {
+  @Prop()
+  code: string;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   userId: string;
 

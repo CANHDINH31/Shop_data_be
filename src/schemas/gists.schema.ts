@@ -5,6 +5,9 @@ export type GistDocument = HydratedDocument<Gist>;
 
 @Schema({ timestamps: true })
 export class Gist {
+  @Prop()
+  code: string;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   userId: string;
 

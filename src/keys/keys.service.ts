@@ -17,6 +17,7 @@ import * as AWS from 'aws-sdk';
 import { MigrateKeyDto } from './dto/migrate-key.dto';
 import { Server } from 'src/schemas/servers.schema';
 import { Test } from 'src/schemas/tests.schema';
+import { generateRandomString } from 'src/utils';
 
 @Injectable()
 export class KeysService {
@@ -209,7 +210,12 @@ export class KeysService {
 
       const money = ((plan.price * (100 - disccount)) / 100).toFixed(0);
 
+      const code = `${moment().format('YYYYMMDD')}-${generateRandomString(
+        4,
+      ).toLowerCase()}`;
+
       await this.transactionModal.create({
+        code,
         userId: user._id,
         gistId: gist._id,
         planId: plan._id,

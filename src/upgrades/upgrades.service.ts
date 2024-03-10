@@ -14,6 +14,7 @@ import { PlanUpgradeDto } from './dto/plan-upgrade.dto';
 import { Plan } from 'src/schemas/plans.schema';
 import * as moment from 'moment';
 import { Collab } from 'src/schemas/collabs.schema';
+import { generateRandomString } from 'src/utils';
 
 @Injectable()
 export class UpgradesService {
@@ -108,7 +109,12 @@ export class UpgradesService {
         (100 * 100)
       ).toFixed(0);
 
+      const code = `${moment().format('YYYYMMDD')}-${generateRandomString(
+        4,
+      ).toLowerCase()}`;
+
       await this.transactionModal.create({
+        code,
         userId: user._id,
         gistId: bandWidthUpgradeDto.gistId,
         extendPlanId: bandWidthUpgradeDto.extendPlanId,
@@ -166,7 +172,11 @@ export class UpgradesService {
 
       const money = ((plan.price * (100 - disccount)) / 100).toFixed(0);
 
+      const code = `${moment().format('YYYYMMDD')}-${generateRandomString(
+        4,
+      ).toLowerCase()}`;
       await this.transactionModal.create({
+        code,
         userId: user._id,
         gistId: planUpgradeDto.gistId,
         planId: plan._id,

@@ -173,9 +173,9 @@ export class GistsService {
       });
 
       // Tạo gist Mongo
-      const code = `${moment(startDate).format(
-        'YYYYMMDD',
-      )}-${generateRandomString(4).toLowerCase()}`;
+      const code = `${moment().format('YYYYMMDD')}-${generateRandomString(
+        4,
+      ).toLowerCase()}`;
 
       const gistMongo = await this.gistModal.create({
         ...createGistDto,
@@ -197,7 +197,6 @@ export class GistsService {
       const money = ((plan.price * (100 - disccount)) / 100).toFixed(0);
 
       // Tạo giao dịch
-
       await this.transactionModal.create({
         code,
         userId: createGistDto.userId,
@@ -217,6 +216,7 @@ export class GistsService {
       if (commision.value > 0 && user.introduceUserId && user.level === 0) {
         const recive = ((plan.price * commision.value) / 100).toFixed(0);
         await this.roseModal.create({
+          code,
           reciveRoseId: user.introduceUserId,
           introducedId: user._id,
           plan: plan.name,
