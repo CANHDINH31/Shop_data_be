@@ -142,7 +142,7 @@ export class UsersService {
           {
             $match: {
               userId: new mongoose.Types.ObjectId(user._id),
-              approve: true,
+              status: 1,
             },
           },
           { $group: { _id: user._id, money: { $sum: '$money' } } },
