@@ -58,7 +58,7 @@ export class Key {
 
   @Prop({ default: 1 })
   status: number;
-  // 1:active - 0: inactive
+  // 1:active - 0: inactive -2:migrate
 }
 
 export const KeySchema = SchemaFactory.createForClass(Key);
