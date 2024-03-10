@@ -18,6 +18,8 @@ import { MigrateKeyDto } from './dto/migrate-key.dto';
 import { Server } from 'src/schemas/servers.schema';
 import { Test } from 'src/schemas/tests.schema';
 import { generateRandomString } from 'src/utils';
+import { AddDataLimitDto } from 'src/servers/dto/add-data-limit.dto';
+import { AddDataLimitKey } from './dto/add-data-limit-key.dto';
 
 @Injectable()
 export class KeysService {
@@ -214,6 +216,31 @@ export class KeysService {
       return {
         status: HttpStatus.OK,
         message: 'Enable key thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async addDataLimit(id: string, addDataLimitKey: AddDataLimitKey) {
+    try {
+      const key: any = await this.keyModal
+        .findById(id)
+        .populate('serverId')
+        .populate('awsId');
+
+      const outlineVpn = new OutlineVPN({
+        apiUrl: key.serverId.apiUrl,
+        fingerprint: key?.serverId?.fingerPrint,
+      });
+
+      await outlineVpn.enableUser(key?.keyId);
+      const data = addDataLimitKey.data * 1000000000;
+      await outlineVpn.addDataLimit(key?.keyId, Number(data));
+
+      return {
+        status: HttpStatus.OK,
+        message: 'Add data thành công',
       };
     } catch (error) {
       throw error;

@@ -11,6 +11,7 @@ import {
 import { KeysService } from './keys.service';
 import { CreateKeyDto } from './dto/create-key.dto';
 import { MigrateKeyDto } from './dto/migrate-key.dto';
+import { AddDataLimitKey } from './dto/add-data-limit-key.dto';
 
 @Controller('keys')
 export class KeysController {
@@ -39,6 +40,14 @@ export class KeysController {
   @Get('/enable/:id')
   enable(@Param('id') id: string) {
     return this.keysService.enable(id);
+  }
+
+  @Patch('/add-data-limit/:id')
+  addDataLimit(
+    @Param('id') id: string,
+    @Body() addDataLimitKey: AddDataLimitKey,
+  ) {
+    return this.keysService.addDataLimit(id, addDataLimitKey);
   }
 
   @Get('/cron')
