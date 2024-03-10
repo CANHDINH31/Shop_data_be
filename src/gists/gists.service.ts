@@ -58,7 +58,7 @@ export class GistsService {
       const randomKey = generateRandomString(4);
       const fileName = `${moment(startDate).format('YYYYMMDD')}-${plan.name
         ?.replace(/[^a-zA-Z0-9]/g, '')
-        ?.toLowerCase()}-${user.username}-${randomKey}.txt`;
+        ?.toLowerCase()}-${user.username}-${randomKey}.json`;
       const extension = `${plan.name
         ?.replace(/[^a-zA-Z0-9]/g, '')
         ?.toLowerCase()}-${user.username}-${moment(startDate).format('MMDD')}`;
@@ -122,10 +122,26 @@ export class GistsService {
       const data = plan.bandWidth * 1000000000;
       await outlineVpn.addDataLimit(id, data);
 
+      // Tạo tên key
+      const today = moment().startOf('day');
+      const amount = await this.gistModal.countDocuments({
+        userId: user._id,
+        planId: plan._id,
+        createdAt: {
+          $gte: today.toDate(),
+          $lt: moment(today).endOf('day').toDate(),
+        },
+      });
+
+      const nameKey = `${plan.name.toLowerCase()}-${user.username.toLowerCase()}-${moment(
+        startDate,
+      ).format('YYYYMMDD')}-${amount + 1}`;
+      outlineVpn.renameUser(id, nameKey);
+
       // Tạo key trên aws
       const keyAws = await this.S3.upload({
         Bucket: this.configService.get('S3_BUCKET'),
-        Key: fileName.replace('txt', 'json'),
+        Key: fileName,
         Body: JSON.stringify({
           server: sortedKeyCountByServerId[0].serverIp,
           server_port: sortedKeyCountByServerId[0].serverPort,
@@ -153,14 +169,20 @@ export class GistsService {
         dataLimit: data,
         dataExpand: data,
         ...rest,
+        name: nameKey,
       });
 
       // Tạo gist Mongo
+      const code = `${moment(startDate).format(
+        'YYYYMMDD',
+      )}-${generateRandomString(4).toLowerCase()}`;
+
       const gistMongo = await this.gistModal.create({
         ...createGistDto,
         extension,
         fileName,
         keyId: key._id,
+        code,
       });
 
       const collab = await this.collabModal.findOne({});
@@ -174,7 +196,10 @@ export class GistsService {
           : 0;
       const money = ((plan.price * (100 - disccount)) / 100).toFixed(0);
 
+      // Tạo giao dịch
+
       await this.transactionModal.create({
+        code,
         userId: createGistDto.userId,
         gistId: gistMongo._id,
         planId: createGistDto.planId,
@@ -182,6 +207,8 @@ export class GistsService {
         discount: disccount,
         description: `Đăng kí gói ${plan.name}`,
       });
+
+      // Trừ tiền tải khoản
       await this.userModal.findByIdAndUpdate(user._id, {
         $inc: { money: -money },
       });
@@ -255,17 +282,6 @@ export class GistsService {
 
       return {
         ...gistMongo.toObject(),
-      };
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async update(id: string, updateGistDto: UpdateGistDto) {
-    try {
-      return {
-        status: HttpStatus.CREATED,
-        message: 'Cập nhật thông tin thành công',
       };
     } catch (error) {
       throw error;
