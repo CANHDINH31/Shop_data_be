@@ -260,7 +260,7 @@ export class ServersService {
     }
   }
 
-  // @Cron(CronExpression.EVERY_12_HOURS)
+  @Cron(CronExpression.EVERY_2_HOURS)
   async getDataUsage() {
     try {
       console.log('start cron data usage');
@@ -280,6 +280,12 @@ export class ServersService {
         await this.keyModal.findByIdAndUpdate(key._id, {
           dataUsage: bytesTransferredByUserId[key.keyId],
         });
+
+        if (bytesTransferredByUserId[key.id] > key.dataExpand) {
+          await this.keyService.disable(key._id);
+        } else {
+          await this.keyService.enable(key._id);
+        }
       }
       console.log('finnish cron data usage');
     } catch (error) {
