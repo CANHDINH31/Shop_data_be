@@ -129,12 +129,12 @@ export class KeysService {
       await this.awsModal.findByIdAndUpdate(aws._id, { status: 2 });
 
       // //Xóa user trên outline cũ
-      const oldOutlineVpn = new OutlineVPN({
-        apiUrl: key?.serverId?.apiUrl,
-        fingerprint: key?.serverId?.fingerPrint,
-      });
+      // const oldOutlineVpn = new OutlineVPN({
+      //   apiUrl: key?.serverId?.apiUrl,
+      //   fingerprint: key?.serverId?.fingerPrint,
+      // });
 
-      await oldOutlineVpn.deleteUser(key.keyId);
+      // await oldOutlineVpn.deleteUser(key.keyId);
 
       return {
         status: HttpStatus.CREATED,
