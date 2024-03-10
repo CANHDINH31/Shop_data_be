@@ -74,7 +74,7 @@ export class KeysService {
       // Cập nhật lại key trên aws, và tạo mới trên mongo
       const keyAws = await this.S3.upload({
         Bucket: this.configService.get('S3_BUCKET'),
-        Key: gist.fileName.replace('txt', 'json'),
+        Key: key?.awsId?.fileName,
         Body: JSON.stringify({
           server: newServer.hostnameForAccessKeys,
           server_port: newServer.portForNewAccessKeys,
@@ -127,12 +127,12 @@ export class KeysService {
       await this.awsModal.findByIdAndUpdate(aws._id, { status: 0 });
 
       // //Xóa user trên outline cũ
-      // const oldOutlineVpn = new OutlineVPN({
-      //   apiUrl: key?.serverId?.apiUrl,
-      //   fingerprint: key?.serverId?.fingerPrint,
-      // });
+      const oldOutlineVpn = new OutlineVPN({
+        apiUrl: key?.serverId?.apiUrl,
+        fingerprint: key?.serverId?.fingerPrint,
+      });
 
-      // await oldOutlineVpn.deleteUser(key.keyId);
+      await oldOutlineVpn.deleteUser(key.keyId);
 
       return {
         status: HttpStatus.CREATED,

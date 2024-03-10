@@ -231,26 +231,8 @@ export class ServersService {
       await this.serverModal.findByIdAndUpdate(id, { status: 0 });
 
       if (listKey?.length > 0) {
-        const outlineVpn = new OutlineVPN({
-          apiUrl: listKey[0].serverId.apiUrl,
-          fingerprint: listKey[0]?.serverId?.fingerPrint,
-        });
-
         for (const key of listKey) {
-          const gist: any = await this.gistModal.findOne({
-            keyId: key._id,
-            status: 1,
-          });
-
-          await outlineVpn.deleteUser(key.keyId);
-          await this.keyModal.findByIdAndUpdate(key._id, { status: 0 });
-          await this.gistModal.findByIdAndUpdate(gist._id, { status: 0 });
-          await this.awsModal.findByIdAndUpdate(key?.awsId?._id, { status: 0 });
-
-          await this.S3.deleteObject({
-            Bucket: this.configService.get('S3_BUCKET'),
-            Key: key?.awsId?.awsId,
-          }).promise();
+          await this.keyService.remove(key._id);
         }
       }
 

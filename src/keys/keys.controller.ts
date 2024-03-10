@@ -16,7 +16,7 @@ import { MigrateKeyDto } from './dto/migrate-key.dto';
 export class KeysController {
   constructor(private readonly keysService: KeysService) {}
 
-  @Post()
+  @Post('/migrate')
   migrate(@Body() migrateKeyDto: MigrateKeyDto) {
     return this.keysService.migrate(migrateKeyDto);
   }
