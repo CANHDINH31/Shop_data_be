@@ -29,7 +29,7 @@ export class Key {
   @Prop({ default: 120000000000 })
   dataLimit: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   dataUsage: number;
 
   @Prop({ default: 0 })

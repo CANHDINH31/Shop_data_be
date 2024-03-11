@@ -2,7 +2,7 @@ import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateKeyDto } from './dto/create-key.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key } from 'src/schemas/keys.schema';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { Gist } from 'src/schemas/gists.schema';
 import { Plan } from 'src/schemas/plans.schema';
 import { User } from 'src/schemas/users.schema';
@@ -20,6 +20,7 @@ import { Test } from 'src/schemas/tests.schema';
 import { generateRandomString } from 'src/utils';
 import { AddDataLimitDto } from 'src/servers/dto/add-data-limit.dto';
 import { AddDataLimitKey } from './dto/add-data-limit-key.dto';
+import { ObjectId } from 'typeorm';
 
 @Injectable()
 export class KeysService {
@@ -382,6 +383,34 @@ export class KeysService {
   async checkCron() {
     try {
       await this.testModal.create({ value: Date.now() });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async test(body: any) {
+    try {
+      const startDate = new Date(body.startDate);
+      const endDate = new Date(body.endDate);
+
+      const gist: any = await this.gistModal
+        .findOne({
+          status: 1,
+          extension: body?.extension,
+        })
+        .populate('keyId');
+
+      if (gist) {
+        const newKey = await this.keyModal.findOneAndUpdate(
+          { _id: gist?.keyId?._id },
+          { $set: { startDate, endDate } },
+          { new: true },
+        );
+
+        return newKey;
+      }
+
+      return '0';
     } catch (error) {
       throw error;
     }
