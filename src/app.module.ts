@@ -24,6 +24,7 @@ import { CollabModule } from './collab/collab.module';
 import { KeysModule } from './keys/keys.module';
 import { MailerModule } from '@nest-modules/mailer';
 import { LocationsModule } from './locations/locations.module';
+import { RoseExtendsModule } from './rose-extends/rose-extends.module';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { LocationsModule } from './locations/locations.module';
     CollabModule,
     KeysModule,
     LocationsModule,
+    RoseExtendsModule,
   ],
   controllers: [AppController],
   providers: [AppService, JwtService],

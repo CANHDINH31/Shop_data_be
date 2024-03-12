@@ -12,16 +12,4 @@ export class CreateExtendPlanDto {
   @IsNotEmpty()
   @IsNumber()
   bandWidth: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  level1: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  level2: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  level3: number;
 }
