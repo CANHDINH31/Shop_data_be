@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { Server } from 'src/schemas/servers.schema';
 import { OutlineVPN } from 'outlinevpn-api';
 import { Key } from 'src/schemas/keys.schema';
@@ -156,7 +156,46 @@ export class ServersService {
           location: { $regex: req.query.location, $options: 'i' },
         }),
       };
-      return await this.serverModal.find(query).sort({ createdAt: -1 });
+
+      const listResult = [];
+      const listServer = await this.serverModal
+        .find(query)
+        .sort({ createdAt: -1 });
+
+      for (const server of listServer) {
+        if (server.status === 1) {
+          const outlineVpn = new OutlineVPN({
+            apiUrl: server.apiUrl,
+            fingerprint: server.fingerPrint,
+          });
+
+          // CALC DATASTRANFER
+          const data = await outlineVpn.getDataUsage();
+          const values = Object.values(data.bytesTransferredByUserId);
+          const dataTransfer = values.reduce((a, b) => a + b, 0);
+
+          // CALC MaxUsage
+          const maxUsage = await this.keyModal.aggregate([
+            { $match: { serverId: new mongoose.Types.ObjectId(server._id) } },
+            { $group: { _id: server._id, maxUsage: { $sum: '$dataExpand' } } },
+          ]);
+
+          const r = await this.serverModal.findByIdAndUpdate(
+            server._id,
+            {
+              dataTransfer,
+              maxUsage: maxUsage?.[0]?.maxUsage,
+            },
+            { new: true },
+          );
+
+          listResult.push(r);
+        } else {
+          listServer.push(server);
+        }
+      }
+
+      return listResult;
     } catch (error) {
       throw error;
     }
