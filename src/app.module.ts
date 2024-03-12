@@ -23,6 +23,7 @@ import { SatisfyModule } from './satisfy/satisfy.module';
 import { CollabModule } from './collab/collab.module';
 import { KeysModule } from './keys/keys.module';
 import { MailerModule } from '@nest-modules/mailer';
+import { LocationsModule } from './locations/locations.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { MailerModule } from '@nest-modules/mailer';
     SatisfyModule,
     CollabModule,
     KeysModule,
+    LocationsModule,
   ],
   controllers: [AppController],
   providers: [AppService, JwtService],
