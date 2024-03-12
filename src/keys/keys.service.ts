@@ -253,8 +253,21 @@ export class KeysService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} key`;
+  async findOne(id: string) {
+    try {
+      const key = await this.keyModal
+        .findById(id)
+        .populate('awsId')
+        .populate('serverId');
+
+      const gist = await this.gistModal
+        .findOne({ keyId: key._id })
+        .populate('userId')
+        .populate('planId');
+      return { ...key.toObject(), gist };
+    } catch (error) {
+      throw error;
+    }
   }
 
   async upgrade(id: string) {

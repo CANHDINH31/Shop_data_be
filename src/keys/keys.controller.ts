@@ -62,7 +62,7 @@ export class KeysController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.keysService.findOne(+id);
+    return this.keysService.findOne(id);
   }
 
   @Patch('/upgrade/:id')
