@@ -14,6 +14,7 @@ import { UpdateLocationServerDto } from './dto/update-location-server.dto';
 import { UpdateNameServerDto } from './dto/update-name-server.dto';
 import { MigrateServerDto } from './dto/migrate-server.dto';
 import { SettingBandWidthDefaultDto } from './dto/setting-bandwidth-default.dto';
+import { UpdateRemarkServerDto } from './dto/update-remark-server.dto';
 
 @Controller('servers')
 export class ServersController {
@@ -54,6 +55,14 @@ export class ServersController {
     @Body() updateLocationServerDto: UpdateLocationServerDto,
   ) {
     return this.serversService.updateLocation(id, updateLocationServerDto);
+  }
+
+  @Patch('/remark/:id')
+  updateRemark(
+    @Param('id') id: string,
+    @Body() updateRemarkServerDto: UpdateRemarkServerDto,
+  ) {
+    return this.serversService.updateRemark(id, updateRemarkServerDto);
   }
 
   @Patch('/name-server/:id')

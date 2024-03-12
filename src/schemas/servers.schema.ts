@@ -43,6 +43,15 @@ export class Server {
 
   @Prop({ default: 1 })
   status: number;
+
+  @Prop()
+  remark: string;
+
+  @Prop({ default: 0 })
+  maxUsage: number;
+
+  @Prop({ default: 0 })
+  dataTransfer: number;
 }
 
 export const ServerSchema = SchemaFactory.createForClass(Server);

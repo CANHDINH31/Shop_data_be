@@ -16,6 +16,7 @@ import { MigrateServerDto } from './dto/migrate-server.dto';
 import { KeysService } from 'src/keys/keys.service';
 import { SettingBandwidth } from 'src/schemas/settingBandwidths.schema';
 import { SettingBandWidthDefaultDto } from './dto/setting-bandwidth-default.dto';
+import { UpdateRemarkServerDto } from './dto/update-remark-server.dto';
 
 @Injectable()
 export class ServersService {
@@ -185,6 +186,26 @@ export class ServersService {
       return {
         status: HttpStatus.OK,
         message: 'Cập nhật địa chỉ thành công',
+        data,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateRemark(id: string, updateRemarkServerDto: UpdateRemarkServerDto) {
+    try {
+      const data = await this.serverModal.findByIdAndUpdate(
+        id,
+        {
+          remark: updateRemarkServerDto.remark,
+        },
+        { new: true },
+      );
+
+      return {
+        status: HttpStatus.OK,
+        message: 'Cập nhật remark thành công',
         data,
       };
     } catch (error) {
