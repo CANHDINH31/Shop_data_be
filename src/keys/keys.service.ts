@@ -280,6 +280,12 @@ export class KeysService {
       const plan = await this.planModal.findById(gist.planId);
       const user = await this.userModal.findById(gist.userId._id);
 
+      if (gist?.planId?.price === 0) {
+        throw new BadRequestException({
+          message: 'Gói dùng thử không thể nâng cấp',
+        });
+      }
+
       if (Number(plan.price) > Number(user.money))
         throw new BadRequestException({
           message: 'Tài khoản không đủ tiền để đăng kí dịch vụ này',
