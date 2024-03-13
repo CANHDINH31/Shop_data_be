@@ -12,6 +12,7 @@ import {
 } from 'src/schemas/transactions.schema';
 import { Plan, PlanSchema } from 'src/schemas/plans.schema';
 import { Collab, CollabSchema } from 'src/schemas/collabs.schema';
+import { RoseExtend, RoseExtendSchema } from 'src/schemas/roseExtends.schema';
 
 @Module({
   imports: [
@@ -23,6 +24,9 @@ import { Collab, CollabSchema } from 'src/schemas/collabs.schema';
     MongooseModule.forFeature([{ name: Key.name, schema: KeySchema }]),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     MongooseModule.forFeature([{ name: Collab.name, schema: CollabSchema }]),
+    MongooseModule.forFeature([
+      { name: RoseExtend.name, schema: RoseExtendSchema },
+    ]),
     MongooseModule.forFeature([
       { name: Transaction.name, schema: TransactionSchema },
     ]),

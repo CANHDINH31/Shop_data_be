@@ -15,6 +15,7 @@ import { Plan } from 'src/schemas/plans.schema';
 import * as moment from 'moment';
 import { Collab } from 'src/schemas/collabs.schema';
 import { generateRandomString } from 'src/utils';
+import { RoseExtend } from 'src/schemas/roseExtends.schema';
 
 @Injectable()
 export class UpgradesService {
@@ -26,6 +27,7 @@ export class UpgradesService {
     @InjectModel(Key.name) private keyModal: Model<Key>,
     @InjectModel(Transaction.name) private transactionModal: Model<Transaction>,
     @InjectModel(Collab.name) private collabModal: Model<Collab>,
+    @InjectModel(RoseExtend.name) private roseExtend: Model<RoseExtend>,
     private configService: ConfigService,
   ) {}
   async upgradeBandwidth(bandWidthUpgradeDto: BandWidthUpgradeDto) {
@@ -33,6 +35,8 @@ export class UpgradesService {
       const extendPlan = await this.extendModal.findById(
         bandWidthUpgradeDto.extendPlanId,
       );
+
+      const roseExtend = await this.roseExtend.findOne({});
 
       const gist: any = await this.gistModal
         .findById(bandWidthUpgradeDto.gistId)
@@ -104,11 +108,11 @@ export class UpgradesService {
           : 0;
 
       const discount1 =
-        bandWidthUpgradeDto.month > 6
-          ? extendPlan['level3']
-          : bandWidthUpgradeDto.month > 3
-          ? extendPlan['level2']
-          : extendPlan['level1'];
+        bandWidthUpgradeDto.month >= 9
+          ? roseExtend['level3']
+          : bandWidthUpgradeDto.month >= 5
+          ? roseExtend['level2']
+          : roseExtend['level1'];
 
       const money = (
         (extendPlan.price *
