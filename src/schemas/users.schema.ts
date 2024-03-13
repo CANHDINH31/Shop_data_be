@@ -52,6 +52,9 @@ export class User {
 
   @Prop({ default: 0 })
   money: number;
+
+  @Prop({ default: 0 })
+  isFree: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -20,7 +20,8 @@ export class RosesService {
       return this.roseModal
         .find(query)
         .populate('reciveRoseId')
-        .populate('introducedId');
+        .populate('introducedId')
+        .sort({ createdAt: -1 });
     } catch (error) {
       throw error;
     }

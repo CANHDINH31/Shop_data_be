@@ -49,6 +49,13 @@ export class GistsService {
       const commision = await this.commisionModal.findOne({});
       const plan = await this.planModal.findById(createGistDto.planId);
       const user = await this.userModal.findById(createGistDto.userId);
+
+      if (plan.price === 0 && user.level === 0 && user.isFree === 1) {
+        throw new BadRequestException({
+          message: 'Bạn đã đăng kí gói dùng thử.',
+        });
+      }
+
       if (Number(plan.price) > Number(user.money))
         throw new BadRequestException({
           message: 'Bạn không đủ tiền để đăng kí dịch vụ này',
@@ -214,7 +221,12 @@ export class GistsService {
       });
 
       // Apply commision for user isnot collab
-      if (commision.value > 0 && user.introduceUserId && user.level === 0) {
+      if (
+        commision.value > 0 &&
+        user.introduceUserId &&
+        user.level === 0 &&
+        plan.price > 0
+      ) {
         const recive = ((plan.price * commision.value) / 100).toFixed(0);
         await this.roseModal.create({
           code,
@@ -229,6 +241,12 @@ export class GistsService {
           $inc: { money: recive },
         });
       }
+
+      // update isfree field
+      if (plan.price === 0 && user.isFree === 0) {
+        await this.userModal.findByIdAndUpdate(user?._id, { isFree: 1 });
+      }
+
       return {
         status: HttpStatus.CREATED,
         message: 'Thêm mới thành công',
