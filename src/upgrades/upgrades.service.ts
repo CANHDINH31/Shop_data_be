@@ -41,7 +41,14 @@ export class UpgradesService {
           populate: {
             path: 'serverId',
           },
+        })
+        .populate('planId');
+
+      if (gist?.planId?.price === 0) {
+        throw new BadRequestException({
+          message: 'Gói dùng thử không thể nâng cấp',
         });
+      }
 
       const user = await this.userModal.findById(gist.userId._id);
 
@@ -147,6 +154,12 @@ export class UpgradesService {
 
       const plan = await this.planModal.findById(gist.planId);
       const user = await this.userModal.findById(gist.userId._id);
+
+      if (gist?.planId?.price === 0) {
+        throw new BadRequestException({
+          message: 'Gói dùng thử không thể nâng cấp',
+        });
+      }
 
       if (Number(plan.price) > Number(user.money))
         throw new BadRequestException({
