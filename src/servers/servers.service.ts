@@ -17,6 +17,7 @@ import { KeysService } from 'src/keys/keys.service';
 import { SettingBandwidth } from 'src/schemas/settingBandwidths.schema';
 import { SettingBandWidthDefaultDto } from './dto/setting-bandwidth-default.dto';
 import { UpdateRemarkServerDto } from './dto/update-remark-server.dto';
+import { UpdateTotalBandwidthServerDto } from './dto/update-total-bandwidth-server.dto';
 
 @Injectable()
 export class ServersService {
@@ -245,6 +246,30 @@ export class ServersService {
       return {
         status: HttpStatus.OK,
         message: 'Cập nhật remark thành công',
+        data,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateTotalBanwidth(
+    id: string,
+    updateTotalBandwidthServerDto: UpdateTotalBandwidthServerDto,
+  ) {
+    try {
+      const data = await this.serverModal.findByIdAndUpdate(
+        id,
+        {
+          totalBandWidth:
+            Number(updateTotalBandwidthServerDto.totalBandwidth) * 1000000000,
+        },
+        { new: true },
+      );
+
+      return {
+        status: HttpStatus.OK,
+        message: 'Cập nhật total bandwidth thành công',
         data,
       };
     } catch (error) {
