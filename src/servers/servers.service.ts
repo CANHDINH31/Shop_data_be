@@ -192,7 +192,7 @@ export class ServersService {
 
           listResult.push(r);
         } else {
-          listServer.push(server);
+          listResult.push(server);
         }
       }
 
