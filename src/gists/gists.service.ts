@@ -140,7 +140,9 @@ export class GistsService {
         },
       });
 
-      const nameKey = `${plan.name.toLowerCase()}-${user.username.toLowerCase()}-${moment(
+      const nameKey = `${plan.name
+        ?.replace(/[^a-zA-Z0-9]/g, '')
+        ?.toLowerCase()}-${user.username.toLowerCase()}-${moment(
         startDate,
       ).format('YYYYMMDD')}-${amount + 1}`;
 
