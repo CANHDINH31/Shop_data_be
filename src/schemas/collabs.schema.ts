@@ -13,6 +13,15 @@ export class Collab {
 
   @Prop({ default: 0 })
   level3: number;
+
+  @Prop({ default: 0 })
+  minLevel1: number;
+
+  @Prop({ default: 0 })
+  minLevel2: number;
+
+  @Prop({ default: 0 })
+  minLevel3: 0;
 }
 
 export const CollabSchema = SchemaFactory.createForClass(Collab);
