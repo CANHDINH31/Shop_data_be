@@ -10,6 +10,11 @@ import { GetByYearDto } from './dto/getByYear.dto';
 export class SatisfyController {
   constructor(private readonly satisfyService: SatisfyService) {}
 
+  @Get('/top-plan')
+  topPlan() {
+    return this.satisfyService.topPlan();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.satisfyService.findOne(id);

@@ -20,6 +20,40 @@ export class SatisfyService {
     @InjectModel(Transaction.name) private transactionModal: Model<Transaction>,
     @InjectModel(User.name) private userModal: Model<User>,
   ) {}
+
+  async topPlan() {
+    try {
+      const transactionModal = await this.transactionModal.aggregate([
+        {
+          $group: {
+            _id: '$planId',
+            count: { $sum: 1 },
+            totalMoney: { $sum: '$money' },
+          },
+        },
+        {
+          $lookup: {
+            from: 'plans',
+            let: { planId: '$_id' },
+            pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$planId'] } } }],
+            as: 'plan',
+          },
+        },
+        {
+          $match: {
+            'plan.price': { $gt: 0 },
+          },
+        },
+        { $sort: { count: -1 } },
+        { $limit: 3 },
+      ]);
+
+      return transactionModal;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async findOne(id: string) {
     try {
       const cash = await this.cashModal.aggregate([
