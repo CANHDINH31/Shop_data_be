@@ -3,6 +3,7 @@ import { SatisfyService } from './satisfy.service';
 import { CashDto } from './dto/cash.dto';
 import { TransactionPlanDto } from './dto/transaction-plan.dto';
 import { TransactionExtendPlanDto } from './dto/transaction-extend-plan.dto';
+import { GetByMonthDto } from './dto/getByMonth.dto';
 
 @Controller('satisfy')
 export class SatisfyController {
@@ -16,6 +17,11 @@ export class SatisfyController {
   @Post('/cash')
   cash(@Body() cashDto: CashDto) {
     return this.satisfyService.cash(cashDto);
+  }
+
+  @Post('/get-by-month')
+  getByMonth(@Body() getByMonthDto: GetByMonthDto) {
+    return this.satisfyService.getByMonth(getByMonthDto);
   }
 
   @Post('/transaction-plan')

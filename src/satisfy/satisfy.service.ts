@@ -9,6 +9,7 @@ import { CashDto } from './dto/cash.dto';
 import * as moment from 'moment';
 import { TransactionPlanDto } from './dto/transaction-plan.dto';
 import { TransactionExtendPlanDto } from './dto/transaction-extend-plan.dto';
+import { GetByMonthDto } from './dto/getByMonth.dto';
 
 @Injectable()
 export class SatisfyService {
@@ -44,6 +45,61 @@ export class SatisfyService {
         transaction,
         currentMoney: user?.money,
         numberIntoduce: introduceUser?.length,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getByMonth(getByMonthDto: GetByMonthDto) {
+    try {
+      const startOfMonth = moment(getByMonthDto.month)
+        .startOf('month')
+        .format('YYYY-MM-DD hh:mm');
+      const endOfMonth = moment(getByMonthDto.month)
+        .endOf('month')
+        .format('YYYY-MM-DD hh:mm');
+
+      const cash = await this.cashModal.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: new Date(startOfMonth),
+              $lte: new Date(endOfMonth),
+            },
+          },
+        },
+        { $group: { _id: 'cash', money: { $sum: '$money' } } },
+      ]);
+
+      const rose = await this.roseModal.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: new Date(startOfMonth),
+              $lte: new Date(endOfMonth),
+            },
+          },
+        },
+        { $group: { _id: 'rose', money: { $sum: '$recive' } } },
+      ]);
+
+      const transaction = await this.transactionModal.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: new Date(startOfMonth),
+              $lte: new Date(endOfMonth),
+            },
+          },
+        },
+        { $group: { _id: 'transaction', money: { $sum: '$money' } } },
+      ]);
+
+      return {
+        cash,
+        rose,
+        transaction,
       };
     } catch (error) {
       throw error;
