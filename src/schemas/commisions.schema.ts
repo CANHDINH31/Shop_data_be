@@ -7,6 +7,9 @@ export type CommisionDocument = HydratedDocument<Commision>;
 export class Commision {
   @Prop({ default: 0 })
   value: number;
+
+  @Prop({ default: 0 })
+  min: number;
 }
 
 export const CommisionSchema = SchemaFactory.createForClass(Commision);

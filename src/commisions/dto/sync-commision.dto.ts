@@ -4,4 +4,8 @@ export class SyncCommisionDto {
   @IsNotEmpty()
   @IsNumber()
   value: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  min: number;
 }
