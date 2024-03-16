@@ -10,6 +10,7 @@ import * as moment from 'moment';
 import { TransactionPlanDto } from './dto/transaction-plan.dto';
 import { TransactionExtendPlanDto } from './dto/transaction-extend-plan.dto';
 import { GetByMonthDto } from './dto/getByMonth.dto';
+import { GetByYearDto } from './dto/getByYear.dto';
 
 @Injectable()
 export class SatisfyService {
@@ -101,6 +102,59 @@ export class SatisfyService {
         rose,
         transaction,
       };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getByYear(getByYearDto: GetByYearDto) {
+    try {
+      const listResult = [];
+      for (let i = 1; i <= 12; i++) {
+        const month = getByYearDto.year + '-' + i;
+        const startOfMonth = moment(month)
+          .startOf('month')
+          .format('YYYY-MM-DD hh:mm');
+        const endOfMonth = moment(month)
+          .endOf('month')
+          .format('YYYY-MM-DD hh:mm');
+        const cash = await this.cashModal.aggregate([
+          {
+            $match: {
+              createdAt: {
+                $gte: new Date(startOfMonth),
+                $lte: new Date(endOfMonth),
+              },
+            },
+          },
+          { $group: { _id: 'cash', money: { $sum: '$money' } } },
+        ]);
+        const rose = await this.roseModal.aggregate([
+          {
+            $match: {
+              createdAt: {
+                $gte: new Date(startOfMonth),
+                $lte: new Date(endOfMonth),
+              },
+            },
+          },
+          { $group: { _id: 'rose', money: { $sum: '$recive' } } },
+        ]);
+        const transaction = await this.transactionModal.aggregate([
+          {
+            $match: {
+              createdAt: {
+                $gte: new Date(startOfMonth),
+                $lte: new Date(endOfMonth),
+              },
+            },
+          },
+          { $group: { _id: 'transaction', money: { $sum: '$money' } } },
+        ]);
+
+        listResult.push({ month: i, cash, rose, transaction });
+      }
+      return listResult;
     } catch (error) {
       throw error;
     }
