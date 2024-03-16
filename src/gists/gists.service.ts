@@ -66,9 +66,7 @@ export class GistsService {
       const fileName = `${moment(startDate).format('YYYYMMDD')}-${plan.name
         ?.replace(/[^a-zA-Z0-9]/g, '')
         ?.toLowerCase()}-${user.username}-${randomKey}.json`;
-      const extension = `${plan.name
-        ?.replace(/[^a-zA-Z0-9]/g, '')
-        ?.toLowerCase()}-${user.username}-${moment(startDate).format('MMDD')}`;
+
       const listServer = await this.serverModal
         .find({ status: 1 })
         .select([
@@ -144,7 +142,7 @@ export class GistsService {
         ?.replace(/[^a-zA-Z0-9]/g, '')
         ?.toLowerCase()}-${user.username.toLowerCase()}-${moment(
         startDate,
-      ).format('YYYYMMDD')}-${amount + 1}`;
+      ).format('YYMMDD')}-${amount + 1}`;
 
       await outlineVpn.renameUser(id, nameKey);
 
@@ -189,7 +187,7 @@ export class GistsService {
 
       const gistMongo = await this.gistModal.create({
         ...createGistDto,
-        extension,
+        extension: nameKey,
         fileName,
         keyId: key._id,
         code,

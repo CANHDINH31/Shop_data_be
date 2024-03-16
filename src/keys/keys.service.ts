@@ -264,7 +264,18 @@ export class KeysService {
         .findOne({ keyId: key._id })
         .populate('userId')
         .populate('planId');
-      return { ...key.toObject(), gist };
+
+      const name = key?.name;
+      let historyKey = [];
+      if (name) {
+        const listHistoryKey = await this.keyModal
+          .find({ name })
+          .populate('serverId');
+        historyKey = listHistoryKey?.filter(
+          (e) => e?._id.toString() !== key?._id?.toString(),
+        );
+      }
+      return { ...key.toObject(), gist, historyKey };
     } catch (error) {
       throw error;
     }
