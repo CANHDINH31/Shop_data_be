@@ -346,13 +346,6 @@ export class KeysService {
         .populate('serverId')
         .populate('awsId');
 
-      const outlineVpn = new OutlineVPN({
-        apiUrl: key.serverId.apiUrl,
-        fingerprint: key?.serverId?.fingerPrint,
-      });
-
-      await outlineVpn.deleteUser(key.keyId);
-
       const gist: any = await this.gistModal.findOne({
         keyId: key._id,
         status: 1,
@@ -367,6 +360,13 @@ export class KeysService {
         Bucket: this.configService.get('S3_BUCKET'),
         Key: key?.awsId?.awsId,
       }).promise();
+
+      const outlineVpn = new OutlineVPN({
+        apiUrl: key.serverId.apiUrl,
+        fingerprint: key?.serverId?.fingerPrint,
+      });
+
+      await outlineVpn.deleteUser(key.keyId);
 
       return {
         status: HttpStatus.OK,
