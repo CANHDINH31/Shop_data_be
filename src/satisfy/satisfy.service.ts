@@ -54,6 +54,38 @@ export class SatisfyService {
     }
   }
 
+  async getTopUser() {
+    try {
+      const cash = await this.cashModal.aggregate([
+        {
+          $match: {
+            status: 1,
+          },
+        },
+        {
+          $group: {
+            _id: '$userId',
+            totalMoney: { $sum: '$money' },
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            let: { userId: '$_id' },
+            pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$userId'] } } }],
+            as: 'user',
+          },
+        },
+        { $sort: { totalMoney: -1 } },
+        { $limit: 10 },
+      ]);
+
+      return cash;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async getByLevel() {
     try {
       const cash = await this.cashModal.aggregate([

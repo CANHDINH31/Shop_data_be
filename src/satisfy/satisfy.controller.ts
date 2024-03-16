@@ -20,6 +20,11 @@ export class SatisfyController {
     return this.satisfyService.getByLevel();
   }
 
+  @Get('/get-top-user')
+  getTopUser() {
+    return this.satisfyService.getTopUser();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.satisfyService.findOne(id);
