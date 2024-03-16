@@ -11,6 +11,8 @@ import { TransactionPlanDto } from './dto/transaction-plan.dto';
 import { TransactionExtendPlanDto } from './dto/transaction-extend-plan.dto';
 import { GetByMonthDto } from './dto/getByMonth.dto';
 import { GetByYearDto } from './dto/getByYear.dto';
+import { Server } from 'src/schemas/servers.schema';
+import { Key } from 'src/schemas/keys.schema';
 
 @Injectable()
 export class SatisfyService {
@@ -19,7 +21,44 @@ export class SatisfyService {
     @InjectModel(Rose.name) private roseModal: Model<Rose>,
     @InjectModel(Transaction.name) private transactionModal: Model<Transaction>,
     @InjectModel(User.name) private userModal: Model<User>,
+    @InjectModel(Server.name) private serverModal: Model<Server>,
+    @InjectModel(Key.name) private keyModal: Model<Key>,
   ) {}
+
+  async server() {
+    try {
+      const amountTotalServer = await this.serverModal.countDocuments();
+      const amountActiveServer = await this.serverModal.countDocuments({
+        status: 1,
+      });
+      const amountKeyActive = await this.keyModal.countDocuments({ status: 1 });
+      const amountRemovedServer = await this.serverModal.countDocuments({
+        status: 0,
+      });
+      const getInfotimeServer = await this.serverModal.aggregate([
+        { $match: { status: 0 } },
+        {
+          $group: {
+            _id: 'time',
+            createdAt: { $sum: { $toLong: '$createdAt' } },
+            updatedAt: { $sum: { $toLong: '$updatedAt' } },
+          },
+        },
+      ]);
+      const totalTime =
+        getInfotimeServer?.[0]?.updatedAt - getInfotimeServer?.[0]?.createdAt;
+
+      const day = totalTime / (1000 * 60 * 60 * 24);
+      return {
+        amountTotalServer,
+        amountActiveServer,
+        amountKeyActive,
+        averageServerLive: day / amountRemovedServer,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
 
   async topPlan() {
     try {

@@ -10,6 +10,11 @@ import { GetByYearDto } from './dto/getByYear.dto';
 export class SatisfyController {
   constructor(private readonly satisfyService: SatisfyService) {}
 
+  @Get('/server')
+  server() {
+    return this.satisfyService.server();
+  }
+
   @Get('/top-plan')
   topPlan() {
     return this.satisfyService.topPlan();
