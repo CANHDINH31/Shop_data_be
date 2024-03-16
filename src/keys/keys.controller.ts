@@ -12,6 +12,7 @@ import { KeysService } from './keys.service';
 import { CreateKeyDto } from './dto/create-key.dto';
 import { MigrateKeyDto } from './dto/migrate-key.dto';
 import { AddDataLimitKey } from './dto/add-data-limit-key.dto';
+import { RenameKeyDto } from './dto/rename-key.dto';
 
 @Controller('keys')
 export class KeysController {
@@ -68,6 +69,11 @@ export class KeysController {
   @Patch('/upgrade/:id')
   upgrade(@Param('id') id: string) {
     return this.keysService.upgrade(id);
+  }
+
+  @Patch('/rename/:id')
+  rename(@Param('id') id: string, @Body() renameKeyDto: RenameKeyDto) {
+    return this.keysService.rename(id, renameKeyDto);
   }
 
   @Delete(':id')

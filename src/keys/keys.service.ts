@@ -21,6 +21,7 @@ import { generateRandomString } from 'src/utils';
 import { AddDataLimitDto } from 'src/servers/dto/add-data-limit.dto';
 import { AddDataLimitKey } from './dto/add-data-limit-key.dto';
 import { ObjectId } from 'typeorm';
+import { RenameKeyDto } from './dto/rename-key.dto';
 
 @Injectable()
 export class KeysService {
@@ -344,6 +345,43 @@ export class KeysService {
       return {
         status: HttpStatus.CREATED,
         message: 'Thêm mới thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async rename(id: string, renameKeyDto: RenameKeyDto) {
+    try {
+      const existKey = await this.keyModal.findOne({
+        status: 1,
+        name: renameKeyDto.name,
+      });
+
+      if (existKey)
+        throw new BadRequestException({
+          message: 'Tên key đã tồn tại',
+        });
+
+      const key: any = await this.keyModal.findById(id).populate('serverId');
+
+      const outlineVpn = new OutlineVPN({
+        apiUrl: key.serverId.apiUrl,
+        fingerprint: key?.serverId?.fingerPrint,
+      });
+
+      await outlineVpn.renameUser(key?.keyId, renameKeyDto.name);
+
+      const data = await this.keyModal.findByIdAndUpdate(
+        id,
+        { name: renameKeyDto.name },
+        { new: true },
+      );
+
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Thêm mới thành công',
+        data,
       };
     } catch (error) {
       throw error;
