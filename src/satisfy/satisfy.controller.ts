@@ -15,6 +15,11 @@ export class SatisfyController {
     return this.satisfyService.topPlan();
   }
 
+  @Get('/get-by-level')
+  getByLevel() {
+    return this.satisfyService.getByLevel();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.satisfyService.findOne(id);

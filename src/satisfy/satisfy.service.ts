@@ -23,7 +23,7 @@ export class SatisfyService {
 
   async topPlan() {
     try {
-      const transactionModal = await this.transactionModal.aggregate([
+      const transaction = await this.transactionModal.aggregate([
         {
           $group: {
             _id: '$planId',
@@ -48,7 +48,44 @@ export class SatisfyService {
         { $limit: 3 },
       ]);
 
-      return transactionModal;
+      return transaction;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getByLevel() {
+    try {
+      const cash = await this.cashModal.aggregate([
+        {
+          $match: {
+            status: 1,
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'user',
+          },
+        },
+        {
+          $group: {
+            _id: '$user.level',
+            totalMoney: { $sum: '$money' },
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            totalMoney: 1,
+            level: '$_id',
+          },
+        },
+      ]);
+
+      return cash;
     } catch (error) {
       throw error;
     }
