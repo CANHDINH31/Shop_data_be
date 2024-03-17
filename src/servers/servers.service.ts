@@ -177,7 +177,12 @@ export class ServersService {
 
           // CALC MaxUsage
           const maxUsage = await this.keyModal.aggregate([
-            { $match: { serverId: new mongoose.Types.ObjectId(server._id) } },
+            {
+              $match: {
+                serverId: new mongoose.Types.ObjectId(server._id),
+                status: 1,
+              },
+            },
             { $group: { _id: server._id, maxUsage: { $sum: '$dataExpand' } } },
           ]);
 
