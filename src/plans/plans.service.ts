@@ -4,10 +4,14 @@ import { UpdatePlanDto } from './dto/update-plan.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Plan } from 'src/schemas/plans.schema';
+import { Transaction } from 'src/schemas/transactions.schema';
 
 @Injectable()
 export class PlansService {
-  constructor(@InjectModel(Plan.name) private planModal: Model<Plan>) {}
+  constructor(
+    @InjectModel(Plan.name) private planModal: Model<Plan>,
+    @InjectModel(Transaction.name) private transactionModal: Model<Transaction>,
+  ) {}
 
   async create(createPlanDto: CreatePlanDto) {
     try {
@@ -37,7 +41,18 @@ export class PlansService {
         }),
       };
 
-      return await this.planModal.find(query).sort({ createdAt: -1 });
+      const listResult = [];
+
+      const listPlan = await this.planModal.find(query).sort({ createdAt: -1 });
+
+      for (const plan of listPlan) {
+        const numberPurchase = await this.transactionModal.countDocuments({
+          planId: plan.id,
+        });
+        listResult.push({ ...plan.toObject(), numberPurchase });
+      }
+
+      return listResult;
     } catch (error) {
       throw error;
     }
