@@ -15,6 +15,27 @@ export class CashsService {
     @InjectModel(User.name) private userModal: Model<User>,
   ) {}
 
+  async autoBank(createCashDto: CreateCashDto) {
+    try {
+      const code = `${moment().format('YYYYMMDD')}-${generateRandomString(
+        4,
+      ).toLowerCase()}`;
+
+      await this.cashModal.create({ ...createCashDto, code, status: 1 });
+
+      await this.userModal.findByIdAndUpdate(createCashDto.userId, {
+        $inc: { money: createCashDto.money },
+      });
+
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Nạp tiền thành công.',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async create(createCashDto: CreateCashDto) {
     try {
       const code = `${moment().format('YYYYMMDD')}-${generateRandomString(

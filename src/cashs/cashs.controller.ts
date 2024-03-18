@@ -15,6 +15,11 @@ import { RejectCashDto } from './dto/reject-cash.dto';
 export class CashsController {
   constructor(private readonly cashsService: CashsService) {}
 
+  @Post('/auto-bank')
+  autoBank(@Body() createCashDto: CreateCashDto) {
+    return this.cashsService.autoBank(createCashDto);
+  }
+
   @Post()
   create(@Body() createCashDto: CreateCashDto) {
     return this.cashsService.create(createCashDto);
