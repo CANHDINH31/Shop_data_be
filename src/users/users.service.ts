@@ -239,7 +239,7 @@ export class UsersService {
 
       await this.mailerService.sendMail({
         to: user.email,
-        subject: 'Thay đổi mật khẩu',
+        subject: 'VPNCN2 Reset Password',
         text: `${this.configService.get(
           'DOMAIN_WEB',
         )}/reset-password?token=${token}`,
