@@ -49,6 +49,9 @@ import { RoseExtendsModule } from './rose-extends/rose-extends.module';
             user: configService.get('MAIL_USER'),
             pass: configService.get('MAIL_PASSWORD'),
           },
+          tls: {
+            rejectUnauthorized: false,
+          },
         },
         defaults: {
           from: `"VPN" <${configService.get('MAIL_FROM')}>`,
