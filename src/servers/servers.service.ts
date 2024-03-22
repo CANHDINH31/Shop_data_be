@@ -355,7 +355,7 @@ export class ServersService {
     try {
       console.log('start cron data usage');
       const listKey: any = await this.keyModal
-        .find({ status: 1 })
+        .find({ status: 1, enable: true })
         .populate('serverId');
 
       for (const key of listKey) {
