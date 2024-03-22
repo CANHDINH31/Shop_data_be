@@ -22,6 +22,7 @@ import { AddDataLimitDto } from 'src/servers/dto/add-data-limit.dto';
 import { AddDataLimitKey } from './dto/add-data-limit-key.dto';
 import { ObjectId } from 'typeorm';
 import { RenameKeyDto } from './dto/rename-key.dto';
+import { MultiMigrateKeyDto } from './dto/multi-migrate-key.dto';
 
 @Injectable()
 export class KeysService {
@@ -48,6 +49,20 @@ export class KeysService {
 
   create(createKeyDto: CreateKeyDto) {
     return 'This action adds a new key';
+  }
+
+  async multiMigrate(multiMigrateKeyDto: MultiMigrateKeyDto) {
+    try {
+      for (const keyId of multiMigrateKeyDto.listKeyId) {
+        await this.migrate({ keyId, serverId: multiMigrateKeyDto.serverId });
+      }
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Multi migrate key thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   async migrate(migrateKeyDto: MigrateKeyDto) {
@@ -124,11 +139,16 @@ export class KeysService {
         extension: gist.extension,
       });
 
-      // Cập nhật status = 0
+      // Cập nhật status = 2
       const aws: any = await this.awsModal.findById(key?.awsId?._id);
       await this.keyModal.findByIdAndUpdate(key._id, { status: 2 });
       await this.gistModal.findByIdAndUpdate(gist._id, { status: 2 });
       await this.awsModal.findByIdAndUpdate(aws._id, { status: 2 });
+
+      // disable key sau khi migrate
+      if (!newKey.enable) {
+        await this.disable(newKey?._id?.toString());
+      }
 
       // //Xóa user trên outline cũ
       // const oldOutlineVpn = new OutlineVPN({

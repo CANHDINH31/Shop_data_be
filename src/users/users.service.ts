@@ -79,7 +79,7 @@ export class UsersService {
 
       if (existUser)
         throw new BadRequestException({
-          message: 'Tài khoản hoặc password đã tồn tại',
+          message: 'Tài khoản hoặc email đã tồn tại',
         });
 
       // Check exist introduce code

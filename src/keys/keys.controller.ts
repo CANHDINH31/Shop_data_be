@@ -13,10 +13,16 @@ import { CreateKeyDto } from './dto/create-key.dto';
 import { MigrateKeyDto } from './dto/migrate-key.dto';
 import { AddDataLimitKey } from './dto/add-data-limit-key.dto';
 import { RenameKeyDto } from './dto/rename-key.dto';
+import { MultiMigrateKeyDto } from './dto/multi-migrate-key.dto';
 
 @Controller('keys')
 export class KeysController {
   constructor(private readonly keysService: KeysService) {}
+
+  @Post('/multi-migrate')
+  multiMigrate(@Body() multiMigrateKeyDto: MultiMigrateKeyDto) {
+    return this.keysService.multiMigrate(multiMigrateKeyDto);
+  }
 
   @Post('/migrate')
   migrate(@Body() migrateKeyDto: MigrateKeyDto) {
