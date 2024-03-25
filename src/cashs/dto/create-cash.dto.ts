@@ -8,4 +8,8 @@ export class CreateCashDto {
   @IsNotEmpty()
   @IsNumber()
   money: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  type: number;
 }

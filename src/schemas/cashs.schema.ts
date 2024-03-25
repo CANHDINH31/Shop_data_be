@@ -19,6 +19,10 @@ export class Cash {
   // 2:pending 1:approve 0:reject
 
   @Prop()
+  type: number;
+  // 0:auto-banking 1:manual
+
+  @Prop()
   description: string;
 }
 

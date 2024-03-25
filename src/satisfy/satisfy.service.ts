@@ -84,7 +84,6 @@ export class SatisfyService {
           },
         },
         { $sort: { count: -1 } },
-        { $limit: 3 },
       ]);
 
       return transaction;
