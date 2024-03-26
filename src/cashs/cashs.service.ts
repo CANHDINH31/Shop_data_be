@@ -42,11 +42,12 @@ export class CashsService {
         4,
       ).toLowerCase()}`;
 
-      await this.cashModal.create({ ...createCashDto, code });
+      const data = await this.cashModal.create({ ...createCashDto, code });
 
       return {
         status: HttpStatus.CREATED,
         message: 'Nạp tiền thành công. Vui lòng chờ admin phê duyệt',
+        data,
       };
     } catch (error) {
       throw error;
