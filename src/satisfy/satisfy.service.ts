@@ -205,6 +205,7 @@ export class SatisfyService {
       const cash = await this.cashModal.aggregate([
         {
           $match: {
+            status: 1,
             createdAt: {
               $gte: new Date(startOfMonth),
               $lte: new Date(endOfMonth),
@@ -262,6 +263,7 @@ export class SatisfyService {
         const cash = await this.cashModal.aggregate([
           {
             $match: {
+              status: 1,
               createdAt: {
                 $gte: new Date(startOfMonth),
                 $lte: new Date(endOfMonth),
