@@ -115,6 +115,8 @@ export class KeysService {
         awsId: keyAwsMongo?._id,
         account: key?.account,
         serverId: migrateKeyDto?.serverId,
+        createDate: key?.createDate,
+        migrateDate: moment(),
         startDate: key?.startDate,
         endDate: key?.endDate,
         dataLimit: key?.dataLimit,
@@ -137,6 +139,7 @@ export class KeysService {
         keyId: newKey._id,
         fileName: gist.fileName,
         extension: gist.extension,
+        createDate: gist?.createDate,
       });
 
       // Cập nhật status = 2

@@ -132,7 +132,7 @@ export class GistsService {
       const amount = await this.gistModal.countDocuments({
         userId: user._id,
         planId: plan._id,
-        createdAt: {
+        createDate: {
           $gte: today.toDate(),
           $lt: moment(today).endOf('day').toDate(),
         },
