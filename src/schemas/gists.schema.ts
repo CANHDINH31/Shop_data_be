@@ -23,6 +23,9 @@ export class Gist {
   @Prop({ default: 1 })
   status: number;
   // 1:active - 0: inactive
+
+  @Prop({ default: () => new Date() })
+  createDate: Date;
 }
 
 export const GistSchema = SchemaFactory.createForClass(Gist);

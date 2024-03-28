@@ -203,7 +203,7 @@ export class ServersService {
 
       return listResult;
     } catch (error) {
-      throw error;
+      console.log(error);
     }
   }
 

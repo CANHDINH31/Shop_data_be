@@ -59,6 +59,12 @@ export class Key {
   @Prop({ default: 1 })
   status: number;
   // 1:active - 0: inactive -2:migrate
+
+  @Prop({ default: () => new Date() })
+  createDate: Date;
+
+  @Prop()
+  migrateDate: Date;
 }
 
 export const KeySchema = SchemaFactory.createForClass(Key);

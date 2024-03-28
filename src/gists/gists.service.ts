@@ -178,6 +178,7 @@ export class GistsService {
         dataExpand: data,
         ...rest,
         name: nameKey,
+        createDate: moment(),
       });
 
       // Tạo gist Mongo
@@ -191,6 +192,7 @@ export class GistsService {
         fileName,
         keyId: key._id,
         code,
+        createDate: moment(),
       });
 
       const collab = await this.collabModal.findOne({});
