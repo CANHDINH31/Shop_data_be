@@ -442,7 +442,7 @@ export class KeysService {
         message: 'Xóa thành công',
       };
     } catch (error) {
-      throw error;
+      console.log(error);
     }
   }
 

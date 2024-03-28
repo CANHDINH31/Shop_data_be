@@ -170,32 +170,39 @@ export class ServersService {
             fingerprint: server.fingerPrint,
           });
 
-          // CALC DATASTRANFER
-          const data = await outlineVpn.getDataUsage();
-          const values = Object.values(data.bytesTransferredByUserId);
-          const dataTransfer = values.reduce((a, b) => a + b, 0);
+          try {
+            // CALC DATASTRANFER
+            const data = await outlineVpn.getDataUsage();
+            const values = Object.values(data.bytesTransferredByUserId);
+            const dataTransfer = values.reduce((a, b) => a + b, 0);
 
-          // CALC MaxUsage
-          const maxUsage = await this.keyModal.aggregate([
-            {
-              $match: {
-                serverId: new mongoose.Types.ObjectId(server._id),
-                status: 1,
+            // CALC MaxUsage
+            const maxUsage = await this.keyModal.aggregate([
+              {
+                $match: {
+                  serverId: new mongoose.Types.ObjectId(server._id),
+                  status: 1,
+                },
               },
-            },
-            { $group: { _id: server._id, maxUsage: { $sum: '$dataExpand' } } },
-          ]);
+              {
+                $group: { _id: server._id, maxUsage: { $sum: '$dataExpand' } },
+              },
+            ]);
 
-          const r = await this.serverModal.findByIdAndUpdate(
-            server._id,
-            {
-              dataTransfer,
-              maxUsage: maxUsage?.[0]?.maxUsage,
-            },
-            { new: true },
-          );
+            const r = await this.serverModal.findByIdAndUpdate(
+              server._id,
+              {
+                dataTransfer,
+                maxUsage: maxUsage?.[0]?.maxUsage,
+              },
+              { new: true },
+            );
 
-          listResult.push(r);
+            listResult.push(r);
+          } catch (error) {
+            listResult.push(server);
+            continue;
+          }
         } else {
           listResult.push(server);
         }
@@ -203,7 +210,7 @@ export class ServersService {
 
       return listResult;
     } catch (error) {
-      console.log(error);
+      throw error;
     }
   }
 
