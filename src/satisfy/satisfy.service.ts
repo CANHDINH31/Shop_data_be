@@ -13,6 +13,7 @@ import { GetByMonthDto } from './dto/getByMonth.dto';
 import { GetByYearDto } from './dto/getByYear.dto';
 import { Server } from 'src/schemas/servers.schema';
 import { Key } from 'src/schemas/keys.schema';
+import { GetTopUserByMonthDto } from './dto/GetTopUserByMonth.dto';
 
 @Injectable()
 export class SatisfyService {
@@ -87,6 +88,49 @@ export class SatisfyService {
       ]);
 
       return transaction;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getTopUserByMonth(getTopUserByMonthDto: GetTopUserByMonthDto) {
+    try {
+      const startOfMonth = moment(getTopUserByMonthDto.month)
+        .startOf('month')
+        .format('YYYY-MM-DD hh:mm');
+      const endOfMonth = moment(getTopUserByMonthDto.month)
+        .endOf('month')
+        .format('YYYY-MM-DD hh:mm');
+
+      const cash = await this.cashModal.aggregate([
+        {
+          $match: {
+            status: 1,
+            createdAt: {
+              $gte: new Date(startOfMonth),
+              $lte: new Date(endOfMonth),
+            },
+          },
+        },
+        {
+          $group: {
+            _id: '$userId',
+            totalMoney: { $sum: '$money' },
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            let: { userId: '$_id' },
+            pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$userId'] } } }],
+            as: 'user',
+          },
+        },
+        { $sort: { totalMoney: -1 } },
+        { $limit: 10 },
+      ]);
+
+      return cash;
     } catch (error) {
       throw error;
     }

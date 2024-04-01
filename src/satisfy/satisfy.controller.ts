@@ -5,6 +5,7 @@ import { TransactionPlanDto } from './dto/transaction-plan.dto';
 import { TransactionExtendPlanDto } from './dto/transaction-extend-plan.dto';
 import { GetByMonthDto } from './dto/getByMonth.dto';
 import { GetByYearDto } from './dto/getByYear.dto';
+import { GetTopUserByMonthDto } from './dto/GetTopUserByMonth.dto';
 
 @Controller('satisfy')
 export class SatisfyController {
@@ -28,6 +29,11 @@ export class SatisfyController {
   @Get('/get-top-user')
   getTopUser() {
     return this.satisfyService.getTopUser();
+  }
+
+  @Post('/get-top-user-by-month')
+  getTopUserByMonth(@Body() getTopUserByMonthDto: GetTopUserByMonthDto) {
+    return this.satisfyService.getTopUserByMonth(getTopUserByMonthDto);
   }
 
   @Get(':id')
