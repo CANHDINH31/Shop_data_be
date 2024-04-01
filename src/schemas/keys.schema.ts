@@ -71,6 +71,9 @@ export class Key {
 
   @Prop()
   migrateDate: Date;
+
+  @Prop({ default: 0 })
+  counterMigrate: number;
 }
 
 export const KeySchema = SchemaFactory.createForClass(Key);

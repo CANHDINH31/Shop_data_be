@@ -145,6 +145,40 @@ export class ServersService {
     }
   }
 
+  async getNormalServer(req: any) {
+    try {
+      let query = {};
+      query = {
+        ...(req?.query?.status && {
+          status: req.query.status,
+        }),
+        ...(req?.query?.name && {
+          name: { $regex: req.query.name, $options: 'i' },
+        }),
+        ...(req?.query?.location && {
+          location: { $regex: req.query.location, $options: 'i' },
+        }),
+      };
+
+      const listResult = [];
+      const listServer = await this.serverModal
+        .find(query)
+        .sort({ createdAt: -1 });
+
+      for (const server of listServer) {
+        const numberKey = await this.keyModal.countDocuments({
+          serverId: server._id,
+          status: 1,
+        });
+        listResult.push({ ...server.toObject(), numberKey });
+      }
+
+      return listResult;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async findAll(req: any) {
     try {
       let query = {};

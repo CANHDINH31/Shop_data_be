@@ -45,6 +45,11 @@ export class ServersController {
     return this.serversService.findSettingBandWidthDefault();
   }
 
+  @Get('/normal-server')
+  getNormalServer(@Req() req) {
+    return this.serversService.getNormalServer(req);
+  }
+
   @Get()
   findAll(@Req() req) {
     return this.serversService.findAll(req);

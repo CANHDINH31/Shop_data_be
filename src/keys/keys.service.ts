@@ -27,6 +27,7 @@ import { MultiMigrateKeyDto } from './dto/multi-migrate-key.dto';
 @Injectable()
 export class KeysService {
   private readonly S3;
+  private readonly MAX_DATE: number;
 
   constructor(
     @InjectModel(Test.name) private testModal: Model<Test>,
@@ -45,6 +46,7 @@ export class KeysService {
       secretAccessKey: configService.get('S3_ACCESS_SECRET'),
       region: configService.get('S3_REGION'),
     });
+    this.MAX_DATE = 3;
   }
 
   create(createKeyDto: CreateKeyDto) {
@@ -131,6 +133,7 @@ export class KeysService {
         port: rest?.port,
         method: rest?.method,
         accessUrl: rest?.accessUrl,
+        counterMigrate: this.MAX_DATE,
       });
 
       await this.gistModal.create({

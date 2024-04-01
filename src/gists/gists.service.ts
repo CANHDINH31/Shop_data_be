@@ -62,7 +62,7 @@ export class GistsService {
         });
       const startDate = moment();
       const endDate = moment().add(plan.day, 'd');
-      const randomKey = generateRandomString(4);
+      const randomKey = generateRandomString(4).toLocaleLowerCase();
       const fileName = `${moment(startDate).format('YYYYMMDD')}-${plan.name
         ?.replace(/[^a-zA-Z0-9]/g, '')
         ?.toLowerCase()}-${user.username}-${randomKey}.json`;
@@ -182,9 +182,7 @@ export class GistsService {
       });
 
       // Tạo gist Mongo
-      const code = `${moment().format('YYYYMMDD')}-${generateRandomString(
-        4,
-      ).toLowerCase()}`;
+      const code = `${moment().format('YYYYMMDD')}-${randomKey}`;
 
       const gistMongo = await this.gistModal.create({
         ...createGistDto,
