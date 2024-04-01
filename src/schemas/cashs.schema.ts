@@ -14,6 +14,9 @@ export class Cash {
   @Prop()
   money: number;
 
+  @Prop()
+  content: string;
+
   @Prop({ default: 2 })
   status: number;
   // 2:pending 1:approve 0:reject
