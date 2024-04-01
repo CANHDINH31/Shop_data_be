@@ -30,7 +30,13 @@ export class Key {
   dataLimit: number;
 
   @Prop({ default: 0 })
+  dataUsageYesterday: number;
+
+  @Prop({ default: 0 })
   dataUsage: number;
+
+  @Prop({ default: [] })
+  arrayDataUsage: number[];
 
   @Prop({ default: 0 })
   dataExpand: number;

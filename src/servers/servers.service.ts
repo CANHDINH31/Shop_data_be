@@ -22,6 +22,7 @@ import { UpdateTotalBandwidthServerDto } from './dto/update-total-bandwidth-serv
 @Injectable()
 export class ServersService {
   private readonly S3;
+  private readonly MAX_DATE: number;
 
   constructor(
     @InjectModel(Server.name) private serverModal: Model<Server>,
@@ -38,6 +39,7 @@ export class ServersService {
       secretAccessKey: configService.get('S3_ACCESS_SECRET'),
       region: configService.get('S3_REGION'),
     });
+    this.MAX_DATE = 3;
   }
 
   async settingBandWidthDefault(
@@ -357,7 +359,7 @@ export class ServersService {
     }
   }
 
-  @Cron(CronExpression.EVERY_2_HOURS)
+  // @Cron(CronExpression.EVERY_2_HOURS)
   async getDataUsage() {
     try {
       console.log('start cron data usage');
@@ -374,15 +376,36 @@ export class ServersService {
         const dataUsage = await outlineVpn.getDataUsage();
         const bytesTransferredByUserId = dataUsage.bytesTransferredByUserId;
 
-        await this.keyModal.findByIdAndUpdate(key._id, {
-          dataUsage: bytesTransferredByUserId[key.keyId],
-        });
+        const arrayDataUsage = key?.arrayDataUsage;
 
-        if (bytesTransferredByUserId[key.id] > key.dataExpand) {
-          await this.keyService.disable(key._id);
+        if (arrayDataUsage?.length < this.MAX_DATE) {
+          const dataAdd =
+            Number(bytesTransferredByUserId[key.keyId]) -
+            Number(key.dataUsageYesterday);
+          arrayDataUsage.push(dataAdd);
         } else {
-          await this.keyService.enable(key._id);
+          const dataAdd =
+            Number(bytesTransferredByUserId[key.keyId]) -
+            Number(key.dataUsageYesterday) +
+            Number(arrayDataUsage[0]);
+          arrayDataUsage.push(dataAdd);
+          arrayDataUsage.shift();
         }
+
+        const totalDataUsage =
+          key?.arrayDataUsage?.reduce((a, b) => a + b, 0) || 0;
+
+        // await this.keyModal.findByIdAndUpdate(key._id, {
+        //   dataUsageYesterday: bytesTransferredByUserId[key.keyId],
+        //   arrayDataUsage: arrayDataUsage?.filter(Boolean),
+        //   dataUsage: totalDataUsage,
+        // });
+
+        // if (bytesTransferredByUserId[key.id] > key.dataExpand) {
+        //   await this.keyService.disable(key._id);
+        // } else {
+        //   await this.keyService.enable(key._id);
+        // }
       }
       console.log('finnish cron data usage');
     } catch (error) {
