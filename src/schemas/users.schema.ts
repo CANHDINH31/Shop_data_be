@@ -55,6 +55,9 @@ export class User {
 
   @Prop({ default: 0 })
   isFree: number;
+
+  @Prop({ default: false })
+  canMigrate: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

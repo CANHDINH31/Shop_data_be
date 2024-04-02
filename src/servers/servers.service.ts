@@ -392,12 +392,12 @@ export class ServersService {
     }
   }
 
-  // @Cron(CronExpression.EVERY_2_HOURS)
+  @Cron(CronExpression.EVERY_DAY_AT_2AM)
   async getDataUsage() {
     try {
       console.log('start cron data usage');
       const listKey: any = await this.keyModal
-        .find({ status: 1, enable: true })
+        .find({ status: 1, enableByAdmin: true })
         .populate('serverId');
 
       for (const key of listKey) {
@@ -412,8 +412,13 @@ export class ServersService {
         const arrayDataUsage = key?.arrayDataUsage || [];
         let counterMigrate = key?.counterMigrate || 0;
 
+        const dataUsageYesterday = bytesTransferredByUserId[key.keyId] || 0;
+
         if (counterMigrate > 0) {
-          const dataAdd = Number(bytesTransferredByUserId[key.keyId]);
+          const dataAdd =
+            Number(dataUsageYesterday) - Number(key.dataUsageYesterday) > 0
+              ? Number(dataUsageYesterday) - Number(key.dataUsageYesterday)
+              : 0;
           if (arrayDataUsage?.length < CYCLE_PLAN) {
             arrayDataUsage.push(dataAdd);
           } else {
@@ -424,14 +429,21 @@ export class ServersService {
         } else {
           if (arrayDataUsage?.length < CYCLE_PLAN) {
             const dataAdd =
-              Number(bytesTransferredByUserId[key.keyId]) -
-              Number(key.dataUsageYesterday);
+              Number(dataUsageYesterday) - Number(key.dataUsageYesterday) > 0
+                ? Number(dataUsageYesterday) - Number(key.dataUsageYesterday)
+                : 0;
+
             arrayDataUsage.push(dataAdd);
           } else {
             const dataAdd =
-              Number(bytesTransferredByUserId[key.keyId]) -
-              Number(key.dataUsageYesterday) +
-              Number(arrayDataUsage[0]);
+              Number(dataUsageYesterday) -
+                Number(key.dataUsageYesterday) +
+                Number(arrayDataUsage[0]) >
+              0
+                ? Number(dataUsageYesterday) -
+                  Number(key.dataUsageYesterday) +
+                  Number(arrayDataUsage[0])
+                : 0;
             arrayDataUsage.push(dataAdd);
             arrayDataUsage.shift();
           }
@@ -441,13 +453,15 @@ export class ServersService {
           key?.arrayDataUsage?.reduce((a, b) => a + b, 0) || 0;
 
         await this.keyModal.findByIdAndUpdate(key._id, {
-          dataUsageYesterday: bytesTransferredByUserId[key.keyId],
-          arrayDataUsage: arrayDataUsage?.filter(Boolean),
+          dataUsageYesterday,
+          arrayDataUsage: arrayDataUsage?.filter(
+            (item) => item !== null && item !== undefined,
+          ),
           dataUsage: totalDataUsage,
           counterMigrate,
         });
 
-        if (bytesTransferredByUserId[key.id] > key.dataExpand) {
+        if (totalDataUsage > key.dataExpand) {
           await this.keyService.disable(key._id);
         } else {
           await this.keyService.enable(key._id);

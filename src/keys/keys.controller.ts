@@ -41,12 +41,12 @@ export class KeysController {
 
   @Get('/disable/:id')
   disable(@Param('id') id: string) {
-    return this.keysService.disable(id);
+    return this.keysService.disableByAdmin(id);
   }
 
   @Get('/enable/:id')
   enable(@Param('id') id: string) {
-    return this.keysService.enable(id);
+    return this.keysService.enableByAdmin(id);
   }
 
   @Patch('/add-data-limit/:id')

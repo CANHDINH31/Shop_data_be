@@ -121,7 +121,7 @@ export class KeysService {
         dataLimit: key?.dataLimit,
         dataUsage: key?.dataUsage || 0,
         endExpandDate: key?.endExpandDate,
-        dataUsageYesterday: key?.dataUsageYesterday || 0,
+        dataUsageYesterday: 0,
         arrayDataUsage: key?.arrayDataUsage || [],
         enable: key?.enable,
         dataExpand: key?.dataExpand,
@@ -195,6 +195,55 @@ export class KeysService {
         .populate('userId')
         .populate('serverId')
         .populate('awsId');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async disableByAdmin(id: string) {
+    try {
+      const key: any = await this.keyModal
+        .findById(id)
+        .populate('serverId')
+        .populate('awsId');
+
+      const outlineVpn = new OutlineVPN({
+        apiUrl: key.serverId.apiUrl,
+        fingerprint: key?.serverId?.fingerPrint,
+      });
+
+      await outlineVpn.disableUser(key?.keyId);
+      await this.keyModal.findByIdAndUpdate(key._id, { enableByAdmin: false });
+
+      return {
+        status: HttpStatus.OK,
+        message: 'Disable key thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async enableByAdmin(id: string) {
+    try {
+      const key: any = await this.keyModal
+        .findById(id)
+        .populate('serverId')
+        .populate('awsId');
+
+      const outlineVpn = new OutlineVPN({
+        apiUrl: key.serverId.apiUrl,
+        fingerprint: key?.serverId?.fingerPrint,
+      });
+
+      await outlineVpn.enableUser(key?.keyId);
+      await outlineVpn.addDataLimit(key?.keyId, key?.dataExpand);
+      await this.keyModal.findByIdAndUpdate(key._id, { enableByAdmin: true });
+
+      return {
+        status: HttpStatus.OK,
+        message: 'Enable key thành công',
+      };
     } catch (error) {
       throw error;
     }
