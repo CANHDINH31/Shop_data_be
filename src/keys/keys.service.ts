@@ -2,7 +2,7 @@ import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateKeyDto } from './dto/create-key.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key } from 'src/schemas/keys.schema';
-import mongoose, { Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { Gist } from 'src/schemas/gists.schema';
 import { Plan } from 'src/schemas/plans.schema';
 import { User } from 'src/schemas/users.schema';
@@ -18,16 +18,14 @@ import { MigrateKeyDto } from './dto/migrate-key.dto';
 import { Server } from 'src/schemas/servers.schema';
 import { Test } from 'src/schemas/tests.schema';
 import { generateRandomString } from 'src/utils';
-import { AddDataLimitDto } from 'src/servers/dto/add-data-limit.dto';
 import { AddDataLimitKey } from './dto/add-data-limit-key.dto';
-import { ObjectId } from 'typeorm';
 import { RenameKeyDto } from './dto/rename-key.dto';
 import { MultiMigrateKeyDto } from './dto/multi-migrate-key.dto';
+import { CYCLE_PLAN } from 'src/utils/constant';
 
 @Injectable()
 export class KeysService {
   private readonly S3;
-  private readonly MAX_DATE: number;
 
   constructor(
     @InjectModel(Test.name) private testModal: Model<Test>,
@@ -46,7 +44,6 @@ export class KeysService {
       secretAccessKey: configService.get('S3_ACCESS_SECRET'),
       region: configService.get('S3_REGION'),
     });
-    this.MAX_DATE = 3;
   }
 
   create(createKeyDto: CreateKeyDto) {
@@ -133,7 +130,7 @@ export class KeysService {
         port: rest?.port,
         method: rest?.method,
         accessUrl: rest?.accessUrl,
-        counterMigrate: this.MAX_DATE,
+        counterMigrate: CYCLE_PLAN,
       });
 
       await this.gistModal.create({

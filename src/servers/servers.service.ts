@@ -18,11 +18,11 @@ import { SettingBandwidth } from 'src/schemas/settingBandwidths.schema';
 import { SettingBandWidthDefaultDto } from './dto/setting-bandwidth-default.dto';
 import { UpdateRemarkServerDto } from './dto/update-remark-server.dto';
 import { UpdateTotalBandwidthServerDto } from './dto/update-total-bandwidth-server.dto';
+import { CYCLE_PLAN } from 'src/utils/constant';
 
 @Injectable()
 export class ServersService {
   private readonly S3;
-  private readonly MAX_DATE: number;
 
   constructor(
     @InjectModel(Server.name) private serverModal: Model<Server>,
@@ -39,7 +39,6 @@ export class ServersService {
       secretAccessKey: configService.get('S3_ACCESS_SECRET'),
       region: configService.get('S3_REGION'),
     });
-    this.MAX_DATE = 3;
   }
 
   async settingBandWidthDefault(
@@ -410,36 +409,49 @@ export class ServersService {
         const dataUsage = await outlineVpn.getDataUsage();
         const bytesTransferredByUserId = dataUsage.bytesTransferredByUserId;
 
-        const arrayDataUsage = key?.arrayDataUsage;
+        const arrayDataUsage = key?.arrayDataUsage || [];
+        let counterMigrate = key?.counterMigrate || 0;
 
-        if (arrayDataUsage?.length < this.MAX_DATE) {
-          const dataAdd =
-            Number(bytesTransferredByUserId[key.keyId]) -
-            Number(key.dataUsageYesterday);
-          arrayDataUsage.push(dataAdd);
+        if (counterMigrate > 0) {
+          const dataAdd = Number(bytesTransferredByUserId[key.keyId]);
+          if (arrayDataUsage?.length < CYCLE_PLAN) {
+            arrayDataUsage.push(dataAdd);
+          } else {
+            arrayDataUsage.push(dataAdd);
+            arrayDataUsage.shift();
+          }
+          counterMigrate = counterMigrate - 1;
         } else {
-          const dataAdd =
-            Number(bytesTransferredByUserId[key.keyId]) -
-            Number(key.dataUsageYesterday) +
-            Number(arrayDataUsage[0]);
-          arrayDataUsage.push(dataAdd);
-          arrayDataUsage.shift();
+          if (arrayDataUsage?.length < CYCLE_PLAN) {
+            const dataAdd =
+              Number(bytesTransferredByUserId[key.keyId]) -
+              Number(key.dataUsageYesterday);
+            arrayDataUsage.push(dataAdd);
+          } else {
+            const dataAdd =
+              Number(bytesTransferredByUserId[key.keyId]) -
+              Number(key.dataUsageYesterday) +
+              Number(arrayDataUsage[0]);
+            arrayDataUsage.push(dataAdd);
+            arrayDataUsage.shift();
+          }
         }
 
         const totalDataUsage =
           key?.arrayDataUsage?.reduce((a, b) => a + b, 0) || 0;
 
-        // await this.keyModal.findByIdAndUpdate(key._id, {
-        //   dataUsageYesterday: bytesTransferredByUserId[key.keyId],
-        //   arrayDataUsage: arrayDataUsage?.filter(Boolean),
-        //   dataUsage: totalDataUsage,
-        // });
+        await this.keyModal.findByIdAndUpdate(key._id, {
+          dataUsageYesterday: bytesTransferredByUserId[key.keyId],
+          arrayDataUsage: arrayDataUsage?.filter(Boolean),
+          dataUsage: totalDataUsage,
+          counterMigrate,
+        });
 
-        // if (bytesTransferredByUserId[key.id] > key.dataExpand) {
-        //   await this.keyService.disable(key._id);
-        // } else {
-        //   await this.keyService.enable(key._id);
-        // }
+        if (bytesTransferredByUserId[key.id] > key.dataExpand) {
+          await this.keyService.disable(key._id);
+        } else {
+          await this.keyService.enable(key._id);
+        }
       }
       console.log('finnish cron data usage');
     } catch (error) {
