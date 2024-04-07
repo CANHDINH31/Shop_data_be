@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -20,4 +20,8 @@ export class UpdateUserDto {
   @IsOptional()
   @IsNumber()
   level: number;
+
+  @IsOptional()
+  @IsBoolean()
+  canMigrate?: boolean;
 }

@@ -26,6 +26,9 @@ export class Key {
   @Prop({ default: true })
   enable: boolean;
 
+  @Prop({ default: true })
+  enableByAdmin: boolean;
+
   @Prop({ default: 120000000000 })
   dataLimit: number;
 
