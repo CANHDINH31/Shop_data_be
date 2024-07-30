@@ -15,8 +15,8 @@ export class KumaController {
   constructor(private readonly kumaService: KumaService) {}
 
   @Post()
-  create(@Body() createKumaDto) {
-    return this.kumaService.create(createKumaDto);
+  monitor(@Body() monitorKumaDto: any) {
+    return this.kumaService.monitor(monitorKumaDto);
   }
 
   @Get()

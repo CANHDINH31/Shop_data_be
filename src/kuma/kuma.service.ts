@@ -3,8 +3,15 @@ import { UpdateKumaDto } from './dto/update-kuma.dto';
 
 @Injectable()
 export class KumaService {
-  create(createKumaDto) {
-    console.log(createKumaDto, 'kumathong');
+  monitor(monitorKumaDto: any) {
+    console.log(
+      {
+        hostname: monitorKumaDto?.monitor?.hostname,
+        port: monitorKumaDto?.monitor?.port,
+        msg: monitorKumaDto?.msg,
+      },
+      'kumathong',
+    );
     return 'This action adds a new kuma';
   }
 
