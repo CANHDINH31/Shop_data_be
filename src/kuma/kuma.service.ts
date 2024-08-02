@@ -8,7 +8,7 @@ type KumaBody = {
 };
 
 const UP = 'Up';
-const DOWN = 'DOWN';
+const DOWN = 'Down';
 @Injectable()
 export class KumaService {
   extractInfo(data: KumaBody) {
