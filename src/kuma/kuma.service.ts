@@ -1,17 +1,40 @@
 import { Injectable } from '@nestjs/common';
 import { UpdateKumaDto } from './dto/update-kuma.dto';
 
+type KumaBody = {
+  hostname: string;
+  port: string;
+  msg: string;
+};
+
 @Injectable()
 export class KumaService {
+  extractInfo(data: KumaBody) {
+    const msgPattern = /^\[c[^\]]*\] \[(🔴|🟢) (Down|Up)\]/;
+    const match = data.msg.match(msgPattern);
+
+    if (match) {
+      const status = match[2];
+      return {
+        hostname: data.hostname,
+        status: status,
+      };
+    } else {
+      return null;
+    }
+  }
+
   monitor(monitorKumaDto: any) {
-    console.log(
-      {
-        hostname: monitorKumaDto?.monitor?.hostname,
-        port: monitorKumaDto?.monitor?.port,
-        msg: monitorKumaDto?.msg,
-      },
-      'kumathong',
-    );
+    const kumaBody = {
+      hostname: monitorKumaDto?.monitor?.hostname,
+      port: monitorKumaDto?.monitor?.port,
+      msg: monitorKumaDto?.msg,
+    };
+
+    const result = this.extractInfo(kumaBody);
+
+    console.log(result, 'kumathong');
+
     return 'This action adds a new kuma';
   }
 
