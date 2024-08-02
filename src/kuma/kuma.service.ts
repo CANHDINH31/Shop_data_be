@@ -37,7 +37,7 @@ export class KumaService {
       console.log(result, 'kumathong');
       // UPDATE SERVER STATUS
     } else {
-      console.log(result);
+      console.log(kumaBody);
     }
 
     return 'This action adds a new kuma';
