@@ -10,7 +10,7 @@ type KumaBody = {
 @Injectable()
 export class KumaService {
   extractInfo(data: KumaBody) {
-    const msgPattern = /^\[c[^\]]*\] \[(🔴|🟢) (Down|Up)\]/;
+    const msgPattern = /^\[([cm][^\]]*)\] \[(🔴|✅) (Down|Up)\]/;
     const match = data.msg.match(msgPattern);
 
     if (match) {
@@ -37,7 +37,6 @@ export class KumaService {
       console.log(result, 'kumathong');
       // UPDATE SERVER STATUS
     } else {
-      console.log(kumaBody);
     }
 
     return 'This action adds a new kuma';
