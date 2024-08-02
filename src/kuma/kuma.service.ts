@@ -33,7 +33,10 @@ export class KumaService {
 
     const result = this.extractInfo(kumaBody);
 
-    console.log(result, 'kumathong');
+    if (result) {
+      console.log(result, 'kumathong');
+      // UPDATE SERVER STATUS
+    }
 
     return 'This action adds a new kuma';
   }
