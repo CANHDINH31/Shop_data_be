@@ -14,7 +14,7 @@ export class KumaService {
     const match = data.msg.match(msgPattern);
 
     if (match) {
-      const status = match[2];
+      const status = match[3];
       return {
         hostname: data.hostname,
         status: status,
