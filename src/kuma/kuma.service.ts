@@ -7,6 +7,8 @@ type KumaBody = {
   msg: string;
 };
 
+const UP = 'Up';
+const DOWN = 'DOWN';
 @Injectable()
 export class KumaService {
   extractInfo(data: KumaBody) {
@@ -34,7 +36,11 @@ export class KumaService {
     const result = this.extractInfo(kumaBody);
 
     if (result) {
-      console.log(result, 'kumathong');
+      if (result.status === UP) {
+        console.log(result, 'up');
+      } else if (result.status === DOWN) {
+        console.log(result, 'down');
+      }
       // UPDATE SERVER STATUS
     } else {
     }
