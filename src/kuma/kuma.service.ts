@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UpdateKumaDto } from './dto/update-kuma.dto';
+import puppeteer from 'puppeteer';
 
 type KumaBody = {
   hostname: string;
@@ -46,6 +47,41 @@ export class KumaService {
     }
 
     return 'This action adds a new kuma';
+  }
+
+  async create(crateKumaDto: any) {
+    const browser = await puppeteer.launch({
+      headless: false,
+      defaultViewport: null,
+      ignoreHTTPSErrors: true,
+      protocolTimeout: 30000,
+      args: [
+        '--disable-web-security',
+        `--ignore-certificate-errors`,
+        `--disable-notifications`,
+        `--no-sandbox`,
+        `--disable-setuid-sandbox`,
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu',
+      ],
+    });
+
+    const page = await browser.newPage();
+    try {
+      await page.goto('https://www.indeed.com');
+
+      const jobTitles = await page.$$eval('.jobtitle', (elements) => {
+        return elements.slice(0, 10).map((element) => {
+          return element.textContent;
+        });
+      });
+
+      console.log('Job Titles:', jobTitles);
+    } catch (error) {
+      throw error;
+    } finally {
+      // await browser.close();
+    }
   }
 
   findAll() {

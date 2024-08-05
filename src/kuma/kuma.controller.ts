@@ -19,6 +19,11 @@ export class KumaController {
     return this.kumaService.monitor(monitorKumaDto);
   }
 
+  @Post('create')
+  create(@Body() createKumaDto: any) {
+    return this.kumaService.create(createKumaDto);
+  }
+
   @Get()
   findAll() {
     return this.kumaService.findAll();
