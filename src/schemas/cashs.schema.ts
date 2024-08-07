@@ -5,6 +5,9 @@ export type CashDocument = HydratedDocument<Cash>;
 
 @Schema({ timestamps: true })
 export class Cash {
+  @Prop()
+  code: string;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   userId: string;
 
@@ -17,6 +20,10 @@ export class Cash {
   @Prop({ default: 2 })
   status: number;
   // 2:pending 1:approve 0:reject
+
+  @Prop()
+  type: number;
+  // 0:auto-banking 1:manual
 
   @Prop()
   description: string;
