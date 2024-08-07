@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UpdateKumaDto } from './dto/update-kuma.dto';
-import puppeteer from 'puppeteer';
+import puppeteer, { Page } from 'puppeteer';
 
 type KumaBody = {
   hostname: string;
@@ -12,7 +12,7 @@ const UP = 'Up';
 const DOWN = 'Down';
 @Injectable()
 export class KumaService {
-  extractInfo(data: KumaBody) {
+  private extractInfo(data: KumaBody) {
     const msgPattern = /^\[([cm][^\]]*)\] \[(🔴|✅) (Down|Up)\]/;
     const match = data.msg.match(msgPattern);
 
@@ -25,6 +25,45 @@ export class KumaService {
     } else {
       return null;
     }
+  }
+
+  private async _initBroswer() {
+    const browser = await puppeteer.launch({
+      headless: false,
+      defaultViewport: null,
+      ignoreHTTPSErrors: true,
+      protocolTimeout: 30000,
+      args: [
+        '--disable-web-security',
+        `--ignore-certificate-errors`,
+        `--disable-notifications`,
+        `--no-sandbox`,
+        `--disable-setuid-sandbox`,
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu',
+      ],
+    });
+
+    const page = await browser.newPage();
+
+    return { browser, page };
+  }
+
+  private async _handleLogin(page: Page) {
+    // Handle Login
+    await page.goto('http://143.198.210.178:3001/dashboard');
+
+    // Input Username
+    await page.waitForSelector('input[autocomplete="username"]');
+    await page.type('input[autocomplete="username"]', 'admin');
+
+    // Input password
+    await page.waitForSelector('input[autocomplete="current-password"]');
+    await page.type('input[autocomplete="current-password"]', 'admin@123');
+
+    // Button login
+    await page.waitForSelector('[type="submit"]');
+    await page.click('[type="submit"]');
   }
 
   monitor(monitorKumaDto: any) {
@@ -50,37 +89,13 @@ export class KumaService {
   }
 
   async create(crateKumaDto: any) {
-    const browser = await puppeteer.launch({
-      headless: false,
-      defaultViewport: null,
-      ignoreHTTPSErrors: true,
-      protocolTimeout: 30000,
-      args: [
-        '--disable-web-security',
-        `--ignore-certificate-errors`,
-        `--disable-notifications`,
-        `--no-sandbox`,
-        `--disable-setuid-sandbox`,
-        '--disable-accelerated-2d-canvas',
-        '--disable-gpu',
-      ],
-    });
-
-    const page = await browser.newPage();
+    const { browser, page } = await this._initBroswer();
+    await this._handleLogin(page);
     try {
-      await page.goto('https://www.indeed.com');
-
-      const jobTitles = await page.$$eval('.jobtitle', (elements) => {
-        return elements.slice(0, 10).map((element) => {
-          return element.textContent;
-        });
-      });
-
-      console.log('Job Titles:', jobTitles);
     } catch (error) {
       throw error;
     } finally {
-      // await browser.close();
+      await browser.close();
     }
   }
 
