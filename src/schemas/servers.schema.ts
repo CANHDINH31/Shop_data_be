@@ -43,6 +43,7 @@ export class Server {
 
   @Prop({ default: 1 })
   status: number;
+  // 0:delete - 1:active - 2:down - 3:maintaince
 
   @Prop()
   remark: string;

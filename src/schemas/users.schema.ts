@@ -14,7 +14,7 @@ export class User {
   @Prop()
   username: string;
 
-  // 1: admin  2: user
+  // 1:admin - 2:user - 3:moderator
   @Prop({ default: 2 })
   role: number;
 
