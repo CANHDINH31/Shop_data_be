@@ -33,6 +33,7 @@ export class KumaService {
       defaultViewport: null,
       ignoreHTTPSErrors: true,
       protocolTimeout: 30000,
+      executablePath: '/usr/bin/chromium-browser',
       args: [
         '--disable-web-security',
         `--ignore-certificate-errors`,
