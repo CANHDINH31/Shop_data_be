@@ -29,7 +29,7 @@ export class KumaService {
 
   private async _initBroswer() {
     const browser = await puppeteer.launch({
-      headless: false,
+      headless: 'shell',
       defaultViewport: null,
       ignoreHTTPSErrors: true,
       protocolTimeout: 30000,
@@ -66,6 +66,27 @@ export class KumaService {
     await page.click('[type="submit"]');
   }
 
+  private async _handleCreateChanel(page: Page) {
+    await page.goto('http://143.198.210.178:3001/add');
+    await this._handleCreateGroup(page);
+    await page.waitForNavigation();
+  }
+
+  private async _handleCreateGroup(page: Page) {
+    // Choose Chanel
+    await page.waitForSelector('select[class="form-select"]');
+    const channelSelectE = await page.$('select[class="form-select"]');
+    await channelSelectE.select('group');
+
+    // Type Name
+    await page.waitForSelector('input[id="name"]');
+    await page.type('input[id="name"]', 'admin@123');
+
+    //Submit
+    await page.waitForSelector('button[id="monitor-submit-btn"]');
+    await page.click('button[id="monitor-submit-btn"]');
+  }
+
   monitor(monitorKumaDto: any) {
     const kumaBody = {
       hostname: monitorKumaDto?.monitor?.hostname,
@@ -91,6 +112,9 @@ export class KumaService {
   async create(crateKumaDto: any) {
     const { browser, page } = await this._initBroswer();
     await this._handleLogin(page);
+    await page.waitForNavigation();
+    await this._handleCreateChanel(page);
+
     try {
     } catch (error) {
       throw error;
