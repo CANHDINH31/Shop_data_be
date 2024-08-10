@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { KumaService } from './kuma.service';
 import { UpdateKumaDto } from './dto/update-kuma.dto';
+import { CreateKumaDto } from './dto/create-kuma.dto';
 
 @Controller('kuma')
 export class KumaController {
@@ -20,7 +21,7 @@ export class KumaController {
   }
 
   @Post('create')
-  create(@Body() createKumaDto: any) {
+  create(@Body() createKumaDto: CreateKumaDto) {
     return this.kumaService.create(createKumaDto);
   }
 

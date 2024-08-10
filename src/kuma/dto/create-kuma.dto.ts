@@ -1,1 +1,15 @@
-export class CreateKumaDto {}
+import { IsNotEmpty, IsString } from 'class-validator';
+
+export class CreateKumaDto {
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @IsNotEmpty()
+  @IsString()
+  hostname: string;
+
+  @IsNotEmpty()
+  @IsString()
+  port: string;
+}

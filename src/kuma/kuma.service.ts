@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { UpdateKumaDto } from './dto/update-kuma.dto';
 import puppeteer, { Page } from 'puppeteer';
+import { CreateKumaDto } from './dto/create-kuma.dto';
+import { ConfigService } from '@nestjs/config';
 
 type KumaBody = {
   hostname: string;
@@ -8,10 +10,23 @@ type KumaBody = {
   msg: string;
 };
 
+type ChannelType = 'GROUP' | 'MANAGE' | 'CLIENT' | 'PING';
+type TypeChannelType = 'group' | 'port';
+
+type ChannelBody = {
+  type: TypeChannelType;
+  name: string;
+  hostname?: string;
+  port?: string;
+  group?: string;
+};
+
 const UP = 'Up';
 const DOWN = 'Down';
+const MAXRETRIES = '5';
 @Injectable()
 export class KumaService {
+  constructor(private configService: ConfigService) {}
   private extractInfo(data: KumaBody) {
     const msgPattern = /^\[([cm][^\]]*)\] \[(🔴|✅) (Down|Up)\]/;
     const match = data.msg.match(msgPattern);
@@ -29,11 +44,12 @@ export class KumaService {
 
   private async _initBroswer() {
     const browser = await puppeteer.launch({
+      // headless: false,
       headless: 'shell',
+      executablePath: '/usr/bin/chromium-browser',
       defaultViewport: null,
       ignoreHTTPSErrors: true,
       protocolTimeout: 30000,
-      executablePath: '/usr/bin/chromium-browser',
       args: [
         '--disable-web-security',
         `--ignore-certificate-errors`,
@@ -52,36 +68,92 @@ export class KumaService {
 
   private async _handleLogin(page: Page) {
     // Handle Login
-    await page.goto('http://143.198.210.178:3001/dashboard');
+    await page.goto(`${this.configService.get('KUMA_DOMAIN')}/dashboard`);
 
     // Input Username
     await page.waitForSelector('input[autocomplete="username"]');
-    await page.type('input[autocomplete="username"]', 'admin');
+    await page.type(
+      'input[autocomplete="username"]',
+      this.configService.get('KUMA_USERNAME'),
+    );
 
     // Input password
     await page.waitForSelector('input[autocomplete="current-password"]');
-    await page.type('input[autocomplete="current-password"]', 'admin@123');
+    await page.type(
+      'input[autocomplete="current-password"]',
+      this.configService.get('KUMA_PASSWORD'),
+    );
 
     // Button login
     await page.waitForSelector('[type="submit"]');
     await page.click('[type="submit"]');
   }
 
-  private async _handleCreateChanel(page: Page) {
-    await page.goto('http://143.198.210.178:3001/add');
-    await this._handleCreateGroup(page);
+  private async _handleCreateChannel(page: Page, createKumaDto: CreateKumaDto) {
+    await page.goto(`${this.configService.get('KUMA_DOMAIN')}/add`);
+    await this._handleCreateCore(page, 'GROUP', {
+      type: 'group',
+      name: createKumaDto.name,
+    });
+
     await page.waitForNavigation();
+    await page.goto(`${this.configService.get('KUMA_DOMAIN')}/add`);
+    await this._handleCreateCore(page, 'CLIENT', {
+      type: 'port',
+      name: `c-${createKumaDto.name}`,
+      hostname: createKumaDto.hostname,
+      port: createKumaDto.port,
+      group: createKumaDto.name,
+    });
   }
 
-  private async _handleCreateGroup(page: Page) {
+  private async _handleCreateCore(
+    page: Page,
+    type: ChannelType,
+    channelBody: ChannelBody,
+  ) {
     // Choose Chanel
     await page.waitForSelector('select[class="form-select"]');
     const channelSelectE = await page.$('select[class="form-select"]');
-    await channelSelectE.select('group');
+    await channelSelectE.select(channelBody.type);
 
     // Type Name
     await page.waitForSelector('input[id="name"]');
-    await page.type('input[id="name"]', 'admin@123');
+    await page.type('input[id="name"]', channelBody.name);
+
+    if (type !== 'GROUP') {
+      // Type Hostname
+      await page.waitForSelector('input[id="hostname"]');
+      await page.type('input[id="hostname"]', channelBody.hostname);
+
+      // Type Port
+      await page.waitForSelector('input[id="port"]');
+      await page.type('input[id="port"]', channelBody.port);
+
+      // Type maxRetries
+      await page.waitForSelector('input[id="maxRetries"]');
+      await page.type('input[id="maxRetries"]', MAXRETRIES);
+
+      // Choose Group
+      await page.waitForSelector('select[id="monitorGroupSelector"]');
+      const options = await page.$$eval(
+        'select[id="monitorGroupSelector"] option',
+        (options) =>
+          options.map((option) => ({
+            value: option.value,
+            text: option.textContent,
+          })),
+      );
+      const optionToSelect = options.find(
+        (option) => option.text === channelBody?.group,
+      );
+      if (optionToSelect) {
+        await page.select(
+          'select[id="monitorGroupSelector"]',
+          optionToSelect.value,
+        );
+      }
+    }
 
     //Submit
     await page.waitForSelector('button[id="monitor-submit-btn"]');
@@ -110,11 +182,11 @@ export class KumaService {
     return 'This action adds a new kuma';
   }
 
-  async create(crateKumaDto: any) {
+  async create(createKumaDto: CreateKumaDto) {
     const { browser, page } = await this._initBroswer();
     await this._handleLogin(page);
     await page.waitForNavigation();
-    await this._handleCreateChanel(page);
+    await this._handleCreateChannel(page, createKumaDto);
 
     try {
     } catch (error) {
