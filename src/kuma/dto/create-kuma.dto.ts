@@ -11,5 +11,9 @@ export class CreateKumaDto {
 
   @IsNotEmpty()
   @IsString()
-  port: string;
+  portC: string;
+
+  @IsNotEmpty()
+  @IsString()
+  portM: string;
 }

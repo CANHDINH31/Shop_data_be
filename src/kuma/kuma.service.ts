@@ -11,7 +11,7 @@ type KumaBody = {
 };
 
 type ChannelType = 'GROUP' | 'MANAGE' | 'CLIENT' | 'PING';
-type TypeChannelType = 'group' | 'port';
+type TypeChannelType = 'group' | 'port' | 'ping';
 
 type ChannelBody = {
   type: TypeChannelType;
@@ -44,9 +44,9 @@ export class KumaService {
 
   private async _initBroswer() {
     const browser = await puppeteer.launch({
-      // headless: false,
-      headless: 'shell',
-      executablePath: '/usr/bin/chromium-browser',
+      headless: false,
+      // headless: 'shell',
+      // executablePath: '/usr/bin/chromium-browser',
       defaultViewport: null,
       ignoreHTTPSErrors: true,
       protocolTimeout: 30000,
@@ -93,16 +93,35 @@ export class KumaService {
     await page.goto(`${this.configService.get('KUMA_DOMAIN')}/add`);
     await this._handleCreateCore(page, 'GROUP', {
       type: 'group',
-      name: createKumaDto.name,
+      name: createKumaDto.name + '-' + createKumaDto?.hostname,
     });
 
     await page.waitForNavigation();
     await page.goto(`${this.configService.get('KUMA_DOMAIN')}/add`);
     await this._handleCreateCore(page, 'CLIENT', {
       type: 'port',
-      name: `c-${createKumaDto.name}`,
+      name: `c-${createKumaDto.name}-${createKumaDto?.hostname}`,
       hostname: createKumaDto.hostname,
-      port: createKumaDto.port,
+      port: createKumaDto.portC,
+      group: createKumaDto.name,
+    });
+
+    await page.waitForNavigation();
+    await page.goto(`${this.configService.get('KUMA_DOMAIN')}/add`);
+    await this._handleCreateCore(page, 'MANAGE', {
+      type: 'port',
+      name: `m-${createKumaDto.name}-${createKumaDto?.hostname}`,
+      hostname: createKumaDto.hostname,
+      port: createKumaDto.portM,
+      group: createKumaDto.name,
+    });
+
+    await page.waitForNavigation();
+    await page.goto(`${this.configService.get('KUMA_DOMAIN')}/add`);
+    await this._handleCreateCore(page, 'PING', {
+      type: 'ping',
+      name: `p-${createKumaDto.name}-${createKumaDto?.hostname}`,
+      hostname: createKumaDto.hostname,
       group: createKumaDto.name,
     });
   }
@@ -127,8 +146,10 @@ export class KumaService {
       await page.type('input[id="hostname"]', channelBody.hostname);
 
       // Type Port
-      await page.waitForSelector('input[id="port"]');
-      await page.type('input[id="port"]', channelBody.port);
+      if (type !== 'PING') {
+        await page.waitForSelector('input[id="port"]');
+        await page.type('input[id="port"]', channelBody.port);
+      }
 
       // Type maxRetries
       await page.waitForSelector('input[id="maxRetries"]');
@@ -145,7 +166,8 @@ export class KumaService {
           })),
       );
       const optionToSelect = options.find(
-        (option) => option.text === channelBody?.group,
+        (option) =>
+          option.text === channelBody?.group + '-' + channelBody?.hostname,
       );
       if (optionToSelect) {
         await page.select(
