@@ -104,11 +104,6 @@ export class ServersService {
   }
 
   async sync(syncServerDto: SyncServerDto) {
-    const parsedUrl = new URL(syncServerDto.apiUrl);
-
-    const hostname = parsedUrl.hostname;
-    const portM = parsedUrl.port;
-
     try {
       const outlineVpn = new OutlineVPN({
         apiUrl: syncServerDto.apiUrl,
@@ -136,13 +131,6 @@ export class ServersService {
             syncServerDto?.totalBandWidth > 0
               ? syncServerDto?.totalBandWidth * 1000000000
               : 6000000000000,
-        });
-
-        await this.kumaService.create({
-          hostname,
-          name: server.name,
-          portC: syncServerDto.portC,
-          portM,
         });
       }
       return {

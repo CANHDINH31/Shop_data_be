@@ -20,8 +20,4 @@ export class SyncServerDto {
   @IsOptional()
   @IsString()
   remark?: string;
-
-  @IsNotEmpty()
-  @IsString()
-  portC: string;
 }
