@@ -40,8 +40,8 @@ export class KumaController {
     return this.kumaService.update(+id, updateKumaDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.kumaService.remove(+id);
+  @Post('remove')
+  remove() {
+    return this.kumaService.remove();
   }
 }

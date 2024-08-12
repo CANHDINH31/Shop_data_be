@@ -206,11 +206,10 @@ export class KumaService {
 
   async create(createKumaDto: CreateKumaDto) {
     const { browser, page } = await this._initBroswer();
-    await this._handleLogin(page);
-    await page.waitForNavigation();
-    await this._handleCreateChannel(page, createKumaDto);
-
     try {
+      await this._handleLogin(page);
+      await page.waitForNavigation();
+      await this._handleCreateChannel(page, createKumaDto);
     } catch (error) {
       throw error;
     } finally {
@@ -230,7 +229,39 @@ export class KumaService {
     return `This action updates a #${id} kuma`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} kuma`;
+  private async _handleSearch(page: Page) {
+    await page.waitForSelector('input[class="form-control search-input"]');
+    await page.type(
+      'input[class="form-control search-input"]',
+      'Outline Server-139.59.108.244',
+    );
+  }
+
+  private async _handleRemove(page: Page) {
+    await page.waitForSelector('div[class="monitor-list scrollbar"]');
+    const listMonitorWrapper = await page.$(
+      'div[class="monitor-list scrollbar"]',
+    );
+    console.log(listMonitorWrapper, 'listMonitorWrapper');
+    if (listMonitorWrapper) {
+      console.log('length');
+      const listMonitors = await listMonitorWrapper.$$(
+        'div[data-v-574bc50a][data-v-185096f3]',
+      );
+    }
+  }
+
+  async remove() {
+    const { browser, page } = await this._initBroswer();
+
+    try {
+      await this._handleLogin(page);
+      await page.waitForNavigation();
+      await this._handleSearch(page);
+      await this._handleRemove(page);
+    } catch (error) {
+    } finally {
+      // await browser.close();
+    }
   }
 }
