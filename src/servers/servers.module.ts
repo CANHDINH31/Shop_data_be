@@ -19,6 +19,7 @@ import {
   SettingBandwidth,
   SettingBandwidthSchema,
 } from 'src/schemas/settingBandwidths.schema';
+import { KumaService } from 'src/kuma/kuma.service';
 
 @Module({
   imports: [
@@ -38,7 +39,7 @@ import {
     MongooseModule.forFeature([{ name: Collab.name, schema: CollabSchema }]),
   ],
   controllers: [ServersController],
-  providers: [ServersService, KeysService],
+  providers: [ServersService, KeysService, KumaService],
 })
 export class ServersModule {
   constructor(private readonly serversService: ServersService) {}

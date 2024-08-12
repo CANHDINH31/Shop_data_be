@@ -19,6 +19,7 @@ import { SettingBandWidthDefaultDto } from './dto/setting-bandwidth-default.dto'
 import { UpdateRemarkServerDto } from './dto/update-remark-server.dto';
 import { UpdateTotalBandwidthServerDto } from './dto/update-total-bandwidth-server.dto';
 import { CYCLE_PLAN } from 'src/utils/constant';
+import { KumaService } from 'src/kuma/kuma.service';
 
 @Injectable()
 export class ServersService {
@@ -33,6 +34,7 @@ export class ServersService {
     private settingBandwidthModal: Model<SettingBandwidth>,
     private keyService: KeysService,
     private configService: ConfigService,
+    private kumaService: KumaService,
   ) {
     this.S3 = new AWS.S3({
       accessKeyId: configService.get('S3_ACCESS_KEY'),
@@ -102,19 +104,21 @@ export class ServersService {
   }
 
   async sync(syncServerDto: SyncServerDto) {
+    const parsedUrl = new URL(syncServerDto.apiUrl);
+
+    const hostname = parsedUrl.hostname;
+    const portM = parsedUrl.port;
+
     try {
       const outlineVpn = new OutlineVPN({
         apiUrl: syncServerDto.apiUrl,
         fingerprint: syncServerDto.fingerPrint,
       });
-
       const server: any = await outlineVpn.getServer();
-
       const serverMongo = await this.serverModal.findOne({
         hostnameForAccessKeys: server.hostnameForAccessKeys,
         status: 1,
       });
-
       if (serverMongo) {
         await this.serverModal.findByIdAndUpdate(serverMongo._id, {
           ...server,
@@ -133,8 +137,14 @@ export class ServersService {
               ? syncServerDto?.totalBandWidth * 1000000000
               : 6000000000000,
         });
-      }
 
+        await this.kumaService.create({
+          hostname,
+          name: server.name,
+          portC: syncServerDto.portC,
+          portM,
+        });
+      }
       return {
         status: HttpStatus.OK,
         message: 'Đồng bộ thành công',
