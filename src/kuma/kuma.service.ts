@@ -3,6 +3,7 @@ import { UpdateKumaDto } from './dto/update-kuma.dto';
 import puppeteer, { Page } from 'puppeteer';
 import { CreateKumaDto } from './dto/create-kuma.dto';
 import { ConfigService } from '@nestjs/config';
+import { RemoveKumaDto } from './dto/remove-kuma.dto';
 
 type KumaBody = {
   hostname: string;
@@ -229,12 +230,9 @@ export class KumaService {
     return `This action updates a #${id} kuma`;
   }
 
-  private async _handleSearch(page: Page) {
+  private async _handleSearch(page: Page, name: string) {
     await page.waitForSelector('input[class="form-control search-input"]');
-    await page.type(
-      'input[class="form-control search-input"]',
-      'Outline Server-139.59.108.244',
-    );
+    await page.type('input[class="form-control search-input"]', name);
   }
 
   private async _handleRemove(page: Page) {
@@ -242,26 +240,52 @@ export class KumaService {
     const listMonitorWrapper = await page.$(
       'div[class="monitor-list scrollbar"]',
     );
-    console.log(listMonitorWrapper, 'listMonitorWrapper');
     if (listMonitorWrapper) {
-      console.log('length');
-      const listMonitors = await listMonitorWrapper.$$(
-        'div[data-v-574bc50a][data-v-185096f3]',
+      const listHrefs = await listMonitorWrapper.$$eval(
+        'a[data-v-574bc50a]',
+        (els) => els?.map((el) => el.getAttribute('href'))?.reverse(),
       );
+
+      for (const href of listHrefs) {
+        await this._handleRemoveCore(page, href);
+      }
     }
   }
 
-  async remove() {
+  private async _handleRemoveCore(page: Page, href: string) {
+    const newPage = await page.browser().newPage();
+    try {
+      await newPage.goto(this.configService.get('KUMA_DOMAIN') + href);
+
+      await newPage.waitForSelector('button[class="btn btn-danger"]');
+      await newPage.click('button[class="btn btn-danger"]');
+
+      await newPage.waitForSelector('div[class="modal fade show"]');
+      await newPage.waitForSelector(
+        'button[class="btn btn-danger"][data-bs-dismiss="modal"]',
+      );
+
+      await newPage.click(
+        'button[class="btn btn-danger"][data-bs-dismiss="modal"]',
+      );
+    } catch (error) {
+      console.log(error);
+    } finally {
+      await newPage.close();
+    }
+  }
+
+  async remove(removeKumaDto: RemoveKumaDto) {
     const { browser, page } = await this._initBroswer();
 
     try {
       await this._handleLogin(page);
       await page.waitForNavigation();
-      await this._handleSearch(page);
+      await this._handleSearch(page, removeKumaDto.name);
       await this._handleRemove(page);
     } catch (error) {
     } finally {
-      // await browser.close();
+      await browser.close();
     }
   }
 }

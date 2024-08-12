@@ -10,6 +10,7 @@ import {
 import { KumaService } from './kuma.service';
 import { UpdateKumaDto } from './dto/update-kuma.dto';
 import { CreateKumaDto } from './dto/create-kuma.dto';
+import { RemoveKumaDto } from './dto/remove-kuma.dto';
 
 @Controller('kuma')
 export class KumaController {
@@ -41,7 +42,7 @@ export class KumaController {
   }
 
   @Post('remove')
-  remove() {
-    return this.kumaService.remove();
+  remove(@Body() removeKumaDto: RemoveKumaDto) {
+    return this.kumaService.remove(removeKumaDto);
   }
 }
