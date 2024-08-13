@@ -8,6 +8,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Server } from 'src/schemas/servers.schema';
 import { Key } from 'src/schemas/keys.schema';
 import { Model } from 'mongoose';
+import { ServersService } from 'src/servers/servers.service';
+import { KeysService } from 'src/keys/keys.service';
 
 type KumaBody = {
   hostname: string;
@@ -26,15 +28,15 @@ type ChannelBody = {
   group?: string;
 };
 
-const UP = 'Up';
 const DOWN = 'Down';
 const MAXRETRIES = '5';
 @Injectable()
 export class KumaService {
   constructor(
     private configService: ConfigService,
-    @InjectModel(Server.name) private serverModal: Model<Server>,
+    private readonly keyService: KeysService,
     @InjectModel(Key.name) private keyModal: Model<Key>,
+    @InjectModel(Server.name) private serverModal: Model<Server>,
   ) {}
   private extractInfo(data: KumaBody) {
     const msgPattern = /^\[([cm][^\]]*)\] \[(🔴|✅) (Down|Up)\]/;
@@ -191,21 +193,48 @@ export class KumaService {
     await page.click('button[id="monitor-submit-btn"]');
   }
 
-  monitor(monitorKumaDto: any) {
-    console.log(monitorKumaDto);
-    const kumaBody = {
-      hostname: monitorKumaDto?.monitor?.hostname,
-      port: monitorKumaDto?.monitor?.port,
-      msg: monitorKumaDto?.msg,
-    };
+  async monitor(monitorKumaDto: any) {
+    try {
+      const kumaBody = {
+        hostname: monitorKumaDto?.monitor?.hostname,
+        port: monitorKumaDto?.monitor?.port,
+        msg: monitorKumaDto?.msg,
+      };
 
-    const result = this.extractInfo(kumaBody);
+      const result = this.extractInfo(kumaBody);
 
-    if (result && result.status === DOWN) {
-      console.log(result, 'DOWN');
+      if (result && result.status === DOWN) {
+        // { hostname: '139.59.108.224', status: 'Down' }
+        // Update status down server
+        const downServer = await this.serverModal.findOneAndUpdate(
+          {
+            hostnameForAccessKeys: result.hostname,
+          },
+          { status: 2 },
+        );
+        // // Migrate key to maintain server
+        const maintainServer = await this.serverModal.findOne({ status: 3 });
+        if (maintainServer) {
+          const listKey = await this.keyModal.find({
+            serverId: downServer?._id?.toString(),
+            status: 1,
+          });
+
+          for (const key of listKey) {
+            await this.keyService.migrate({
+              keyId: key._id?.toString(),
+              serverId: maintainServer?._id?.toString(),
+            });
+          }
+        } else {
+          console.log('not found maintain server');
+        }
+      }
+
+      return 'This action adds a new kuma';
+    } catch (error) {
+      console.log(error);
     }
-
-    return 'This action adds a new kuma';
   }
 
   async create(createKumaDto: CreateKumaDto) {
