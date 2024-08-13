@@ -192,6 +192,7 @@ export class KumaService {
   }
 
   monitor(monitorKumaDto: any) {
+    console.log(monitorKumaDto);
     const kumaBody = {
       hostname: monitorKumaDto?.monitor?.hostname,
       port: monitorKumaDto?.monitor?.port,
