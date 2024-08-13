@@ -20,6 +20,7 @@ import { UpdateRemarkServerDto } from './dto/update-remark-server.dto';
 import { UpdateTotalBandwidthServerDto } from './dto/update-total-bandwidth-server.dto';
 import { CYCLE_PLAN } from 'src/utils/constant';
 import { KumaService } from 'src/kuma/kuma.service';
+import { UpdateStatusServerDto } from './dto/update-status-server.dto';
 
 @Injectable()
 export class ServersService {
@@ -344,6 +345,29 @@ export class ServersService {
       return {
         status: HttpStatus.OK,
         message: 'Cập nhật name server thành công',
+        data,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateStautsServer(
+    id: string,
+    updateStatusServerDto: UpdateStatusServerDto,
+  ) {
+    try {
+      const data = await this.serverModal.findByIdAndUpdate(
+        id,
+        {
+          status: updateStatusServerDto.status,
+        },
+        { new: true },
+      );
+
+      return {
+        status: HttpStatus.OK,
+        message: 'Cập nhật status server thành công',
         data,
       };
     } catch (error) {

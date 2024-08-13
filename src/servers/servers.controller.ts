@@ -16,6 +16,7 @@ import { MigrateServerDto } from './dto/migrate-server.dto';
 import { SettingBandWidthDefaultDto } from './dto/setting-bandwidth-default.dto';
 import { UpdateRemarkServerDto } from './dto/update-remark-server.dto';
 import { UpdateTotalBandwidthServerDto } from './dto/update-total-bandwidth-server.dto';
+import { UpdateStatusServerDto } from './dto/update-status-server.dto';
 
 @Controller('servers')
 export class ServersController {
@@ -88,6 +89,14 @@ export class ServersController {
     @Body() updateNameServerDto: UpdateNameServerDto,
   ) {
     return this.serversService.updateNameServer(id, updateNameServerDto);
+  }
+
+  @Patch('/status-server/:id')
+  updateStautsServer(
+    @Param('id') id: string,
+    @Body() updateStatusServerDto: UpdateStatusServerDto,
+  ) {
+    return this.serversService.updateStautsServer(id, updateStatusServerDto);
   }
 
   @Delete(':id')
