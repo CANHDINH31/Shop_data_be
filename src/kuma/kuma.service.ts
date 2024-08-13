@@ -4,6 +4,10 @@ import puppeteer, { Page } from 'puppeteer';
 import { CreateKumaDto } from './dto/create-kuma.dto';
 import { ConfigService } from '@nestjs/config';
 import { RemoveKumaDto } from './dto/remove-kuma.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Server } from 'src/schemas/servers.schema';
+import { Key } from 'src/schemas/keys.schema';
+import { Model } from 'mongoose';
 
 type KumaBody = {
   hostname: string;
@@ -27,7 +31,11 @@ const DOWN = 'Down';
 const MAXRETRIES = '5';
 @Injectable()
 export class KumaService {
-  constructor(private configService: ConfigService) {}
+  constructor(
+    private configService: ConfigService,
+    @InjectModel(Server.name) private serverModal: Model<Server>,
+    @InjectModel(Key.name) private keyModal: Model<Key>,
+  ) {}
   private extractInfo(data: KumaBody) {
     const msgPattern = /^\[([cm][^\]]*)\] \[(🔴|✅) (Down|Up)\]/;
     const match = data.msg.match(msgPattern);
@@ -45,9 +53,9 @@ export class KumaService {
 
   private async _initBroswer() {
     const browser = await puppeteer.launch({
-      headless: false,
-      // headless: 'shell',
-      // executablePath: '/usr/bin/chromium-browser',
+      // headless: false,
+      headless: 'shell',
+      executablePath: '/usr/bin/chromium-browser',
       defaultViewport: null,
       ignoreHTTPSErrors: true,
       protocolTimeout: 30000,
@@ -192,14 +200,8 @@ export class KumaService {
 
     const result = this.extractInfo(kumaBody);
 
-    if (result) {
-      if (result.status === UP) {
-        console.log(result, 'up');
-      } else if (result.status === DOWN) {
-        console.log(result, 'down');
-      }
-      // UPDATE SERVER STATUS
-    } else {
+    if (result && result.status === DOWN) {
+      console.log(result, 'DOWN');
     }
 
     return 'This action adds a new kuma';
