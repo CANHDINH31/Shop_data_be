@@ -358,6 +358,11 @@ export class ServersService {
         .populate('serverId')
         .populate('awsId');
 
+      const server = await this.serverModal.findById(id);
+      const serverName = server.name + '-' + server.hostnameForAccessKeys;
+
+      await this.kumaService.remove({ name: serverName });
+
       await this.serverModal.findByIdAndUpdate(id, { status: 0 });
 
       if (listKey?.length > 0) {
