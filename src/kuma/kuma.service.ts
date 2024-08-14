@@ -8,7 +8,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Server } from 'src/schemas/servers.schema';
 import { Key } from 'src/schemas/keys.schema';
 import { Model } from 'mongoose';
-import { ServersService } from 'src/servers/servers.service';
 import { KeysService } from 'src/keys/keys.service';
 
 type KumaBody = {
@@ -272,7 +271,9 @@ export class KumaService {
     const listMonitorWrapper = await page.$(
       'div[class="monitor-list scrollbar"]',
     );
+
     if (listMonitorWrapper) {
+      await page.waitForSelector('a[data-v-574bc50a]');
       const listHrefs = await listMonitorWrapper.$$eval(
         'a[data-v-574bc50a]',
         (els) => els?.map((el) => el.getAttribute('href'))?.reverse(),
@@ -293,13 +294,19 @@ export class KumaService {
       await newPage.click('button[class="btn btn-danger"]');
 
       await newPage.waitForSelector('div[class="modal fade show"]');
-      await newPage.waitForSelector(
-        'button[class="btn btn-danger"][data-bs-dismiss="modal"]',
-      );
+      const modelActive = await newPage.$('div[class="modal fade show"]');
+      if (modelActive) {
+        await modelActive.waitForSelector(
+          'button[class="btn btn-danger"][data-bs-dismiss="modal"]',
+        );
+        const buttonSubmit = await modelActive.$(
+          'button[class="btn btn-danger"][data-bs-dismiss="modal"]',
+        );
 
-      await newPage.click(
-        'button[class="btn btn-danger"][data-bs-dismiss="modal"]',
-      );
+        if (buttonSubmit) {
+          await buttonSubmit.click();
+        }
+      }
     } catch (error) {
       console.log(error);
     } finally {
