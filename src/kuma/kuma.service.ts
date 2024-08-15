@@ -29,6 +29,7 @@ type ChannelBody = {
 
 const DOWN = 'Down';
 const MAXRETRIES = '5';
+
 @Injectable()
 export class KumaService {
   constructor(
@@ -263,6 +264,7 @@ export class KumaService {
 
   private async _handleSearch(page: Page, name: string) {
     await page.waitForSelector('input[class="form-control search-input"]');
+    await page.type('input[class="form-control search-input"]', '');
     await page.type('input[class="form-control search-input"]', name);
   }
 
@@ -273,15 +275,16 @@ export class KumaService {
     );
 
     if (listMonitorWrapper) {
-      await page.waitForSelector('a[data-v-574bc50a]');
+      await page.waitForSelector('a[data-v-574bc50a]', { timeout: 500 });
       const listHrefs = await listMonitorWrapper.$$eval(
         'a[data-v-574bc50a]',
         (els) => els?.map((el) => el.getAttribute('href'))?.reverse(),
       );
 
-      for (const href of listHrefs) {
-        await this._handleRemoveCore(page, href);
-      }
+      const removePromises = listHrefs.map((href) =>
+        this._handleRemoveCore(page, href),
+      );
+      await Promise.all(removePromises);
     }
   }
 
@@ -314,7 +317,7 @@ export class KumaService {
     }
   }
 
-  async remove(removeKumaDto: RemoveKumaDto) {
+  private async _remove(removeKumaDto: RemoveKumaDto) {
     const { browser, page } = await this._initBroswer();
 
     try {
@@ -325,6 +328,14 @@ export class KumaService {
     } catch (error) {
     } finally {
       await browser.close();
+    }
+  }
+
+  async remove(removeKumaDto: RemoveKumaDto) {
+    let numRetries = 1;
+    while (numRetries < Number(MAXRETRIES)) {
+      await this._remove(removeKumaDto);
+      numRetries++;
     }
   }
 }
