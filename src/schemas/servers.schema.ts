@@ -53,6 +53,10 @@ export class Server {
 
   @Prop({ default: 0 })
   dataTransfer: number;
+
+  @Prop({ default: 0 })
+  isConnectKuma: number;
+  // 0: not connect - 1: connect
 }
 
 export const ServerSchema = SchemaFactory.createForClass(Server);
