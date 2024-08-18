@@ -2,7 +2,7 @@ import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateKeyDto } from './dto/create-key.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key } from 'src/schemas/keys.schema';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { Gist } from 'src/schemas/gists.schema';
 import { Plan } from 'src/schemas/plans.schema';
 import { User } from 'src/schemas/users.schema';
@@ -174,6 +174,14 @@ export class KeysService {
 
   async findAll(req: any) {
     try {
+      // type: 1 - expire today
+      // type: 2 - buy today
+      // type: 3 - over banwidth today
+      const startToday = new Date();
+      startToday.setHours(0, 0, 0, 0);
+      const endToday = new Date();
+      endToday.setHours(23, 59, 59, 999);
+
       let query = {};
 
       const pageSize = req.query.pageSize || 10;
@@ -198,6 +206,33 @@ export class KeysService {
           status: req.query.status,
         }),
       };
+
+      if (req.query.type === '1') {
+        query = {
+          ...query,
+          endDate: {
+            $gte: startToday,
+            $lte: endToday,
+          },
+        };
+      }
+
+      if (req.query.type === '2') {
+        query = {
+          ...query,
+          createdAt: {
+            $gte: startToday,
+            $lte: endToday,
+          },
+        };
+      }
+
+      if (req.query.type === '3') {
+        query = {
+          ...query,
+          $expr: { $gt: ['$dataUsage', '$dataLimit'] },
+        };
+      }
 
       const data = await this.keyModal
         .find(query)
