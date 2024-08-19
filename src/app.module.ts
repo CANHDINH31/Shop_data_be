@@ -28,6 +28,7 @@ import { RoseExtendsModule } from './rose-extends/rose-extends.module';
 import { KumaModule } from './kuma/kuma.module';
 import { ClouldsModule } from './cloulds/cloulds.module';
 import { ProvidersModule } from './providers/providers.module';
+import { CloudManagersModule } from './cloud-managers/cloud-managers.module';
 
 @Module({
   imports: [
@@ -82,6 +83,7 @@ import { ProvidersModule } from './providers/providers.module';
     KumaModule,
     ClouldsModule,
     ProvidersModule,
+    CloudManagersModule,
   ],
   controllers: [AppController],
   providers: [AppService, JwtService],
