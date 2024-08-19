@@ -26,6 +26,7 @@ import { MailerModule } from '@nest-modules/mailer';
 import { LocationsModule } from './locations/locations.module';
 import { RoseExtendsModule } from './rose-extends/rose-extends.module';
 import { KumaModule } from './kuma/kuma.module';
+import { ClouldsModule } from './cloulds/cloulds.module';
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ import { KumaModule } from './kuma/kuma.module';
     LocationsModule,
     RoseExtendsModule,
     KumaModule,
+    ClouldsModule,
   ],
   controllers: [AppController],
   providers: [AppService, JwtService],
