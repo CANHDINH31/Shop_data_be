@@ -18,20 +18,35 @@ export class ClouldsService {
 
   async findAll() {
     try {
+      return await this.cloudModal.find({ status: 1 });
     } catch (error) {
       throw error;
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} clould`;
+  async findOne(id: string) {
+    try {
+      return await this.cloudModal.findById(id);
+    } catch (error) {
+      throw error;
+    }
   }
 
-  update(id: number, updateClouldDto: UpdateClouldDto) {
-    return `This action updates a #${id} clould`;
+  async update(id: string, updateClouldDto: UpdateClouldDto) {
+    try {
+      return await this.cloudModal.findByIdAndUpdate(id, updateClouldDto, {
+        new: true,
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} clould`;
+  async remove(id: string) {
+    try {
+      return await this.cloudModal.findByIdAndUpdate(id, { status: 0 });
+    } catch (error) {
+      throw error;
+    }
   }
 }

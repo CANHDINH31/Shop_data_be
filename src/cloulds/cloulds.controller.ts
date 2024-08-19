@@ -27,16 +27,16 @@ export class ClouldsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.clouldsService.findOne(+id);
+    return this.clouldsService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateClouldDto: UpdateClouldDto) {
-    return this.clouldsService.update(+id, updateClouldDto);
+    return this.clouldsService.update(id, updateClouldDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.clouldsService.remove(+id);
+    return this.clouldsService.remove(id);
   }
 }
