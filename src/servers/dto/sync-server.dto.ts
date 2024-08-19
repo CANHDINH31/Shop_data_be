@@ -20,4 +20,8 @@ export class SyncServerDto {
   @IsOptional()
   @IsString()
   remark?: string;
+
+  @IsOptional()
+  @IsNumber()
+  status?: number;
 }
