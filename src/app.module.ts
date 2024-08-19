@@ -27,6 +27,7 @@ import { LocationsModule } from './locations/locations.module';
 import { RoseExtendsModule } from './rose-extends/rose-extends.module';
 import { KumaModule } from './kuma/kuma.module';
 import { ClouldsModule } from './cloulds/cloulds.module';
+import { ProvidersModule } from './providers/providers.module';
 
 @Module({
   imports: [
@@ -80,6 +81,7 @@ import { ClouldsModule } from './cloulds/cloulds.module';
     RoseExtendsModule,
     KumaModule,
     ClouldsModule,
+    ProvidersModule,
   ],
   controllers: [AppController],
   providers: [AppService, JwtService],
