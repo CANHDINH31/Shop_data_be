@@ -1,15 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { CreateClouldDto } from './dto/create-clould.dto';
 import { UpdateClouldDto } from './dto/update-clould.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Cloud } from 'src/schemas/clouds.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class ClouldsService {
-  create(createClouldDto: CreateClouldDto) {
-    return 'This action adds a new clould';
+  constructor(@InjectModel(Cloud.name) private cloudModal: Model<Cloud>) {}
+  async create(createClouldDto: CreateClouldDto) {
+    try {
+      return await this.cloudModal.create({ ...createClouldDto });
+    } catch (error) {
+      throw error;
+    }
   }
 
-  findAll() {
-    return `This action returns all cloulds`;
+  async findAll() {
+    try {
+    } catch (error) {
+      throw error;
+    }
   }
 
   findOne(id: number) {

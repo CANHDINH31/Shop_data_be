@@ -13,7 +13,32 @@ export class Cloud {
   name: string;
 
   @Prop()
-  fileName: string;
+  valid: number;
+  // 1:valid - 0:expried
+
+  @Prop()
+  startDate: string;
+
+  @Prop()
+  endDate: string;
+
+  @Prop()
+  provider: string;
+
+  @Prop()
+  cloud: string;
+
+  @Prop()
+  key: string;
+
+  @Prop()
+  server: string;
+
+  @Prop()
+  price: number;
+
+  @Prop()
+  remark: string;
 }
 
 export const CloudSchema = SchemaFactory.createForClass(Cloud);
