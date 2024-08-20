@@ -16,8 +16,12 @@ export class CloudManagersController {
   constructor(private readonly cloudManagersService: CloudManagersService) {}
 
   @Post()
-  create(@Body() createCloudManagerDto: CreateCloudManagerDto) {
-    return this.cloudManagersService.create(createCloudManagerDto);
+  async create(@Body() createCloudManagerDto: CreateCloudManagerDto) {
+    try {
+      return this.cloudManagersService.create(createCloudManagerDto);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Get()

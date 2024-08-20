@@ -23,6 +23,19 @@ export class CloudManager {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Provider' })
   providerId: string;
+
+  @Prop()
+  key: string;
+
+  @Prop()
+  price: number;
+
+  @Prop()
+  remark: string;
+
+  @Prop({ default: 1 })
+  isDelete: number;
+  // 1:not delete - 0:delete
 }
 
 export const CloudManagerSchema = SchemaFactory.createForClass(CloudManager);
