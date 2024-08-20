@@ -17,6 +17,7 @@ import { SettingBandWidthDefaultDto } from './dto/setting-bandwidth-default.dto'
 import { UpdateRemarkServerDto } from './dto/update-remark-server.dto';
 import { UpdateTotalBandwidthServerDto } from './dto/update-total-bandwidth-server.dto';
 import { UpdateStatusServerDto } from './dto/update-status-server.dto';
+import { UpdateCloudManagerDto } from './dto/update-cloud-manager.dto';
 
 @Controller('servers')
 export class ServersController {
@@ -97,6 +98,14 @@ export class ServersController {
     @Body() updateStatusServerDto: UpdateStatusServerDto,
   ) {
     return this.serversService.updateStautsServer(id, updateStatusServerDto);
+  }
+
+  @Patch('/cloud-manager/:id')
+  updateCloudManager(
+    @Param('id') id: string,
+    @Body() updateCloudManagerDto: UpdateCloudManagerDto,
+  ) {
+    return this.serversService.updateCloudManager(id, updateCloudManagerDto);
   }
 
   @Delete(':id')

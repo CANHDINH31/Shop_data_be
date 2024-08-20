@@ -8,19 +8,24 @@ import { Model } from 'mongoose';
 @Injectable()
 export class CloudManagersService {
   constructor(
-    @InjectModel(CloudManager.name) private cloudModal: Model<CloudManager>,
+    @InjectModel(CloudManager.name)
+    private cloudManagerModal: Model<CloudManager>,
   ) {}
 
   async create(createCloudManagerDto: CreateCloudManagerDto) {
     try {
-      return await this.cloudModal.create({ ...createCloudManagerDto });
+      return await this.cloudManagerModal.create({ ...createCloudManagerDto });
     } catch (error) {
       throw error;
     }
   }
 
-  findAll() {
-    return `This action returns all cloudManagers`;
+  async findAll() {
+    try {
+      return await this.cloudManagerModal.find({ isDelete: 1 });
+    } catch (error) {
+      throw error;
+    }
   }
 
   findOne(id: number) {

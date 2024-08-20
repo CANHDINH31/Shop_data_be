@@ -24,4 +24,8 @@ export class SyncServerDto {
   @IsOptional()
   @IsNumber()
   status?: number;
+
+  @IsOptional()
+  @IsString()
+  cloudManagerId?: string;
 }

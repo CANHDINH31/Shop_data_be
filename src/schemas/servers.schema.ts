@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
 
 export type ServerDocument = HydratedDocument<Server>;
 
@@ -57,6 +57,9 @@ export class Server {
   @Prop({ default: 0 })
   isConnectKuma: number;
   // 0: not connect - 1: connect
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'CloudManager' })
+  cloudManagerId: string;
 }
 
 export const ServerSchema = SchemaFactory.createForClass(Server);

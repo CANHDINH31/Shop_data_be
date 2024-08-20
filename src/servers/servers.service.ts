@@ -21,6 +21,7 @@ import { UpdateTotalBandwidthServerDto } from './dto/update-total-bandwidth-serv
 import { CYCLE_PLAN } from 'src/utils/constant';
 import { KumaService } from 'src/kuma/kuma.service';
 import { UpdateStatusServerDto } from './dto/update-status-server.dto';
+import { UpdateCloudManagerDto } from './dto/update-cloud-manager.dto';
 
 @Injectable()
 export class ServersService {
@@ -368,6 +369,29 @@ export class ServersService {
       return {
         status: HttpStatus.OK,
         message: 'Cập nhật status server thành công',
+        data,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateCloudManager(
+    id: string,
+    updateCloudManagerDto: UpdateCloudManagerDto,
+  ) {
+    try {
+      const data = await this.serverModal.findByIdAndUpdate(
+        id,
+        {
+          cloudManagerId: updateCloudManagerDto.cloudManagerId,
+        },
+        { new: true },
+      );
+
+      return {
+        status: HttpStatus.OK,
+        message: 'Cập nhật cloud manager thành công',
         data,
       };
     } catch (error) {
