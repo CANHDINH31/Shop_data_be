@@ -6,11 +6,13 @@ import {
   CloudManager,
   CloudManagerSchema,
 } from 'src/schemas/cloudManagers.schema';
+import { Server, ServerSchema } from 'src/schemas/servers.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: CloudManager.name, schema: CloudManagerSchema },
+      { name: Server.name, schema: ServerSchema },
     ]),
   ],
   controllers: [CloudManagersController],

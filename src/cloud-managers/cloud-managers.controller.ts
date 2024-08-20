@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { CloudManagersService } from './cloud-managers.service';
 import { CreateCloudManagerDto } from './dto/create-cloud-manager.dto';
@@ -25,13 +26,13 @@ export class CloudManagersController {
   }
 
   @Get()
-  findAll() {
-    return this.cloudManagersService.findAll();
+  findAll(@Req() req) {
+    return this.cloudManagersService.findAll(req);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.cloudManagersService.findOne(+id);
+    return this.cloudManagersService.findOne(id);
   }
 
   @Patch(':id')
@@ -39,11 +40,11 @@ export class CloudManagersController {
     @Param('id') id: string,
     @Body() updateCloudManagerDto: UpdateCloudManagerDto,
   ) {
-    return this.cloudManagersService.update(+id, updateCloudManagerDto);
+    return this.cloudManagersService.update(id, updateCloudManagerDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.cloudManagersService.remove(+id);
+    return this.cloudManagersService.remove(id);
   }
 }

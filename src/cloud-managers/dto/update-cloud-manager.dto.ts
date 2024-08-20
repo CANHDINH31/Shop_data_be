@@ -1,4 +1,39 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateCloudManagerDto } from './create-cloud-manager.dto';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
-export class UpdateCloudManagerDto extends PartialType(CreateCloudManagerDto) {}
+export class UpdateCloudManagerDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  startDate?: string;
+
+  @IsOptional()
+  @IsString()
+  endDate?: string;
+
+  @IsOptional()
+  @IsNumber()
+  status?: number;
+
+  @IsOptional()
+  @IsString()
+  cloudId?: string;
+
+  @IsOptional()
+  @IsString()
+  providerId?: string;
+
+  @IsOptional()
+  @IsString()
+  key?: string;
+
+  @IsOptional()
+  @IsNumber()
+  price?: number;
+
+  @IsOptional()
+  @IsString()
+  remark?: string;
+}
