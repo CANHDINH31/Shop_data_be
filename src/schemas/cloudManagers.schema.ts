@@ -9,10 +9,10 @@ export class CloudManager {
   name: string;
 
   @Prop()
-  startDate: string;
+  startDate: Date;
 
   @Prop()
-  endDate: string;
+  endDate: Date;
 
   @Prop({ default: 1 })
   status: number;

@@ -29,16 +29,16 @@ export class CloudManagersService {
         {
           $match: {
             isDelete: 1,
-            createdAt: {
+            startDate: {
               $gte: new Date(startOfMonth),
               $lte: new Date(endOfMonth),
             },
           },
         },
-        { $group: { _id: 'cost', money: { $sum: '$price' } } },
+        { $group: { _id: 'null', price: { $sum: '$price' } } },
       ]);
 
-      return cost;
+      return { cost: cost?.[0]?.price };
     } catch (error) {
       throw error;
     }
