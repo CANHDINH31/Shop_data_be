@@ -6,6 +6,7 @@ import { CloudManager } from 'src/schemas/cloudManagers.schema';
 import { Model } from 'mongoose';
 import { Server } from 'src/schemas/servers.schema';
 import * as moment from 'moment';
+import { TotalCostDto } from './dto/total-cost.dto';
 
 @Injectable()
 export class CloudManagersService {
@@ -14,6 +15,34 @@ export class CloudManagersService {
     private cloudManagerModal: Model<CloudManager>,
     @InjectModel(Server.name) private serverModal: Model<Server>,
   ) {}
+
+  async totalCost(totalCostDto: TotalCostDto) {
+    try {
+      const startOfMonth = moment(totalCostDto.month)
+        .startOf('month')
+        .format('YYYY-MM-DD hh:mm');
+      const endOfMonth = moment(totalCostDto.month)
+        .endOf('month')
+        .format('YYYY-MM-DD hh:mm');
+
+      const cost = await this.cloudManagerModal.aggregate([
+        {
+          $match: {
+            isDelete: 1,
+            createdAt: {
+              $gte: new Date(startOfMonth),
+              $lte: new Date(endOfMonth),
+            },
+          },
+        },
+        { $group: { _id: 'cost', money: { $sum: '$price' } } },
+      ]);
+
+      return cost;
+    } catch (error) {
+      throw error;
+    }
+  }
 
   async create(createCloudManagerDto: CreateCloudManagerDto) {
     try {

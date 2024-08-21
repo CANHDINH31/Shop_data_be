@@ -11,10 +11,20 @@ import {
 import { CloudManagersService } from './cloud-managers.service';
 import { CreateCloudManagerDto } from './dto/create-cloud-manager.dto';
 import { UpdateCloudManagerDto } from './dto/update-cloud-manager.dto';
+import { TotalCostDto } from './dto/total-cost.dto';
 
 @Controller('cloud-managers')
 export class CloudManagersController {
   constructor(private readonly cloudManagersService: CloudManagersService) {}
+
+  @Post('/total-cost')
+  async totalCost(@Body() totalCostDto: TotalCostDto) {
+    try {
+      return this.cloudManagersService.totalCost(totalCostDto);
+    } catch (error) {
+      throw error;
+    }
+  }
 
   @Post()
   async create(@Body() createCloudManagerDto: CreateCloudManagerDto) {
