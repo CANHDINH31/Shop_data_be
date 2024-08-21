@@ -172,6 +172,10 @@ export class KeysService {
     }
   }
 
+  private escapeRegex(input) {
+    return input.replace(/[^\w\s]/gi, '').replace(' ', '.+');
+  }
+
   async findAll(req: any) {
     try {
       // type: 1 - expire today
@@ -195,11 +199,14 @@ export class KeysService {
         }),
 
         ...(req?.query?.account && {
-          account: { $regex: req.query.account, $options: 'i' },
+          account: {
+            $regex: this.escapeRegex(req.query.account),
+            $options: 'i',
+          },
         }),
 
         ...(req?.query?.name && {
-          name: { $regex: req.query.name, $options: 'i' },
+          name: { $regex: this.escapeRegex(req.query.name), $options: 'i' },
         }),
 
         ...(req?.query?.status && {
@@ -233,8 +240,6 @@ export class KeysService {
           $expr: { $gt: ['$dataUsage', '$dataLimit'] },
         };
       }
-
-      console.log(query, 'query');
 
       const data = await this.keyModal
         .find(query)
