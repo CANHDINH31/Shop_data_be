@@ -234,6 +234,8 @@ export class KeysService {
         };
       }
 
+      console.log(query, 'query');
+
       const data = await this.keyModal
         .find(query)
         .populate('userId')

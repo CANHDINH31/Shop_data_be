@@ -243,9 +243,10 @@ export class KumaService {
       await this._handleLogin(page);
       await page.waitForNavigation();
       await this._handleCreateChannel(page, createKumaDto);
-      await this.serverModal.findOneAndUpdate(
+      const server = await this.serverModal.findOneAndUpdate(
         {
           hostnameForAccessKeys: createKumaDto.hostname,
+          status: 1,
         },
         { isConnectKuma: 1 },
       );
