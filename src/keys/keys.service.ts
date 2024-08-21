@@ -260,6 +260,43 @@ export class KeysService {
     }
   }
 
+  async todayInfo() {
+    try {
+      const startToday = new Date();
+      startToday.setHours(0, 0, 0, 0);
+      const endToday = new Date();
+      endToday.setHours(23, 59, 59, 999);
+
+      const expireToday = await this.keyModal
+        .find({
+          endDate: {
+            $gte: startToday,
+            $lte: endToday,
+          },
+        })
+        .count();
+
+      const buyToday = await this.keyModal
+        .find({
+          createdAt: {
+            $gte: startToday,
+            $lte: endToday,
+          },
+        })
+        .count();
+
+      const overbandWidthToday = await this.keyModal
+        .find({
+          $expr: { $gt: ['$dataUsage', '$dataLimit'] },
+        })
+        .count();
+
+      return { expireToday, buyToday, overbandWidthToday };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async disableByAdmin(id: string) {
     try {
       const key: any = await this.keyModal

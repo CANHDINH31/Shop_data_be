@@ -34,6 +34,11 @@ export class KeysController {
     return this.keysService.create(createKeyDto);
   }
 
+  @Get('/today-info')
+  todayInfo() {
+    return this.keysService.todayInfo();
+  }
+
   @Get()
   findAll(@Req() req) {
     return this.keysService.findAll(req);
