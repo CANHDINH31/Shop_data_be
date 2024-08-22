@@ -10,6 +10,7 @@ import {
 import { CashsService } from './cashs.service';
 import { CreateCashDto } from './dto/create-cash.dto';
 import { RejectCashDto } from './dto/reject-cash.dto';
+import { CashByAdminDto } from './dto/cash-by-admin.dto';
 
 @Controller('cashs')
 export class CashsController {
@@ -18,6 +19,11 @@ export class CashsController {
   @Post('/auto-bank')
   autoBank(@Body() createCashDto: CreateCashDto) {
     return this.cashsService.autoBank(createCashDto);
+  }
+
+  @Post('/cash-by-admin')
+  cashByAdmin(@Body() cashByAdminDto: CashByAdminDto) {
+    return this.cashsService.cashByAdmin(cashByAdminDto);
   }
 
   @Post()

@@ -27,6 +27,10 @@ export class Cash {
 
   @Prop()
   description: string;
+
+  @Prop({ default: 0 })
+  createByAdmin: number;
+  // 0:false - 1:true
 }
 
 export const CashSchema = SchemaFactory.createForClass(Cash);

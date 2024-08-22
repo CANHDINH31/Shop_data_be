@@ -7,6 +7,7 @@ import { Model } from 'mongoose';
 import { User } from 'src/schemas/users.schema';
 import * as moment from 'moment';
 import { generateRandomString } from 'src/utils';
+import { CashByAdminDto } from './dto/cash-by-admin.dto';
 
 @Injectable()
 export class CashsService {
@@ -47,6 +48,34 @@ export class CashsService {
       return {
         status: HttpStatus.CREATED,
         message: 'Nạp tiền thành công. Vui lòng chờ admin phê duyệt',
+        data,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async cashByAdmin(cashByAdminDto: CashByAdminDto) {
+    try {
+      const code = `${moment().format('YYYYMMDD')}-${generateRandomString(
+        4,
+      ).toLowerCase()}`;
+
+      const data = await this.cashModal.create({
+        ...cashByAdminDto,
+        code,
+        status: 1,
+        type: 1,
+        createByAdmin: 1,
+      });
+
+      await this.userModal.findByIdAndUpdate(cashByAdminDto.userId, {
+        $inc: { money: cashByAdminDto.money },
+      });
+
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Nạp tiền thành công.',
         data,
       };
     } catch (error) {
