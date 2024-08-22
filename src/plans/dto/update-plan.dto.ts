@@ -37,4 +37,8 @@ export class UpdatePlanDto {
   @IsOptional()
   @IsNumber()
   display?: number;
+
+  @IsOptional()
+  @IsNumber()
+  enable?: number;
 }

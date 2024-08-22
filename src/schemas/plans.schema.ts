@@ -29,6 +29,10 @@ export class Plan {
 
   @Prop({ default: 1 })
   status: number;
+
+  @Prop({ defaul: 1 })
+  enable: number;
+  // 1:enable - 0: disable
 }
 
 export const PlanSchema = SchemaFactory.createForClass(Plan);
