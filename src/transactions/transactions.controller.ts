@@ -11,6 +11,7 @@ import {
 import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import { HistoryExtendPlanTransactionDto } from './dto/history-extend-plan-transaction.dto';
 
 @Controller('transactions')
 export class TransactionsController {
@@ -19,6 +20,15 @@ export class TransactionsController {
   @Post()
   create(@Body() createTransactionDto: CreateTransactionDto) {
     return this.transactionsService.create(createTransactionDto);
+  }
+
+  @Post('history-extend-plan')
+  historyExtendPlan(
+    @Body() historyExtendPlanTransactionDto: HistoryExtendPlanTransactionDto,
+  ) {
+    return this.transactionsService.historyExtendPlan(
+      historyExtendPlanTransactionDto,
+    );
   }
 
   @Get()
