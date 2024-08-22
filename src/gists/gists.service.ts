@@ -266,6 +266,9 @@ export class GistsService {
       ...(req?.query?.status && {
         status: req.query.status,
       }),
+      ...(req?.query?.planId && {
+        planId: req.query.planId,
+      }),
     };
 
     try {
