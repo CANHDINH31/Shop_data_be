@@ -53,6 +53,7 @@ export class GistsService {
       if (plan.price === 0 && user.level === 0 && user.isFree === 1) {
         throw new BadRequestException({
           message: 'Bạn đã đăng kí gói dùng thử.',
+          remark: 400,
         });
       }
 
