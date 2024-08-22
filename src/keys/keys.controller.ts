@@ -14,6 +14,7 @@ import { MigrateKeyDto } from './dto/migrate-key.dto';
 import { AddDataLimitKey } from './dto/add-data-limit-key.dto';
 import { RenameKeyDto } from './dto/rename-key.dto';
 import { MultiMigrateKeyDto } from './dto/multi-migrate-key.dto';
+import { EndDateKeyDto } from './dto/end-date-key.dto';
 
 @Controller('keys')
 export class KeysController {
@@ -60,6 +61,11 @@ export class KeysController {
     @Body() addDataLimitKey: AddDataLimitKey,
   ) {
     return this.keysService.addDataLimit(id, addDataLimitKey);
+  }
+
+  @Patch('/end-date/:id')
+  updateEndDate(@Param('id') id: string, @Body() endDateKeyDto: EndDateKeyDto) {
+    return this.keysService.updateEndDate(id, endDateKeyDto);
   }
 
   @Get('/cron')

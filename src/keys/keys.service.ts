@@ -22,6 +22,7 @@ import { AddDataLimitKey } from './dto/add-data-limit-key.dto';
 import { RenameKeyDto } from './dto/rename-key.dto';
 import { MultiMigrateKeyDto } from './dto/multi-migrate-key.dto';
 import { CYCLE_PLAN } from 'src/utils/constant';
+import { EndDateKeyDto } from './dto/end-date-key.dto';
 
 @Injectable()
 export class KeysService {
@@ -424,6 +425,23 @@ export class KeysService {
       return {
         status: HttpStatus.OK,
         message: 'Add data thành công',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateEndDate(id: string, endDateKeyDto: EndDateKeyDto) {
+    try {
+      const data = await this.keyModal.findByIdAndUpdate(
+        id,
+        { endDate: endDateKeyDto.endDate },
+        { new: true },
+      );
+      return {
+        status: HttpStatus.OK,
+        data,
+        message: 'Update end date thành công',
       };
     } catch (error) {
       throw error;
