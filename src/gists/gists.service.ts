@@ -1,6 +1,5 @@
 import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateGistDto } from './dto/create-gist.dto';
-import { UpdateGistDto } from './dto/update-gist.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Gist } from 'src/schemas/gists.schema';
 import mongoose, { Model } from 'mongoose';
@@ -316,7 +315,24 @@ export class GistsService {
     updateExtensionGistDto: UpdateExtensionGistDto,
   ) {
     try {
-      const gist = await this.gistModal.findByIdAndUpdate(
+      const gist: any = await this.gistModal.findById(id).populate({
+        path: 'keyId',
+        populate: {
+          path: 'serverId',
+        },
+      });
+
+      const outlineVpn = new OutlineVPN({
+        apiUrl: gist.keyId.serverId.apiUrl,
+        fingerprint: gist.keyId.serverId.fingerPrint,
+      });
+
+      await outlineVpn.renameUser(
+        gist.keyId.keyId,
+        updateExtensionGistDto.extension,
+      );
+
+      await this.gistModal.findByIdAndUpdate(
         id,
         {
           extension: updateExtensionGistDto.extension,
