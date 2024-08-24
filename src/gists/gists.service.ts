@@ -247,9 +247,21 @@ export class GistsService {
         await this.userModal.findByIdAndUpdate(user?._id, { isFree: 1 });
       }
 
+      const result = await this.gistModal
+        .findById(gistMongo._id)
+        .populate('userId')
+        .populate('planId')
+        .populate({
+          path: 'keyId',
+          populate: {
+            path: 'awsId',
+          },
+        });
+
       return {
         status: HttpStatus.CREATED,
         message: 'Thêm mới thành công',
+        data: result,
       };
     } catch (error) {
       throw error;
