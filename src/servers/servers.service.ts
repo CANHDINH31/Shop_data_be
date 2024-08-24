@@ -112,6 +112,20 @@ export class ServersService {
         fingerprint: syncServerDto.fingerPrint,
       });
       const server: any = await outlineVpn.getServer();
+      if (syncServerDto?.isCheckUnique !== '1') {
+        const existServer = await this.serverModal.findOne({
+          hostnameForAccessKeys: server.hostnameForAccessKeys,
+          status: 0,
+        });
+        if (existServer) {
+          return {
+            status: HttpStatus.OK,
+            isCheckUnique: 1,
+            message: 'Server đã được xóa trước đây',
+          };
+        }
+      }
+
       const serverMongo = await this.serverModal.findOne({
         hostnameForAccessKeys: server.hostnameForAccessKeys,
         status: 1,

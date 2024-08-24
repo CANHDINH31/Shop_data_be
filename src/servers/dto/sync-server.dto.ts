@@ -28,4 +28,8 @@ export class SyncServerDto {
   @IsOptional()
   @IsString()
   cloudManagerId?: string;
+
+  @IsOptional()
+  @IsString()
+  isCheckUnique?: string;
 }
