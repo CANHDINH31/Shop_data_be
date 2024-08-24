@@ -126,10 +126,21 @@ export class UsersService {
         }),
       };
 
+      const pageSize = req.query.pageSize || 10;
+      const page = req.query.page || 1;
+      const skip = Number(pageSize) * (page - 1);
+      const take = Number(pageSize);
+
       const listUser = await this.userModal
         .find(query)
         .populate('introduceUserId')
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(take);
+
+      const totalItems = await this.userModal.find(query).count();
+
+      const totalPage = Math.ceil(totalItems / Number(pageSize));
 
       const resultList = [];
 
@@ -155,7 +166,13 @@ export class UsersService {
         });
       }
 
-      return resultList;
+      return {
+        currentPage: Number(page),
+        totalPage,
+        itemsPerPage: Number(take),
+        totalItems,
+        resultList,
+      };
     } catch (error) {
       throw error;
     }
