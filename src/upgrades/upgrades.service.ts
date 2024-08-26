@@ -80,10 +80,6 @@ export class UpgradesService {
 
       const data = gist.keyId.dataLimit + extendPlan.bandWidth * 1000000000;
 
-      console.log(gist.keyId.dataLimit, 'data');
-
-      console.log(data, 'currentDataAfterExtend');
-
       await outlineVpn.enableUser(gist.keyId.keyId);
       await outlineVpn.addDataLimit(gist.keyId.keyId, data);
 

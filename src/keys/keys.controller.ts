@@ -70,7 +70,7 @@ export class KeysController {
 
   @Get('/cron')
   cron() {
-    return this.keysService.checkExpiredKey();
+    return this.keysService.checkExpireDataExpandKey();
   }
 
   @Get(':id')

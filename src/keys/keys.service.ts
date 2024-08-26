@@ -625,7 +625,7 @@ export class KeysService {
     try {
       console.log('start cron check expire key');
       const listKey = (await this.keyModal
-        .find({ status: 1 })
+        .find({ status: { $in: [1, 2] } })
         .populate('serverId')) as any[];
       const today = moment();
       const expiredKeys = listKey.filter((key) => {
@@ -638,6 +638,44 @@ export class KeysService {
       console.log('finnish cron check expire key');
     } catch (error) {
       throw error;
+    }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_2AM)
+  async checkExpireDataExpandKey() {
+    try {
+      const listKey = (await this.keyModal
+        .find({ status: { $in: [1, 2] } })
+        .populate('serverId')) as any[];
+      const today = moment();
+      const expiredKeys = listKey.filter((key) => {
+        const endExpandDate = moment(key.endExpandDate);
+        return endExpandDate.isBefore(today);
+      });
+
+      for (const key of expiredKeys) {
+        await this.rollBackDataExpand(key);
+      }
+    } catch (error) {}
+  }
+
+  private async rollBackDataExpand(key: any) {
+    try {
+      const outlineVpn = new OutlineVPN({
+        apiUrl: key.serverId.apiUrl,
+        fingerprint: key.serverId.fingerPrint,
+      });
+
+      const data = key.dataLimit + 5 * 1000000000;
+
+      await outlineVpn.addDataLimit(key.keyId, data);
+
+      await this.keyModal.findByIdAndUpdate(key._id, {
+        dataExpand: data,
+        enable: true,
+      });
+    } catch (error) {
+      console.log(error);
     }
   }
 }
