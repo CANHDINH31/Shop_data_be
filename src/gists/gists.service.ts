@@ -86,7 +86,7 @@ export class GistsService {
           {
             $match: {
               serverId: new mongoose.Types.ObjectId(server._id),
-              status: 1,
+              status: { $in: [1, 2] },
             },
           },
           {
@@ -136,6 +136,7 @@ export class GistsService {
           $gte: today.toDate(),
           $lt: moment(today).endOf('day').toDate(),
         },
+        status: 1,
       });
 
       const nameKey = `${plan.name
