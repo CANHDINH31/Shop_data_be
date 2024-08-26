@@ -2,7 +2,7 @@ import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateKeyDto } from './dto/create-key.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key } from 'src/schemas/keys.schema';
-import mongoose, { Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { Gist } from 'src/schemas/gists.schema';
 import { Plan } from 'src/schemas/plans.schema';
 import { User } from 'src/schemas/users.schema';
@@ -636,43 +636,6 @@ export class KeysService {
         await this.remove(key._id);
       }
       console.log('finnish cron check expire key');
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  // @Cron(CronExpression.EVERY_10_MINUTES)
-  async checkCron() {
-    try {
-      await this.testModal.create({ value: Date.now() });
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async test(body: any) {
-    try {
-      const startDate = new Date(body.startDate);
-      const endDate = new Date(body.endDate);
-
-      const gist: any = await this.gistModal
-        .findOne({
-          status: 1,
-          extension: body?.extension,
-        })
-        .populate('keyId');
-
-      if (gist) {
-        const newKey = await this.keyModal.findOneAndUpdate(
-          { _id: gist?.keyId?._id },
-          { $set: { startDate, endDate } },
-          { new: true },
-        );
-
-        return newKey;
-      }
-
-      return '0';
     } catch (error) {
       throw error;
     }

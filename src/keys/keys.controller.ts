@@ -73,11 +73,6 @@ export class KeysController {
     return this.keysService.checkExpiredKey();
   }
 
-  @Post('/test')
-  test(@Body() body: any) {
-    return this.keysService.test(body);
-  }
-
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.keysService.findOne(id);
