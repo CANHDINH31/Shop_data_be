@@ -37,7 +37,7 @@ export class SatisfyService {
         status: 0,
       });
       const getInfotimeServer = await this.serverModal.aggregate([
-        { $match: { status: 0 } },
+        { $match: { status: { $in: [0, 1, 2, 3] } } },
         {
           $group: {
             _id: 'time',
