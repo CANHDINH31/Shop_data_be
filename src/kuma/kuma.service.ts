@@ -202,6 +202,7 @@ export class KumaService {
       };
 
       const result = this.extractInfo(kumaBody);
+      console.log(result, 'result');
 
       if (result && result.status === DOWN) {
         // { hostname: '139.59.108.224', status: 'Down' }

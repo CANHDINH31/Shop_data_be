@@ -201,13 +201,13 @@ export class KeysService {
 
         ...(req?.query?.account && {
           account: {
-            $regex: this.escapeRegex(req.query.account),
+            $regex: req.query.account,
             $options: 'i',
           },
         }),
 
         ...(req?.query?.name && {
-          name: { $regex: this.escapeRegex(req.query.name), $options: 'i' },
+          name: { $regex: req.query.name, $options: 'i' },
         }),
 
         ...(req?.query?.status && {
