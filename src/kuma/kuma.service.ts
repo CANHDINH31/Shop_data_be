@@ -119,16 +119,6 @@ export class KumaService {
 
     await page.waitForNavigation();
     await page.goto(`${this.configService.get('KUMA_DOMAIN')}/add`);
-    await this._handleCreateCore(page, 'MANAGE', {
-      type: 'port',
-      name: `m-${createKumaDto.name}-${createKumaDto?.hostname}`,
-      hostname: createKumaDto.hostname,
-      port: createKumaDto.portM,
-      group: createKumaDto.name,
-    });
-
-    await page.waitForNavigation();
-    await page.goto(`${this.configService.get('KUMA_DOMAIN')}/add`);
     await this._handleCreateCore(page, 'PING', {
       type: 'ping',
       name: `p-${createKumaDto.name}-${createKumaDto?.hostname}`,
@@ -244,13 +234,14 @@ export class KumaService {
       await this._handleLogin(page);
       await page.waitForNavigation();
       await this._handleCreateChannel(page, createKumaDto);
-      const server = await this.serverModal.findOneAndUpdate(
+      await this.serverModal.findOneAndUpdate(
         {
           hostnameForAccessKeys: createKumaDto.hostname,
           status: 1,
         },
         { isConnectKuma: 1 },
       );
+      return 'Connect kuma finnish';
     } catch (error) {
       throw error;
     } finally {
