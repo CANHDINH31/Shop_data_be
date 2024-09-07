@@ -335,6 +335,8 @@ export class GistsService {
         },
       });
 
+      const keyId = gist.keyId._id;
+
       const outlineVpn = new OutlineVPN({
         apiUrl: gist.keyId.serverId.apiUrl,
         fingerprint: gist.keyId.serverId.fingerPrint,
@@ -345,7 +347,11 @@ export class GistsService {
         updateExtensionGistDto.extension,
       );
 
-      await this.gistModal.findByIdAndUpdate(
+      await this.keyModal.findByIdAndUpdate(keyId, {
+        name: updateExtensionGistDto.extension,
+      });
+
+      const updatedGist = await this.gistModal.findByIdAndUpdate(
         id,
         {
           extension: updateExtensionGistDto.extension,
@@ -356,7 +362,7 @@ export class GistsService {
       return {
         status: HttpStatus.CREATED,
         message: 'Cập nhật thông tin thành công',
-        gist,
+        updatedGist,
       };
     } catch (error) {
       throw error;
