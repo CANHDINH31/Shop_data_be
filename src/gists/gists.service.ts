@@ -272,6 +272,11 @@ export class GistsService {
   async findAll(req: any) {
     let query = {};
 
+    const pageSize = req.query.pageSize || 10;
+    const page = req.query.page || 1;
+    const skip = Number(pageSize) * (page - 1);
+    const take = Number(pageSize);
+
     query = {
       ...(req?.query?.userId && {
         userId: req.query.userId,
@@ -282,10 +287,16 @@ export class GistsService {
       ...(req?.query?.planId && {
         planId: req.query.planId,
       }),
+      ...(req?.query?.keyId && {
+        keyId: req.query.keyId,
+      }),
+      ...(req?.query?.extension && {
+        extension: { $regex: req.query.extension, $options: 'i' },
+      }),
     };
 
     try {
-      return await this.gistModal
+      const data = await this.gistModal
         .find(query)
         .sort({ createdAt: -1 })
         .populate('userId')
@@ -295,7 +306,21 @@ export class GistsService {
           populate: {
             path: 'awsId',
           },
-        });
+        })
+        .skip(skip)
+        .limit(take);
+
+      const totalItems = await this.keyModal.find(query).count();
+
+      const totalPage = Math.ceil(totalItems / Number(pageSize));
+
+      return {
+        currentPage: Number(page),
+        totalPage,
+        itemsPerPage: Number(take),
+        totalItems,
+        data,
+      };
     } catch (error) {
       throw error;
     }

@@ -124,8 +124,8 @@ export class UsersService {
         ...(req?.query?.email && {
           email: { $regex: req.query.email, $options: 'i' },
         }),
-        ...(req?.query?.usersname && {
-          usersname: { $regex: req.query.usersname, $options: 'i' },
+        ...(req?.query?.username && {
+          username: { $regex: req.query.username, $options: 'i' },
         }),
       };
 
