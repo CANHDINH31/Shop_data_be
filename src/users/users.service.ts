@@ -124,6 +124,9 @@ export class UsersService {
         ...(req?.query?.email && {
           email: { $regex: req.query.email, $options: 'i' },
         }),
+        ...(req?.query?.usersname && {
+          usersname: { $regex: req.query.usersname, $options: 'i' },
+        }),
       };
 
       const pageSize = req.query.pageSize || 10;
