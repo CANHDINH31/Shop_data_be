@@ -463,80 +463,91 @@ export class ServersService {
   async getDataUsage() {
     try {
       console.log('start cron data usage');
-      const listKey: any = await this.keyModal
-        .find({ status: 1, enableByAdmin: true })
-        .populate('serverId');
 
-      for (const key of listKey) {
-        const outlineVpn = new OutlineVPN({
-          apiUrl: key.serverId.apiUrl,
-          fingerprint: key.serverId.fingerPrint,
-        });
+      let skip = 0;
+      const limit = 10;
+      let listKey: any = [];
 
-        const dataUsage = await outlineVpn.getDataUsage();
-        const bytesTransferredByUserId = dataUsage.bytesTransferredByUserId;
+      do {
+        listKey = await this.keyModal
+          .find({ status: 1, enableByAdmin: true })
+          .skip(skip)
+          .limit(limit)
+          .populate('serverId');
 
-        const arrayDataUsage = key?.arrayDataUsage || [];
-        let counterMigrate = key?.counterMigrate || 0;
+        if (listKey.length > 0) {
+          console.log(listKey, skip);
+          // await this._handleCoreGetDataUsage(listKey);
+        }
 
-        const dataUsageYesterday = bytesTransferredByUserId[key.keyId] || 0;
+        skip += limit;
+      } while (listKey.length > 0);
 
-        if (counterMigrate > 0) {
+      console.log('finnish cron data usage');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  private async _handleCoreGetDataUsage(listKey: any) {
+    for (const key of listKey) {
+      const outlineVpn = new OutlineVPN({
+        apiUrl: key.serverId.apiUrl,
+        fingerprint: key.serverId.fingerPrint,
+      });
+      const dataUsage = await outlineVpn.getDataUsage();
+      const bytesTransferredByUserId = dataUsage.bytesTransferredByUserId;
+      const arrayDataUsage = key?.arrayDataUsage || [];
+      let counterMigrate = key?.counterMigrate || 0;
+      const dataUsageYesterday = bytesTransferredByUserId[key.keyId] || 0;
+      if (counterMigrate > 0) {
+        const dataAdd =
+          Number(dataUsageYesterday) - Number(key.dataUsageYesterday) > 0
+            ? Number(dataUsageYesterday) - Number(key.dataUsageYesterday)
+            : 0;
+        if (arrayDataUsage?.length < CYCLE_PLAN) {
+          arrayDataUsage.push(dataAdd);
+        } else {
+          arrayDataUsage.push(dataAdd);
+          arrayDataUsage.shift();
+        }
+        counterMigrate = counterMigrate - 1;
+      } else {
+        if (arrayDataUsage?.length < CYCLE_PLAN) {
           const dataAdd =
             Number(dataUsageYesterday) - Number(key.dataUsageYesterday) > 0
               ? Number(dataUsageYesterday) - Number(key.dataUsageYesterday)
               : 0;
-          if (arrayDataUsage?.length < CYCLE_PLAN) {
-            arrayDataUsage.push(dataAdd);
-          } else {
-            arrayDataUsage.push(dataAdd);
-            arrayDataUsage.shift();
-          }
-          counterMigrate = counterMigrate - 1;
+          arrayDataUsage.push(dataAdd);
         } else {
-          if (arrayDataUsage?.length < CYCLE_PLAN) {
-            const dataAdd =
-              Number(dataUsageYesterday) - Number(key.dataUsageYesterday) > 0
-                ? Number(dataUsageYesterday) - Number(key.dataUsageYesterday)
-                : 0;
-
-            arrayDataUsage.push(dataAdd);
-          } else {
-            const dataAdd =
-              Number(dataUsageYesterday) -
+          const dataAdd =
+            Number(dataUsageYesterday) -
+              Number(key.dataUsageYesterday) +
+              Number(arrayDataUsage[0]) >
+            0
+              ? Number(dataUsageYesterday) -
                 Number(key.dataUsageYesterday) +
-                Number(arrayDataUsage[0]) >
-              0
-                ? Number(dataUsageYesterday) -
-                  Number(key.dataUsageYesterday) +
-                  Number(arrayDataUsage[0])
-                : 0;
-            arrayDataUsage.push(dataAdd);
-            arrayDataUsage.shift();
-          }
-        }
-
-        const totalDataUsage =
-          key?.arrayDataUsage?.reduce((a, b) => a + b, 0) || 0;
-
-        await this.keyModal.findByIdAndUpdate(key._id, {
-          dataUsageYesterday,
-          arrayDataUsage: arrayDataUsage?.filter(
-            (item) => item !== null && item !== undefined,
-          ),
-          dataUsage: totalDataUsage,
-          counterMigrate,
-        });
-
-        if (totalDataUsage > key.dataExpand) {
-          await this.keyService.disable(key._id);
-        } else {
-          await this.keyService.enable(key._id);
+                Number(arrayDataUsage[0])
+              : 0;
+          arrayDataUsage.push(dataAdd);
+          arrayDataUsage.shift();
         }
       }
-      console.log('finnish cron data usage');
-    } catch (error) {
-      throw error;
+      const totalDataUsage =
+        key?.arrayDataUsage?.reduce((a, b) => a + b, 0) || 0;
+      await this.keyModal.findByIdAndUpdate(key._id, {
+        dataUsageYesterday,
+        arrayDataUsage: arrayDataUsage?.filter(
+          (item) => item !== null && item !== undefined,
+        ),
+        dataUsage: totalDataUsage,
+        counterMigrate,
+      });
+      if (totalDataUsage > key.dataExpand) {
+        await this.keyService.disable(key._id);
+      } else {
+        await this.keyService.enable(key._id);
+      }
     }
   }
 }

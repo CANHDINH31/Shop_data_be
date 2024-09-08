@@ -589,6 +589,13 @@ export class KeysService {
 
       await outlineVpn.renameUser(key?.keyId, renameKeyDto.name);
 
+      await this.gistModal.findOneAndUpdate(
+        { keyId: key._id },
+        {
+          extension: renameKeyDto.name,
+        },
+      );
+
       const data = await this.keyModal.findByIdAndUpdate(
         id,
         { name: renameKeyDto.name },
@@ -597,7 +604,7 @@ export class KeysService {
 
       return {
         status: HttpStatus.CREATED,
-        message: 'Thêm mới thành công',
+        message: 'Cập nhật tên thành công',
         data,
       };
     } catch (error) {
