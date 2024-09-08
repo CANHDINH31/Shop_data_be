@@ -242,13 +242,27 @@ export class KeysService {
         };
       }
 
-      const data = await this.keyModal
+      const data: any = await this.keyModal
         .find(query)
         .populate('userId')
         .populate('serverId')
         .populate('awsId')
         .skip(skip)
         .limit(take);
+
+      const listResult = [];
+      for (const d of data) {
+        const outlineVpn = new OutlineVPN({
+          apiUrl: d?.serverId?.apiUrl,
+          fingerprint: d?.serverId?.fingerPrint,
+        });
+
+        const realtimeDataUsage = await this._getDataUsage(
+          outlineVpn,
+          d?.keyId,
+        );
+        listResult.push({ ...d.toObject(), realtimeDataUsage });
+      }
 
       const totalItems = await this.keyModal.find(query).count();
 
@@ -259,10 +273,19 @@ export class KeysService {
         totalPage,
         itemsPerPage: Number(take),
         totalItems,
-        data,
+        data: listResult,
       };
     } catch (error) {
       throw error;
+    }
+  }
+
+  async _getDataUsage(outlineVpn: OutlineVPN, keyId: string) {
+    try {
+      return await outlineVpn.getDataUserUsage(keyId);
+    } catch (error) {
+      console.log(error, ' erorr');
+      return 0;
     }
   }
 
