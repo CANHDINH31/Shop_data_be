@@ -413,7 +413,7 @@ export class ServersService {
     }
   }
 
-  async remove(id: string) {
+  async remove(id: string, req: any) {
     try {
       const listKey: any = await this.keyModal
         .find({ serverId: id, status: 1 })
@@ -423,7 +423,9 @@ export class ServersService {
       const server = await this.serverModal.findById(id);
       const serverName = server.name + '-' + server.hostnameForAccessKeys;
 
-      await this.kumaService.remove({ name: serverName });
+      if (req.query.isDeleteKuma == 1) {
+        await this.kumaService.remove({ name: serverName });
+      }
 
       await this.serverModal.findByIdAndUpdate(id, { status: 0 });
 

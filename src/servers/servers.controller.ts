@@ -109,8 +109,8 @@ export class ServersController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.serversService.remove(id);
+  remove(@Param('id') id: string, @Req() req) {
+    return this.serversService.remove(id, req);
   }
 
   @Get('/cron')
