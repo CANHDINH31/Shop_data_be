@@ -11,10 +11,16 @@ import {
 } from '@nestjs/common';
 import { GistsService } from './gists.service';
 import { CreateGistDto } from './dto/create-gist.dto';
+import { BackUpGistDto } from './dto/back-gist.dto';
 
 @Controller('gists')
 export class GistsController {
   constructor(private readonly gistsService: GistsService) {}
+
+  @Post('/back-up')
+  backup(@Body() backUpGistDto: BackUpGistDto) {
+    return this.gistsService.backUp(backUpGistDto);
+  }
 
   @Post()
   create(@Body() createGistDto: CreateGistDto) {

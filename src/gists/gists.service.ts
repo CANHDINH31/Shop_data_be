@@ -18,6 +18,7 @@ import { Collab } from 'src/schemas/collabs.schema';
 import { generateRandomString } from 'src/utils';
 import * as AWS from 'aws-sdk';
 import { Aws } from 'src/schemas/awses.schema';
+import { BackUpGistDto } from './dto/back-gist.dto';
 
 @Injectable()
 export class GistsService {
@@ -407,169 +408,129 @@ export class GistsService {
     }
   }
 
-  async backUp(backUpDto: any) {
+  async backUp(backUpGistDto: BackUpGistDto) {
     try {
-      const startTime = moment('2024-08-15 00:00').format('YYYY-MM-DD hh:mm');
-      const endTime = moment('2024-08-16 15:00').format('YYYY-MM-DD hh:mm');
+      const keyBU = await this.keyModal.findById(backUpGistDto.keyId);
+      const aws = await this.awsModal.findById(keyBU.awsId);
+      const gist = await this.gistModal.findOne({ keyId: keyBU._id });
 
-      const startTimeDate = new Date(startTime);
-      const endTimeDate = new Date(endTime);
+      const fileName = aws?.fileName?.split('/').pop();
+      const listServer = await this.serverModal
+        .find({ status: 1 })
+        .select([
+          '_id',
+          'hostnameForAccessKeys',
+          'portForNewAccessKeys',
+          'totalBandWidth',
+        ]);
 
-      const keyBU = await this.keyModal.aggregate([
-        {
-          $match: {
-            status: 0,
-            updatedAt: {
-              $gte: startTimeDate,
-              $lte: endTimeDate,
-            },
-          },
-        },
-      ]);
-
-      const gist = await this.gistModal.aggregate([
-        {
-          $match: {
-            status: 0,
-            updatedAt: {
-              $gte: startTimeDate,
-              $lte: endTimeDate,
-            },
-          },
-        },
-      ]);
-
-      const aws = await this.awsModal.aggregate([
-        {
-          $match: {
-            status: 0,
-            updatedAt: {
-              $gte: startTimeDate,
-              $lte: endTimeDate,
-            },
-          },
-        },
-      ]);
-
-      for (let i = 120; i < 130; i++) {
-        const fileName = aws?.[i]?.fileName?.split('/').pop();
-        const listServer = await this.serverModal
-          .find({ status: 1 })
-          .select([
-            '_id',
-            'hostnameForAccessKeys',
-            'portForNewAccessKeys',
-            'totalBandWidth',
-          ]);
-
-        if (listServer?.length < 1) {
-          throw new BadRequestException({
-            message: 'Hiện chưa có server nào hoạt động. Vui lòng quay lại sau',
-          });
-        }
-
-        const keyCountByServerId = [];
-        for (const server of listServer) {
-          const dataLimit = await this.keyModal.aggregate([
-            {
-              $match: {
-                serverId: new mongoose.Types.ObjectId(server._id),
-                status: 1,
-              },
-            },
-            {
-              $group: {
-                _id: server._id,
-                dataLimit: { $sum: '$dataExpand' },
-              },
-            },
-          ]);
-
-          keyCountByServerId.push({
-            serverId: server._id,
-            dataLimit: dataLimit?.[0]?.dataLimit || 0,
-            serverIp: server.hostnameForAccessKeys,
-            serverPort: server.portForNewAccessKeys,
-            totalBandWidth: server.totalBandWidth,
-          });
-        }
-
-        // Sắp xếp danh sách keyCountByServerId theo số lượng key tăng dần
-        const sortedKeyCountByServerId = keyCountByServerId.sort(
-          (a, b) =>
-            Number(a.dataLimit) / Number(a.totalBandWidth) -
-            Number(b.dataLimit) / Number(b.totalBandWidth),
-        );
-
-        // Lấy serverId có ít key nhất
-        const leastKeyServerId = sortedKeyCountByServerId[0].serverId;
-        const serverMongo = await this.serverModal.findById(leastKeyServerId);
-        const outlineVpn = new OutlineVPN({
-          apiUrl: serverMongo.apiUrl,
-          fingerprint: serverMongo.fingerPrint,
-        });
-
-        // Tạo user trên outlineVpn
-        const userVpn = await outlineVpn.createUser();
-        const { id, ...rest } = userVpn;
-        await outlineVpn.addDataLimit(id, keyBU?.[i]?.dataExpand);
-
-        await outlineVpn.renameUser(id, keyBU?.[i]?.name);
-
-        // Tạo key trên aws
-        const keyAws = await this.S3.upload({
-          Bucket: this.configService.get('S3_BUCKET'),
-          Key: fileName,
-          Body: JSON.stringify({
-            server: sortedKeyCountByServerId[0].serverIp,
-            server_port: sortedKeyCountByServerId[0].serverPort,
-            password: rest.password,
-            method: rest.method,
-          }),
-          ContentType: 'application/json',
-        }).promise();
-
-        // Tạo keyaws mongo
-        const keyAwsMongo = await this.awsModal.create({
-          awsId: keyAws.Key,
-          fileName: keyAws.Location,
-        });
-
-        // Tạo key Mongo
-        const key = await this.keyModal.create({
-          ...rest,
-          keyId: id,
-          awsId: keyAwsMongo._id,
-          serverId: leastKeyServerId,
-          name: keyBU?.[i]?.name,
-          enable: keyBU?.[i]?.enable,
-          enableByAdmin: keyBU?.[i]?.enableByAdmin,
-          dataLimit: keyBU?.[i]?.dataLimit,
-          dataUsageYesterday: keyBU?.[i]?.dataUsageYesterday,
-          dataUsage: keyBU?.[i]?.dataUsage,
-          arrayDataUsage: keyBU?.[i]?.arrayDataUsage,
-          dataExpand: keyBU?.[i]?.dataExpand,
-          userId: keyBU?.[i]?.userId,
-          account: keyBU?.[i]?.account,
-          startDate: keyBU?.[i]?.startDate,
-          endDate: keyBU?.[i]?.endDate,
-          createDate: keyBU?.[i]?.createDate,
-          migrateDate: keyBU?.[i]?.migrateDate,
-          counterMigrate: keyBU?.[i]?.counterMigrate,
-        });
-
-        // // Tạo gist Mongo
-        await this.gistModal.create({
-          userId: gist?.[i]?.userId,
-          planId: gist?.[i]?.planId,
-          extension: gist?.[i]?.extension,
-          fileName: fileName,
-          keyId: key._id,
-          code: gist?.[i]?.code,
-          createDate: gist?.[i]?.createDate,
+      if (listServer?.length < 1) {
+        throw new BadRequestException({
+          message: 'Hiện chưa có server nào hoạt động. Vui lòng quay lại sau',
         });
       }
-      return aws?.length;
+
+      const keyCountByServerId = [];
+      for (const server of listServer) {
+        const dataLimit = await this.keyModal.aggregate([
+          {
+            $match: {
+              serverId: new mongoose.Types.ObjectId(server._id),
+              status: 1,
+            },
+          },
+          {
+            $group: {
+              _id: server._id,
+              dataLimit: { $sum: '$dataExpand' },
+            },
+          },
+        ]);
+
+        keyCountByServerId.push({
+          serverId: server._id,
+          dataLimit: dataLimit?.[0]?.dataLimit || 0,
+          serverIp: server.hostnameForAccessKeys,
+          serverPort: server.portForNewAccessKeys,
+          totalBandWidth: server.totalBandWidth,
+        });
+      }
+
+      // Sắp xếp danh sách keyCountByServerId theo số lượng key tăng dần
+      const sortedKeyCountByServerId = keyCountByServerId.sort(
+        (a, b) =>
+          Number(a.dataLimit) / Number(a.totalBandWidth) -
+          Number(b.dataLimit) / Number(b.totalBandWidth),
+      );
+
+      // Lấy serverId có ít key nhất
+      const leastKeyServerId = sortedKeyCountByServerId[0].serverId;
+      const serverMongo = await this.serverModal.findById(leastKeyServerId);
+      const outlineVpn = new OutlineVPN({
+        apiUrl: serverMongo.apiUrl,
+        fingerprint: serverMongo.fingerPrint,
+      });
+
+      // Tạo user trên outlineVpn
+      const userVpn = await outlineVpn.createUser();
+      const { id, ...rest } = userVpn;
+      await outlineVpn.addDataLimit(id, keyBU?.dataExpand);
+
+      await outlineVpn.renameUser(id, keyBU?.name);
+
+      // Tạo key trên aws
+      const keyAws = await this.S3.upload({
+        Bucket: this.configService.get('S3_BUCKET'),
+        Key: fileName,
+        Body: JSON.stringify({
+          server: sortedKeyCountByServerId[0].serverIp,
+          server_port: sortedKeyCountByServerId[0].serverPort,
+          password: rest.password,
+          method: rest.method,
+        }),
+        ContentType: 'application/json',
+      }).promise();
+
+      // Tạo keyaws mongo
+      const keyAwsMongo = await this.awsModal.create({
+        awsId: keyAws.Key,
+        fileName: keyAws.Location,
+      });
+
+      // Tạo key Mongo
+      const key = await this.keyModal.create({
+        ...rest,
+        keyId: id,
+        awsId: keyAwsMongo._id,
+        serverId: leastKeyServerId,
+        name: keyBU?.name,
+        enable: keyBU?.enable,
+        enableByAdmin: keyBU?.enableByAdmin,
+        dataLimit: keyBU?.dataLimit,
+        dataUsageYesterday: keyBU?.dataUsageYesterday,
+        dataUsage: keyBU?.dataUsage,
+        arrayDataUsage: keyBU?.arrayDataUsage,
+        dataExpand: keyBU?.dataExpand,
+        userId: keyBU?.userId,
+        account: keyBU?.account,
+        startDate: keyBU?.startDate,
+        endDate: keyBU?.endDate,
+        createDate: keyBU?.createDate,
+        migrateDate: keyBU?.migrateDate,
+        counterMigrate: keyBU?.counterMigrate,
+      });
+
+      // // Tạo gist Mongo
+      await this.gistModal.create({
+        userId: gist?.userId,
+        planId: gist?.planId,
+        extension: gist?.extension,
+        fileName: fileName,
+        keyId: key._id,
+        code: gist?.code,
+        createDate: gist?.createDate,
+      });
+      return 'success';
     } catch (error) {
       console.log(error, 'error');
     }
