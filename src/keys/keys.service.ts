@@ -743,24 +743,36 @@ export class KeysService {
   async checkExpiredKey() {
     try {
       console.log('start cron check expire key');
-      const listKey = (await this.keyModal
-        .find({ status: 1 })
-        .populate('serverId')) as any[];
+
+      let skip = 0;
+      const limit = 10;
+      let listKey: any = [];
       const today = moment();
-      const expiredKeys = listKey.filter((key) => {
-        const endDate = moment(key.endDate);
-        return endDate.isBefore(today);
-      });
-      for (const key of expiredKeys) {
-        await this.remove(key._id);
-      }
+      do {
+        listKey = (await this.keyModal
+          .find({ status: 1 })
+          .skip(skip)
+          .limit(limit)
+          .populate('serverId')) as any[];
+
+        if (listKey.length > 0) {
+          const expiredKeys = listKey.filter((key) => {
+            const endDate = moment(key.endDate);
+            return endDate.isBefore(today);
+          });
+          for (const key of expiredKeys) {
+            await this.remove(key._id);
+          }
+        }
+        skip += limit;
+      } while (listKey.length > 0);
       console.log('finnish cron check expire key');
     } catch (error) {
       throw error;
     }
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_2AM)
+  @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async checkExpireDataExpandKey() {
     try {
       let skip = 0;

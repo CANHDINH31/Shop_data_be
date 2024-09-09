@@ -75,7 +75,7 @@ export class KeysController {
 
   @Get('/cron')
   cron() {
-    return this.keysService.checkExpireDataExpandKey();
+    return this.keysService.checkExpiredKey();
   }
 
   @Get(':id')
