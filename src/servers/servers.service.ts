@@ -213,6 +213,11 @@ export class ServersService {
         .sort({ createdAt: -1 });
 
       for (const server of listServer) {
+        const numberKey = await this.keyModal.countDocuments({
+          serverId: server._id,
+          status: { $in: [1, 2] },
+        });
+
         if (server.status === 1) {
           const outlineVpn = new OutlineVPN({
             apiUrl: server.apiUrl,
@@ -247,13 +252,13 @@ export class ServersService {
               { new: true },
             );
 
-            listResult.push(r);
+            listResult.push({ ...r.toObject(), numberKey });
           } catch (error) {
-            listResult.push(server);
+            listResult.push({ ...server.toObject(), numberKey });
             continue;
           }
         } else {
-          listResult.push(server);
+          listResult.push({ ...server.toObject(), numberKey });
         }
       }
 
