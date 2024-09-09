@@ -250,6 +250,95 @@ export class KeysService {
         .skip(skip)
         .limit(take);
 
+      const totalItems = await this.keyModal.find(query).count();
+
+      const totalPage = Math.ceil(totalItems / Number(pageSize));
+
+      return {
+        currentPage: Number(page),
+        totalPage,
+        itemsPerPage: Number(take),
+        totalItems,
+        data,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findAllWithOutlineDataUsage(req: any) {
+    try {
+      // type: 1 - expire today
+      // type: 2 - buy today
+      // type: 3 - over banwidth today
+      const startToday = new Date();
+      startToday.setHours(0, 0, 0, 0);
+      const endToday = new Date();
+      endToday.setHours(23, 59, 59, 999);
+
+      let query = {};
+
+      const pageSize = req.query.pageSize || 10;
+      const page = req.query.page || 1;
+      const skip = Number(pageSize) * (page - 1);
+      const take = Number(pageSize);
+
+      query = {
+        ...(req?.query?.serverId && {
+          serverId: req.query.serverId,
+        }),
+
+        ...(req?.query?.account && {
+          account: {
+            $regex: req.query.account,
+            $options: 'i',
+          },
+        }),
+
+        ...(req?.query?.name && {
+          name: { $regex: req.query.name, $options: 'i' },
+        }),
+
+        ...(req?.query?.status && {
+          status: req.query.status,
+        }),
+      };
+
+      if (req.query.type === '1') {
+        query = {
+          ...query,
+          endDate: {
+            $gte: startToday,
+            $lte: endToday,
+          },
+        };
+      }
+
+      if (req.query.type === '2') {
+        query = {
+          ...query,
+          createdAt: {
+            $gte: startToday,
+            $lte: endToday,
+          },
+        };
+      }
+
+      if (req.query.type === '3') {
+        query = {
+          ...query,
+          $expr: { $gt: ['$dataUsage', '$dataLimit'] },
+        };
+      }
+
+      const data: any = await this.keyModal
+        .find(query)
+        .populate('userId')
+        .populate('serverId')
+        .populate('awsId')
+        .skip(skip)
+        .limit(take);
+
       const listResult = [];
       for (const d of data) {
         const outlineVpn = new OutlineVPN({

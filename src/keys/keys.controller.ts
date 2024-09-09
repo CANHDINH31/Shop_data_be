@@ -40,6 +40,11 @@ export class KeysController {
     return this.keysService.todayInfo();
   }
 
+  @Get('/outline-data-usage')
+  findAllWithOutlineDataUsage(@Req() req) {
+    return this.keysService.findAllWithOutlineDataUsage(req);
+  }
+
   @Get()
   findAll(@Req() req) {
     return this.keysService.findAll(req);
