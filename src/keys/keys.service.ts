@@ -744,7 +744,7 @@ export class KeysService {
     try {
       console.log('start cron check expire key');
       const listKey = (await this.keyModal
-        .find({ status: { $in: [1, 2] } })
+        .find({ status: 1 })
         .populate('serverId')) as any[];
       const today = moment();
       const expiredKeys = listKey.filter((key) => {
@@ -763,18 +763,28 @@ export class KeysService {
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
   async checkExpireDataExpandKey() {
     try {
-      const listKey = (await this.keyModal
-        .find({ status: { $in: [1, 2] } })
-        .populate('serverId')) as any[];
+      let skip = 0;
+      const limit = 10;
+      let listKey: any = [];
       const today = moment();
-      const expiredKeys = listKey.filter((key) => {
-        const endExpandDate = moment(key.endExpandDate);
-        return endExpandDate.isBefore(today);
-      });
+      do {
+        listKey = await this.keyModal
+          .find({ status: 1 })
+          .skip(skip)
+          .limit(limit)
+          .populate('serverId');
+        if (listKey.length > 0) {
+          const expiredKeys = listKey.filter((key) => {
+            const endExpandDate = moment(key.endExpandDate);
+            return endExpandDate.isBefore(today);
+          });
+          for (const key of expiredKeys) {
+            await this.rollBackDataExpand(key);
+          }
+        }
 
-      for (const key of expiredKeys) {
-        await this.rollBackDataExpand(key);
-      }
+        skip += limit;
+      } while (listKey.length > 0);
     } catch (error) {}
   }
 

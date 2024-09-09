@@ -481,8 +481,7 @@ export class ServersService {
           .populate('serverId');
 
         if (listKey.length > 0) {
-          console.log(listKey, skip);
-          // await this._handleCoreGetDataUsage(listKey);
+          await this._handleCoreGetDataUsage(listKey);
         }
 
         skip += limit;
