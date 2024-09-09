@@ -181,7 +181,7 @@ export class ServersService {
       for (const server of listServer) {
         const numberKey = await this.keyModal.countDocuments({
           serverId: server._id,
-          status: { $in: [1, 2] },
+          status: 1,
         });
         listResult.push({ ...server.toObject(), numberKey });
       }
@@ -215,7 +215,7 @@ export class ServersService {
       for (const server of listServer) {
         const numberKey = await this.keyModal.countDocuments({
           serverId: server._id,
-          status: { $in: [1, 2] },
+          status: 1,
         });
 
         if (server.status === 1) {
