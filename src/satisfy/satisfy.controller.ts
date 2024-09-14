@@ -42,6 +42,11 @@ export class SatisfyController {
     return this.satisfyService.fullDataToday();
   }
 
+  @Get('/buy-plan-today')
+  buyPlanToday() {
+    return this.satisfyService.buyPlanToday();
+  }
+
   @Get('/new-cash-today')
   newCashToday() {
     return this.satisfyService.newCashToday();

@@ -246,6 +246,65 @@ export class SatisfyService {
     }
   }
 
+  async buyPlanToday() {
+    try {
+      try {
+        const yesterday = moment()
+          .subtract(1, 'days')
+          .format('YYYY-MM-DD hh:mm');
+        const tomorrow = moment().add(1, 'days').format('YYYY-MM-DD hh:mm');
+
+        const transactions = await this.transactionModal.aggregate([
+          {
+            $match: {
+              createdAt: {
+                $gt: new Date(yesterday),
+                $lt: new Date(tomorrow),
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'userId',
+              foreignField: '_id',
+              as: 'user',
+            },
+          },
+          {
+            $lookup: {
+              from: 'plans',
+              localField: 'planId',
+              foreignField: '_id',
+              as: 'plan',
+            },
+          },
+          {
+            $lookup: {
+              from: 'gists',
+              localField: 'gistId',
+              foreignField: '_id',
+              as: 'gist',
+            },
+          },
+          {
+            $lookup: {
+              from: 'extendPlans',
+              localField: 'extendPlanId',
+              foreignField: '_id',
+              as: 'extendPlan',
+            },
+          },
+        ]);
+        return transactions;
+      } catch (error) {
+        throw error;
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async fullDataToday() {
     try {
       try {
