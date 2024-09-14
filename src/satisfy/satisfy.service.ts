@@ -246,6 +246,26 @@ export class SatisfyService {
     }
   }
 
+  async fullDataToday() {
+    try {
+      try {
+        const key = await this.keyModal.aggregate([
+          {
+            $match: {
+              status: 1,
+              $expr: { $gt: ['$dataUsage', '$dataLimit'] },
+            },
+          },
+        ]);
+        return key;
+      } catch (error) {
+        throw error;
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async newCashToday() {
     try {
       try {

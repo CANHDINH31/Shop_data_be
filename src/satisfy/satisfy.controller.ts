@@ -37,6 +37,11 @@ export class SatisfyController {
     return this.satisfyService.newUserToday();
   }
 
+  @Get('/full-data-today')
+  fullDataToday() {
+    return this.satisfyService.fullDataToday();
+  }
+
   @Get('/new-cash-today')
   newCashToday() {
     return this.satisfyService.newCashToday();
