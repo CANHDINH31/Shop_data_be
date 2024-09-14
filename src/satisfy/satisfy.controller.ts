@@ -6,6 +6,7 @@ import { TransactionExtendPlanDto } from './dto/transaction-extend-plan.dto';
 import { GetByMonthDto } from './dto/getByMonth.dto';
 import { GetByYearDto } from './dto/getByYear.dto';
 import { GetTopUserByMonthDto } from './dto/GetTopUserByMonth.dto';
+import { ExpiredKeyDto } from './dto/expiredKey.dto';
 
 @Controller('satisfy')
 export class SatisfyController {
@@ -29,6 +30,21 @@ export class SatisfyController {
   @Get('/get-top-user')
   getTopUser() {
     return this.satisfyService.getTopUser();
+  }
+
+  @Get('/new-user-today')
+  newUserToday() {
+    return this.satisfyService.newUserToday();
+  }
+
+  @Get('/new-cash-today')
+  newCashToday() {
+    return this.satisfyService.newCashToday();
+  }
+
+  @Post('/expried-key')
+  expiredKey(@Body() expiredKeyDto: ExpiredKeyDto) {
+    return this.satisfyService.expiredKey(expiredKeyDto);
   }
 
   @Post('/get-top-user-by-month')

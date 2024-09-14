@@ -14,6 +14,7 @@ import { GetByYearDto } from './dto/getByYear.dto';
 import { Server } from 'src/schemas/servers.schema';
 import { Key } from 'src/schemas/keys.schema';
 import { GetTopUserByMonthDto } from './dto/GetTopUserByMonth.dto';
+import { ExpiredKeyDto } from './dto/expiredKey.dto';
 
 @Injectable()
 export class SatisfyService {
@@ -93,6 +94,56 @@ export class SatisfyService {
     }
   }
 
+  async expiredKey(expiredKeyDto: ExpiredKeyDto) {
+    try {
+      const yesterday = moment(expiredKeyDto.day)
+        .subtract(1, 'days')
+        .format('YYYY-MM-DD hh:mm');
+      const tomorrow = moment(expiredKeyDto.day)
+        .add(1, 'days')
+        .format('YYYY-MM-DD hh:mm');
+
+      const key = await this.keyModal.aggregate([
+        {
+          $match: {
+            status: 1,
+            endDate: {
+              $gt: new Date(yesterday),
+              $lt: new Date(tomorrow),
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: 'servers',
+            localField: 'serverId',
+            foreignField: '_id',
+            as: 'server',
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'user',
+          },
+        },
+        {
+          $lookup: {
+            from: 'aws',
+            localField: 'awsId',
+            foreignField: '_id',
+            as: 'aws',
+          },
+        },
+      ]);
+      return key;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async getTopUserByMonth(getTopUserByMonthDto: GetTopUserByMonthDto) {
     try {
       const startOfMonth = moment(getTopUserByMonthDto.month)
@@ -163,6 +214,69 @@ export class SatisfyService {
       ]);
 
       return cash;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async newUserToday() {
+    try {
+      try {
+        const yesterday = moment()
+          .subtract(1, 'days')
+          .format('YYYY-MM-DD hh:mm');
+        const tomorrow = moment().add(1, 'days').format('YYYY-MM-DD hh:mm');
+
+        const users = await this.userModal.aggregate([
+          {
+            $match: {
+              createdAt: {
+                $gt: new Date(yesterday),
+                $lt: new Date(tomorrow),
+              },
+            },
+          },
+        ]);
+        return users;
+      } catch (error) {
+        throw error;
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async newCashToday() {
+    try {
+      try {
+        const yesterday = moment()
+          .subtract(1, 'days')
+          .format('YYYY-MM-DD hh:mm');
+        const tomorrow = moment().add(1, 'days').format('YYYY-MM-DD hh:mm');
+
+        const cashs = await this.cashModal.aggregate([
+          {
+            $match: {
+              status: 1,
+              createdAt: {
+                $gt: new Date(yesterday),
+                $lt: new Date(tomorrow),
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'userId',
+              foreignField: '_id',
+              as: 'user',
+            },
+          },
+        ]);
+        return cashs;
+      } catch (error) {
+        throw error;
+      }
     } catch (error) {
       throw error;
     }
