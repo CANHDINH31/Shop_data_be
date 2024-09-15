@@ -14,6 +14,8 @@ import { Collab, CollabSchema } from 'src/schemas/collabs.schema';
 import { AWSSchema, Aws } from 'src/schemas/awses.schema';
 import { Server, ServerSchema } from 'src/schemas/servers.schema';
 import { Test, TestSchema } from 'src/schemas/tests.schema';
+import { BullModule } from '@nestjs/bullmq';
+import { ExpriedDataExpandKey, ExpriedKeyConsumer } from './keys.consumer';
 
 @Module({
   imports: [
@@ -28,8 +30,14 @@ import { Test, TestSchema } from 'src/schemas/tests.schema';
     ]),
     MongooseModule.forFeature([{ name: Aws.name, schema: AWSSchema }]),
     MongooseModule.forFeature([{ name: Collab.name, schema: CollabSchema }]),
+    BullModule.registerQueue({
+      name: 'expried-key',
+    }),
+    BullModule.registerQueue({
+      name: 'expried-data-expand-key',
+    }),
   ],
   controllers: [KeysController],
-  providers: [KeysService],
+  providers: [KeysService, ExpriedKeyConsumer, ExpriedDataExpandKey],
 })
 export class KeysModule {}

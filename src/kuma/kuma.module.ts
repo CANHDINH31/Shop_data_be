@@ -19,6 +19,7 @@ import {
   TransactionSchema,
 } from 'src/schemas/transactions.schema';
 import { Collab, CollabSchema } from 'src/schemas/collabs.schema';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
@@ -36,6 +37,12 @@ import { Collab, CollabSchema } from 'src/schemas/collabs.schema';
       { name: Transaction.name, schema: TransactionSchema },
     ]),
     MongooseModule.forFeature([{ name: Collab.name, schema: CollabSchema }]),
+    BullModule.registerQueue({
+      name: 'expried-key',
+    }),
+    BullModule.registerQueue({
+      name: 'expried-data-expand-key',
+    }),
   ],
   controllers: [KumaController],
   providers: [KumaService, KeysService],

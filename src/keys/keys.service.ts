@@ -23,6 +23,8 @@ import { RenameKeyDto } from './dto/rename-key.dto';
 import { MultiMigrateKeyDto } from './dto/multi-migrate-key.dto';
 import { CYCLE_PLAN } from 'src/utils/constant';
 import { EndDateKeyDto } from './dto/end-date-key.dto';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class KeysService {
@@ -38,6 +40,9 @@ export class KeysService {
     @InjectModel(Transaction.name) private transactionModal: Model<Transaction>,
     @InjectModel(Collab.name) private collabModal: Model<Collab>,
     @InjectModel(Aws.name) private awsModal: Model<Aws>,
+    @InjectQueue('expried-key') private expriedKeyQueue: Queue,
+    @InjectQueue('expried-data-expand-key')
+    private expriedDataExpandQueue: Queue,
     private configService: ConfigService,
   ) {
     this.S3 = new AWS.S3({
@@ -747,7 +752,7 @@ export class KeysService {
       let skip = 0;
       const limit = 10;
       let listKey: any = [];
-      const today = moment();
+
       do {
         listKey = (await this.keyModal
           .find({ status: 1 })
@@ -756,19 +761,24 @@ export class KeysService {
           .populate('serverId')) as any[];
 
         if (listKey.length > 0) {
-          const expiredKeys = listKey.filter((key) => {
-            const endDate = moment(key.endDate);
-            return endDate.isBefore(today);
-          });
-          for (const key of expiredKeys) {
-            await this.remove(key._id);
-          }
+          await this.expriedKeyQueue.add('expried-key', { data: listKey });
         }
         skip += limit;
       } while (listKey.length > 0);
       console.log('finnish cron check expire key');
     } catch (error) {
       throw error;
+    }
+  }
+
+  async _handleExpriedKeyCore(listKey: any) {
+    const today = moment();
+    const expiredKeys = listKey.filter((key) => {
+      const endDate = moment(key.endDate);
+      return endDate.isBefore(today);
+    });
+    for (const key of expiredKeys) {
+      await this.remove(key._id);
     }
   }
 
@@ -786,13 +796,9 @@ export class KeysService {
           .limit(limit)
           .populate('serverId');
         if (listKey.length > 0) {
-          const expiredKeys = listKey.filter((key) => {
-            const endExpandDate = moment(key.endExpandDate);
-            return endExpandDate.isBefore(today);
+          await this.expriedDataExpandQueue.add('expried-data-expand-key', {
+            data: listKey,
           });
-          for (const key of expiredKeys) {
-            await this.rollBackDataExpand(key);
-          }
         }
 
         skip += limit;
@@ -817,6 +823,17 @@ export class KeysService {
       });
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  async _handleExpriedDataExpandKey(listKey: any) {
+    const today = moment();
+    const expiredKeys = listKey.filter((key) => {
+      const endExpandDate = moment(key.endExpandDate);
+      return endExpandDate.isBefore(today);
+    });
+    for (const key of expiredKeys) {
+      await this.rollBackDataExpand(key);
     }
   }
 }

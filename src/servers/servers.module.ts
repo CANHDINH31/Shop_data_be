@@ -42,6 +42,12 @@ import { DataUsageConsumer } from './servers.consumer';
     BullModule.registerQueue({
       name: 'data-usage',
     }),
+    BullModule.registerQueue({
+      name: 'expried-key',
+    }),
+    BullModule.registerQueue({
+      name: 'expried-data-expand-key',
+    }),
   ],
   controllers: [ServersController],
   providers: [ServersService, KeysService, KumaService, DataUsageConsumer],
