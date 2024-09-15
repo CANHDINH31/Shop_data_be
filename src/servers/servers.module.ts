@@ -20,6 +20,8 @@ import {
   SettingBandwidthSchema,
 } from 'src/schemas/settingBandwidths.schema';
 import { KumaService } from 'src/kuma/kuma.service';
+import { BullModule } from '@nestjs/bullmq';
+import { DataUsageConsumer } from './servers.consumer';
 
 @Module({
   imports: [
@@ -37,9 +39,12 @@ import { KumaService } from 'src/kuma/kuma.service';
       { name: Transaction.name, schema: TransactionSchema },
     ]),
     MongooseModule.forFeature([{ name: Collab.name, schema: CollabSchema }]),
+    BullModule.registerQueue({
+      name: 'data-usage',
+    }),
   ],
   controllers: [ServersController],
-  providers: [ServersService, KeysService, KumaService],
+  providers: [ServersService, KeysService, KumaService, DataUsageConsumer],
 })
 export class ServersModule {
   constructor(private readonly serversService: ServersService) {}

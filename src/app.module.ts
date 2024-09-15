@@ -29,6 +29,7 @@ import { KumaModule } from './kuma/kuma.module';
 import { ClouldsModule } from './cloulds/cloulds.module';
 import { ProvidersModule } from './providers/providers.module';
 import { CloudManagersModule } from './cloud-managers/cloud-managers.module';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
@@ -63,6 +64,17 @@ import { CloudManagersModule } from './cloud-managers/cloud-managers.module';
       }),
     }),
     ConfigModule.forRoot({ isGlobal: true }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        connection: {
+          host: configService.get('REDIS_HOST'),
+          port: configService.get('REDIS_PORT'),
+          password: configService.get('REDIS_PASSWORD'),
+        },
+      }),
+      inject: [ConfigService],
+    }),
     UsersModule,
     PlansModule,
     GistsModule,

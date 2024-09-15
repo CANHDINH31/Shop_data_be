@@ -22,6 +22,8 @@ import { CYCLE_PLAN } from 'src/utils/constant';
 import { KumaService } from 'src/kuma/kuma.service';
 import { UpdateStatusServerDto } from './dto/update-status-server.dto';
 import { UpdateCloudManagerDto } from './dto/update-cloud-manager.dto';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class ServersService {
@@ -34,6 +36,7 @@ export class ServersService {
     @InjectModel(Aws.name) private awsModal: Model<Aws>,
     @InjectModel(SettingBandwidth.name)
     private settingBandwidthModal: Model<SettingBandwidth>,
+    @InjectQueue('data-usage') private dataUsageQueue: Queue,
     private keyService: KeysService,
     private configService: ConfigService,
     private kumaService: KumaService,
@@ -481,7 +484,7 @@ export class ServersService {
           .populate('serverId');
 
         if (listKey.length > 0) {
-          await this._handleCoreGetDataUsage(listKey);
+          await this.dataUsageQueue.add('data-usage', { data: listKey });
         }
 
         skip += limit;
@@ -493,7 +496,7 @@ export class ServersService {
     }
   }
 
-  private async _handleCoreGetDataUsage(listKey: any) {
+  public async _handleCoreGetDataUsage(listKey: any) {
     for (const key of listKey) {
       const outlineVpn = new OutlineVPN({
         apiUrl: key.serverId.apiUrl,
