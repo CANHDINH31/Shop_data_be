@@ -61,6 +61,7 @@ export class KumaService {
       defaultViewport: null,
       ignoreHTTPSErrors: true,
       protocolTimeout: 60000,
+      timeout: 0,
       args: [
         '--disable-web-security',
         `--ignore-certificate-errors`,
@@ -78,10 +79,12 @@ export class KumaService {
   }
 
   private async _handleLogin(page: Page) {
+    await page.screenshot({ path: 'uploads/screenshot1.png' });
+
     // Handle Login
-    await page.goto(`${this.configService.get('KUMA_DOMAIN')}/dashboard`, {
-      timeout: 0,
-    });
+    await page.goto(`${this.configService.get('KUMA_DOMAIN')}/dashboard`);
+
+    await page.screenshot({ path: 'uploads/screenshot2.png' });
 
     // Input Username
     await page.waitForSelector('input[autocomplete="username"]');
@@ -90,12 +93,16 @@ export class KumaService {
       this.configService.get('KUMA_USERNAME'),
     );
 
+    await page.screenshot({ path: 'uploads/screenshot3.png' });
+
     // Input password
     await page.waitForSelector('input[autocomplete="current-password"]');
     await page.type(
       'input[autocomplete="current-password"]',
       this.configService.get('KUMA_PASSWORD'),
     );
+
+    await page.screenshot({ path: 'uploads/screenshot4.png' });
 
     // Button login
     await page.waitForSelector('[type="submit"]');
