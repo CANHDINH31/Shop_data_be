@@ -222,16 +222,16 @@ export class ServersService {
         });
 
         if (server.status === 1) {
-          const outlineVpn = new OutlineVPN({
-            apiUrl: server.apiUrl,
-            fingerprint: server.fingerPrint,
-          });
+          // const outlineVpn = new OutlineVPN({
+          //   apiUrl: server.apiUrl,
+          //   fingerprint: server.fingerPrint,
+          // });
 
           try {
-            // CALC DATASTRANFER
-            const data = await outlineVpn.getDataUsage();
-            const values = Object.values(data.bytesTransferredByUserId);
-            const dataTransfer = values.reduce((a, b) => a + b, 0);
+            // // CALC DATASTRANFER
+            // const data = await outlineVpn.getDataUsage();
+            // const values = Object.values(data.bytesTransferredByUserId);
+            // const dataTransfer = values.reduce((a, b) => a + b, 0);
 
             // CALC MaxUsage
             const maxUsage = await this.keyModal.aggregate([
@@ -249,7 +249,7 @@ export class ServersService {
             const r = await this.serverModal.findByIdAndUpdate(
               server._id,
               {
-                dataTransfer,
+                // dataTransfer,
                 maxUsage: maxUsage?.[0]?.maxUsage,
               },
               { new: true },
