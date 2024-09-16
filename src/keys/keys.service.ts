@@ -253,7 +253,8 @@ export class KeysService {
         .populate('serverId')
         .populate('awsId')
         .skip(skip)
-        .limit(take);
+        .limit(take)
+        .sort({ startDate: -1 });
 
       const totalItems = await this.keyModal.find(query).count();
 
