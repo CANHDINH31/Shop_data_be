@@ -79,7 +79,9 @@ export class KumaService {
 
   private async _handleLogin(page: Page) {
     // Handle Login
-    await page.goto(`${this.configService.get('KUMA_DOMAIN')}/dashboard`);
+    await page.goto(`${this.configService.get('KUMA_DOMAIN')}/dashboard`, {
+      timeout: 0,
+    });
 
     // Input Username
     await page.waitForSelector('input[autocomplete="username"]');
