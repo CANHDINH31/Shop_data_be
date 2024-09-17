@@ -206,7 +206,12 @@ export class KumaService {
       if (result && result.status === DOWN) {
         // { hostname: '139.59.108.224', status: 'Down' }
         // Update status down server
-        const downServer = await this.serverModal.findOneAndUpdate(
+        const downServer = await this.serverModal.findOne({
+          hostnameForAccessKeys: result.hostname,
+        });
+
+        if (downServer.status == 2) return;
+        await this.serverModal.findOneAndUpdate(
           {
             hostnameForAccessKeys: result.hostname,
           },

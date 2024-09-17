@@ -3,7 +3,7 @@
 /node_modules
 /data
 /docker
-
+/uploads
 
 # Logs
 logs
