@@ -20,6 +20,7 @@ import {
 } from 'src/schemas/transactions.schema';
 import { Collab, CollabSchema } from 'src/schemas/collabs.schema';
 import { BullModule } from '@nestjs/bullmq';
+import { KumaMonitorConsumer } from './kuma.consumer';
 
 @Module({
   imports: [
@@ -43,8 +44,11 @@ import { BullModule } from '@nestjs/bullmq';
     BullModule.registerQueue({
       name: 'expried-data-expand-key',
     }),
+    BullModule.registerQueue({
+      name: 'kuma-monitor',
+    }),
   ],
   controllers: [KumaController],
-  providers: [KumaService, KeysService],
+  providers: [KumaService, KeysService, KumaMonitorConsumer],
 })
 export class KumaModule {}

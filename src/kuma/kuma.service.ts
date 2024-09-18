@@ -9,6 +9,8 @@ import { Server } from 'src/schemas/servers.schema';
 import { Key } from 'src/schemas/keys.schema';
 import { Model } from 'mongoose';
 import { KeysService } from 'src/keys/keys.service';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
 type KumaBody = {
   hostname: string;
@@ -37,6 +39,7 @@ export class KumaService {
     private readonly keyService: KeysService,
     @InjectModel(Key.name) private keyModal: Model<Key>,
     @InjectModel(Server.name) private serverModal: Model<Server>,
+    @InjectQueue('kuma-monitor') private kumaMonitorQueue: Queue,
   ) {}
   private extractInfo(data: KumaBody) {
     const msgPattern = /^\[([cm][^\]]*)\] \[(🔴|✅) (Down|Up)\]/;
@@ -201,15 +204,24 @@ export class KumaService {
       };
 
       const result = this.extractInfo(kumaBody);
-      console.log(result, 'result');
+      await this.kumaMonitorQueue.add('kuma-monitor', {
+        data: result,
+      });
 
+      return 'This action adds a new kuma';
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async _handleMonitorCore(result: any) {
+    try {
       if (result && result.status === DOWN) {
         // { hostname: '139.59.108.224', status: 'Down' }
         // Update status down server
         const downServer = await this.serverModal.findOne({
           hostnameForAccessKeys: result.hostname,
         });
-
         if (downServer.status == 2) return;
         await this.serverModal.findOneAndUpdate(
           {
@@ -224,7 +236,6 @@ export class KumaService {
             serverId: downServer?._id?.toString(),
             status: 1,
           });
-
           for (const key of listKey) {
             await this.keyService.migrate({
               keyId: key._id?.toString(),
@@ -235,8 +246,6 @@ export class KumaService {
           console.log('not found maintain server');
         }
       }
-
-      return 'This action adds a new kuma';
     } catch (error) {
       console.log(error);
     }
