@@ -249,6 +249,10 @@ export class KumaService {
         },
       );
 
+      await this.serverModal.findByIdAndUpdate(removeKumaDto.id, {
+        monitorId: [],
+        isConnectKuma: 0,
+      });
       return 'remove monitoring successfully';
     } catch (error) {
       throw new Error(error);
