@@ -165,17 +165,14 @@ export class KumaService {
     formData.append('username', this.configService.get('KUMA_USERNAME'));
     formData.append('password', this.configService.get('KUMA_PASSWORD'));
     try {
-      // const res = await this.httpService.axiosRef.post(
-      //   this.configService.get('KUMA_DOMAIN') + '/login/access-token',
-      //   formData,
-      // );
+      const res = await this.httpService.axiosRef.post(
+        this.configService.get('KUMA_DOMAIN') + '/login/access-token',
+        formData,
+      );
 
-      // const token = res.data.access_token;
+      const token = res.data.access_token;
 
-      const token =
-        'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3Mjc0MjQyNzIsInN1YiI6ImV5SmhiR2NpT2lKSVV6STFOaUlzSW5SNWNDSTZJa3BYVkNKOS5leUoxYzJWeWJtRnRaU0k2SW1Ga2JXbHVJaXdpYUNJNkltWTNNVEF3T1dGaE9UVXhOV1pqTmpBMk5HRmxObVE0TnpreE1UUm1OVEl5SWl3aWFXRjBJam94TnpJMk56TXpNRGN5ZlEuTXliblk2cndvUTZwcWNOR0tYRVowTGs2T3l6aEExVWd2NW9HQTRLbjZaOCJ9.FpAHDnXDsmb9Z4jZjGkTGc5R94EtWjpWB00yYzLp_JY';
-
-      const payload = {
+      const payloadC = {
         type: 'port',
         name: `c-${createKumaDto.name}-${createKumaDto.hostname}`,
         interval: 30,
@@ -198,9 +195,31 @@ export class KumaService {
         mqttPassword: '',
       };
 
-      const monitorRes = await this.httpService.axiosRef.post(
+      const payloadP = {
+        type: 'ping',
+        name: `p-${createKumaDto.name}-${createKumaDto.hostname}`,
+        interval: 30,
+        retryInterval: 30,
+        resendInterval: 0,
+        maxretries: 6,
+        upsideDown: false,
+        url: 'https://',
+        expiryNotification: false,
+        ignoreTls: false,
+        maxredirects: 10,
+        accepted_statuscodes: ['200-299'],
+        method: 'GET',
+        authMethod: 'basic',
+        hostname: createKumaDto.hostname,
+        dns_resolve_server: '1.1.1.1',
+        dns_resolve_type: 'A',
+        mqttUsername: '',
+        mqttPassword: '',
+      };
+
+      const monitorResC = await this.httpService.axiosRef.post(
         this.configService.get('KUMA_DOMAIN') + '/monitors',
-        payload,
+        payloadC,
         {
           headers: {
             Accept: 'application/json',
@@ -210,8 +229,32 @@ export class KumaService {
         },
       );
 
-      return monitorRes;
+      const monitorResP = await this.httpService.axiosRef.post(
+        this.configService.get('KUMA_DOMAIN') + '/monitors',
+        payloadP,
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      await this.serverModal.findOneAndUpdate(
+        {
+          hostnameForAccessKeys: createKumaDto.hostname,
+          status: 1,
+        },
+        {
+          monitorId: [monitorResC.data.monitorID, monitorResP.data.monitorID],
+          isConnectKuma: 1,
+        },
+      );
+
+      return 'create kuma monitor successfully';
     } catch (err) {
+      console.log(err);
       throw err;
     }
   }

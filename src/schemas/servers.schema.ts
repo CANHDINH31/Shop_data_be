@@ -60,6 +60,9 @@ export class Server {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'CloudManager' })
   cloudManagerId: string;
+
+  @Prop({})
+  monitorId: string[];
 }
 
 export const ServerSchema = SchemaFactory.createForClass(Server);
