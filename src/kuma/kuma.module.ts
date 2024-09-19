@@ -21,9 +21,11 @@ import {
 import { Collab, CollabSchema } from 'src/schemas/collabs.schema';
 import { BullModule } from '@nestjs/bullmq';
 import { KumaMonitorConsumer } from './kuma.consumer';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
+    HttpModule,
     MongooseModule.forFeature([{ name: Server.name, schema: ServerSchema }]),
     MongooseModule.forFeature([{ name: Key.name, schema: KeySchema }]),
     MongooseModule.forFeature([{ name: Gist.name, schema: GistSchema }]),

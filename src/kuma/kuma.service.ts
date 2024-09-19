@@ -1,3 +1,4 @@
+import { json } from 'express';
 import { Injectable } from '@nestjs/common';
 import { UpdateKumaDto } from './dto/update-kuma.dto';
 import puppeteer, { Page } from 'puppeteer';
@@ -11,22 +12,12 @@ import { Model } from 'mongoose';
 import { KeysService } from 'src/keys/keys.service';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import { HttpService } from '@nestjs/axios';
 
 type KumaBody = {
   hostname: string;
   port: string;
   msg: string;
-};
-
-type ChannelType = 'GROUP' | 'MANAGE' | 'CLIENT' | 'PING';
-type TypeChannelType = 'group' | 'port' | 'ping';
-
-type ChannelBody = {
-  type: TypeChannelType;
-  name: string;
-  hostname?: string;
-  port?: string;
-  group?: string;
 };
 
 const DOWN = 'Down';
@@ -40,6 +31,7 @@ export class KumaService {
     @InjectModel(Key.name) private keyModal: Model<Key>,
     @InjectModel(Server.name) private serverModal: Model<Server>,
     @InjectQueue('kuma-monitor') private kumaMonitorQueue: Queue,
+    private readonly httpService: HttpService,
   ) {}
   private extractInfo(data: KumaBody) {
     const msgPattern = /^\[([cm][^\]]*)\] \[(🔴|✅) (Down|Up)\]/;
@@ -112,89 +104,6 @@ export class KumaService {
     await page.click('[type="submit"]');
   }
 
-  private async _handleCreateChannel(page: Page, createKumaDto: CreateKumaDto) {
-    await page.goto(`${this.configService.get('KUMA_DOMAIN')}/add`);
-    await this._handleCreateCore(page, 'GROUP', {
-      type: 'group',
-      name: createKumaDto.name + '-' + createKumaDto?.hostname,
-    });
-
-    await page.waitForNavigation();
-    await page.goto(`${this.configService.get('KUMA_DOMAIN')}/add`);
-    await this._handleCreateCore(page, 'CLIENT', {
-      type: 'port',
-      name: `c-${createKumaDto.name}-${createKumaDto?.hostname}`,
-      hostname: createKumaDto.hostname,
-      port: createKumaDto.portC,
-      group: createKumaDto.name,
-    });
-
-    await page.waitForNavigation();
-    await page.goto(`${this.configService.get('KUMA_DOMAIN')}/add`);
-    await this._handleCreateCore(page, 'PING', {
-      type: 'ping',
-      name: `p-${createKumaDto.name}-${createKumaDto?.hostname}`,
-      hostname: createKumaDto.hostname,
-      group: createKumaDto.name,
-    });
-  }
-
-  private async _handleCreateCore(
-    page: Page,
-    type: ChannelType,
-    channelBody: ChannelBody,
-  ) {
-    // Choose Chanel
-    await page.waitForSelector('select[class="form-select"]');
-    const channelSelectE = await page.$('select[class="form-select"]');
-    await channelSelectE.select(channelBody.type);
-
-    // Type Name
-    await page.waitForSelector('input[id="name"]');
-    await page.type('input[id="name"]', channelBody.name);
-
-    if (type !== 'GROUP') {
-      // Type Hostname
-      await page.waitForSelector('input[id="hostname"]');
-      await page.type('input[id="hostname"]', channelBody.hostname);
-
-      // Type Port
-      if (type !== 'PING') {
-        await page.waitForSelector('input[id="port"]');
-        await page.type('input[id="port"]', channelBody.port);
-      }
-
-      // Type maxRetries
-      await page.waitForSelector('input[id="maxRetries"]');
-      await page.type('input[id="maxRetries"]', MAXRETRIES);
-
-      // Choose Group
-      await page.waitForSelector('select[id="monitorGroupSelector"]');
-      const options = await page.$$eval(
-        'select[id="monitorGroupSelector"] option',
-        (options) =>
-          options.map((option) => ({
-            value: option.value,
-            text: option.textContent,
-          })),
-      );
-      const optionToSelect = options.find(
-        (option) =>
-          option.text === channelBody?.group + '-' + channelBody?.hostname,
-      );
-      if (optionToSelect) {
-        await page.select(
-          'select[id="monitorGroupSelector"]',
-          optionToSelect.value,
-        );
-      }
-    }
-
-    //Submit
-    await page.waitForSelector('button[id="monitor-submit-btn"]');
-    await page.click('button[id="monitor-submit-btn"]');
-  }
-
   async monitor(monitorKumaDto: any) {
     try {
       const kumaBody = {
@@ -252,23 +161,58 @@ export class KumaService {
   }
 
   async create(createKumaDto: CreateKumaDto) {
-    const { browser, page } = await this._initBroswer();
+    const formData = new FormData();
+    formData.append('username', this.configService.get('KUMA_USERNAME'));
+    formData.append('password', this.configService.get('KUMA_PASSWORD'));
     try {
-      await this._handleLogin(page);
-      await page.waitForNavigation();
-      await this._handleCreateChannel(page, createKumaDto);
-      await this.serverModal.findOneAndUpdate(
+      // const res = await this.httpService.axiosRef.post(
+      //   this.configService.get('KUMA_DOMAIN') + '/login/access-token',
+      //   formData,
+      // );
+
+      // const token = res.data.access_token;
+
+      const token =
+        'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3Mjc0MjQyNzIsInN1YiI6ImV5SmhiR2NpT2lKSVV6STFOaUlzSW5SNWNDSTZJa3BYVkNKOS5leUoxYzJWeWJtRnRaU0k2SW1Ga2JXbHVJaXdpYUNJNkltWTNNVEF3T1dGaE9UVXhOV1pqTmpBMk5HRmxObVE0TnpreE1UUm1OVEl5SWl3aWFXRjBJam94TnpJMk56TXpNRGN5ZlEuTXliblk2cndvUTZwcWNOR0tYRVowTGs2T3l6aEExVWd2NW9HQTRLbjZaOCJ9.FpAHDnXDsmb9Z4jZjGkTGc5R94EtWjpWB00yYzLp_JY';
+
+      const payload = {
+        type: 'port',
+        name: `c-${createKumaDto.name}-${createKumaDto.hostname}`,
+        interval: 30,
+        retryInterval: 30,
+        resendInterval: 0,
+        maxretries: 6,
+        upsideDown: false,
+        url: 'https://',
+        expiryNotification: false,
+        ignoreTls: false,
+        maxredirects: 10,
+        port: createKumaDto.portC,
+        accepted_statuscodes: ['200-299'],
+        method: 'GET',
+        authMethod: 'basic',
+        hostname: createKumaDto.hostname,
+        dns_resolve_server: '1.1.1.1',
+        dns_resolve_type: 'A',
+        mqttUsername: '',
+        mqttPassword: '',
+      };
+
+      const monitorRes = await this.httpService.axiosRef.post(
+        this.configService.get('KUMA_DOMAIN') + '/monitors',
+        payload,
         {
-          hostnameForAccessKeys: createKumaDto.hostname,
-          status: 1,
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
         },
-        { isConnectKuma: 1 },
       );
-      return 'Connect kuma finnish';
-    } catch (error) {
-      throw error;
-    } finally {
-      await browser.close();
+
+      return monitorRes;
+    } catch (err) {
+      throw err;
     }
   }
 

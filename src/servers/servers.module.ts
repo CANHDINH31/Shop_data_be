@@ -22,9 +22,11 @@ import {
 import { KumaService } from 'src/kuma/kuma.service';
 import { BullModule } from '@nestjs/bullmq';
 import { DataUsageConsumer } from './servers.consumer';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
+    HttpModule,
     MongooseModule.forFeature([{ name: Server.name, schema: ServerSchema }]),
     MongooseModule.forFeature([{ name: Key.name, schema: KeySchema }]),
     MongooseModule.forFeature([{ name: Gist.name, schema: GistSchema }]),
