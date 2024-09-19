@@ -1,7 +1,5 @@
-import { json } from 'express';
 import { Injectable } from '@nestjs/common';
 import { UpdateKumaDto } from './dto/update-kuma.dto';
-import puppeteer, { Page } from 'puppeteer';
 import { CreateKumaDto } from './dto/create-kuma.dto';
 import { ConfigService } from '@nestjs/config';
 import { RemoveKumaDto } from './dto/remove-kuma.dto';
@@ -21,7 +19,6 @@ type KumaBody = {
 };
 
 const DOWN = 'Down';
-const MAXRETRIES = '5';
 
 @Injectable()
 export class KumaService {
@@ -46,62 +43,6 @@ export class KumaService {
     } else {
       return null;
     }
-  }
-
-  private async _initBroswer() {
-    const browser = await puppeteer.launch({
-      // headless: false,
-      headless: 'shell',
-      executablePath: '/usr/bin/chromium-browser',
-      defaultViewport: null,
-      ignoreHTTPSErrors: true,
-      protocolTimeout: 60000,
-      timeout: 0,
-      args: [
-        '--disable-web-security',
-        `--ignore-certificate-errors`,
-        `--disable-notifications`,
-        `--no-sandbox`,
-        `--disable-setuid-sandbox`,
-        '--disable-accelerated-2d-canvas',
-        '--disable-gpu',
-      ],
-    });
-
-    const page = await browser.newPage();
-
-    return { browser, page };
-  }
-
-  private async _handleLogin(page: Page) {
-    await page.screenshot({ path: 'uploads/screenshot1.png' });
-
-    // Handle Login
-    await page.goto(`${this.configService.get('KUMA_DOMAIN')}/dashboard`);
-
-    await page.screenshot({ path: 'uploads/screenshot2.png' });
-
-    // Input Username
-    await page.waitForSelector('input[autocomplete="username"]');
-    await page.type(
-      'input[autocomplete="username"]',
-      this.configService.get('KUMA_USERNAME'),
-    );
-
-    await page.screenshot({ path: 'uploads/screenshot3.png' });
-
-    // Input password
-    await page.waitForSelector('input[autocomplete="current-password"]');
-    await page.type(
-      'input[autocomplete="current-password"]',
-      this.configService.get('KUMA_PASSWORD'),
-    );
-
-    await page.screenshot({ path: 'uploads/screenshot4.png' });
-
-    // Button login
-    await page.waitForSelector('[type="submit"]');
-    await page.click('[type="submit"]');
   }
 
   async monitor(monitorKumaDto: any) {
@@ -271,80 +212,46 @@ export class KumaService {
     return `This action updates a #${id} kuma`;
   }
 
-  private async _handleSearch(page: Page, name: string) {
-    await page.waitForSelector('input[class="form-control search-input"]');
-    await page.type('input[class="form-control search-input"]', '');
-    await page.type('input[class="form-control search-input"]', name);
-  }
-
-  private async _handleRemove(page: Page) {
-    await page.waitForSelector('div[class="monitor-list scrollbar"]');
-    const listMonitorWrapper = await page.$(
-      'div[class="monitor-list scrollbar"]',
-    );
-
-    if (listMonitorWrapper) {
-      await page.waitForSelector('a[data-v-574bc50a]', { timeout: 500 });
-      const listHrefs = await listMonitorWrapper.$$eval(
-        'a[data-v-574bc50a]',
-        (els) => els?.map((el) => el.getAttribute('href'))?.reverse(),
-      );
-
-      const removePromises = listHrefs.map((href) =>
-        this._handleRemoveCore(page, href),
-      );
-      await Promise.all(removePromises);
-    }
-  }
-
-  private async _handleRemoveCore(page: Page, href: string) {
-    const newPage = await page.browser().newPage();
-    try {
-      await newPage.goto(this.configService.get('KUMA_DOMAIN') + href);
-
-      await newPage.waitForSelector('button[class="btn btn-danger"]');
-      await newPage.click('button[class="btn btn-danger"]');
-
-      await newPage.waitForSelector('div[class="modal fade show"]');
-      const modelActive = await newPage.$('div[class="modal fade show"]');
-      if (modelActive) {
-        await modelActive.waitForSelector(
-          'button[class="btn btn-danger"][data-bs-dismiss="modal"]',
-        );
-        const buttonSubmit = await modelActive.$(
-          'button[class="btn btn-danger"][data-bs-dismiss="modal"]',
-        );
-
-        if (buttonSubmit) {
-          await buttonSubmit.click();
-        }
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      await newPage.close();
-    }
-  }
-
-  private async _remove(removeKumaDto: RemoveKumaDto) {
-    const { browser, page } = await this._initBroswer();
-
-    try {
-      await this._handleLogin(page);
-      await page.waitForNavigation();
-      await this._handleSearch(page, removeKumaDto.name);
-      await this._handleRemove(page);
-    } catch (error) {
-    } finally {
-      await browser.close();
-    }
-  }
-
   async remove(removeKumaDto: RemoveKumaDto) {
-    let numRetries = 1;
-    while (numRetries < Number(MAXRETRIES)) {
-      await this._remove(removeKumaDto);
-      numRetries++;
+    try {
+      const server: any = await this.serverModal.findById(removeKumaDto.id);
+      const listMonitorId = server.monitorId;
+      const formData = new FormData();
+      formData.append('username', this.configService.get('KUMA_USERNAME'));
+      formData.append('password', this.configService.get('KUMA_PASSWORD'));
+
+      const res = await this.httpService.axiosRef.post(
+        this.configService.get('KUMA_DOMAIN') + '/login/access-token',
+        formData,
+      );
+
+      const token = res.data.access_token;
+
+      await this.httpService.axiosRef.delete(
+        this.configService.get('KUMA_DOMAIN') + `/monitors/${listMonitorId[0]}`,
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      await this.httpService.axiosRef.delete(
+        this.configService.get('KUMA_DOMAIN') + `/monitors/${listMonitorId[1]}`,
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      return 'remove monitoring successfully';
+    } catch (error) {
+      throw new Error(error);
     }
   }
 }
