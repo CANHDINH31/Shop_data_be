@@ -304,9 +304,7 @@ export class GistsService {
         .populate('planId')
         .populate({
           path: 'keyId',
-          populate: {
-            path: 'awsId',
-          },
+          populate: [{ path: 'awsId' }, { path: 'serverId' }],
         })
         .skip(skip)
         .limit(take);

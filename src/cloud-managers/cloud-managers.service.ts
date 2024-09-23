@@ -76,20 +76,30 @@ export class CloudManagersService {
         const startDate = moment(
           moment(cloudManager.startDate).format('YYYY-MM-DD'),
         );
+
+        const today = moment();
+
         const endDate = moment(
           moment(cloudManager.endDate).format('YYYY-MM-DD'),
         );
 
-        const remain = endDate.diff(startDate, 'days');
-        listData.push({ ...cloudManager?.toObject(), remain, server });
+        const valid = endDate.diff(startDate, 'days');
+        const remain = endDate.diff(today, 'days');
+
+        listData.push({
+          ...cloudManager?.toObject(),
+          valid,
+          server,
+          remain,
+        });
       }
 
-      const totoalCost = await this.cloudManagerModal.aggregate([
+      const totalCost = await this.cloudManagerModal.aggregate([
         { $match: query },
         { $group: { _id: 'null', price: { $sum: '$price' } } },
       ]);
 
-      return { totoalCost: totoalCost?.[0]?.price, listData };
+      return { totalCost: totalCost?.[0]?.price, listData };
     } catch (error) {
       throw error;
     }
