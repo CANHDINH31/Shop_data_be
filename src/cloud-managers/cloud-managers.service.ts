@@ -84,14 +84,22 @@ export class CloudManagersService {
           moment(cloudManager.endDate).format('YYYY-MM-DD'),
         );
 
+        const dieDate = cloudManager?.dieDate
+          ? moment(moment(cloudManager.dieDate).format('YYYY-MM-DD'))
+          : null;
+
         const valid = endDate.diff(startDate, 'days');
         const remain = endDate.diff(today, 'days');
+        const live = cloudManager?.dieDate
+          ? dieDate.diff(startDate, 'days')
+          : null;
 
         listData.push({
           ...cloudManager?.toObject(),
           valid,
           server,
           remain,
+          live,
         });
       }
 
