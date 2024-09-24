@@ -127,6 +127,7 @@ export class KumaService {
         maxredirects: 10,
         port: createKumaDto.portC,
         accepted_statuscodes: ['200-299'],
+        notificationIDList: [1, 2],
         method: 'GET',
         authMethod: 'basic',
         hostname: createKumaDto.hostname,

@@ -14,6 +14,9 @@ export class CloudManager {
   @Prop()
   endDate: Date;
 
+  @Prop()
+  dieDate: Date;
+
   @Prop({ default: 1 })
   status: number;
   // 1:live - 0:die

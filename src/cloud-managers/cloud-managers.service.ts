@@ -7,6 +7,7 @@ import { Model } from 'mongoose';
 import { Server } from 'src/schemas/servers.schema';
 import * as moment from 'moment';
 import { TotalCostDto } from './dto/total-cost.dto';
+import { UpdateStatusCloudManagerDto } from './dto/update-status-cloud-manager.dto';
 
 @Injectable()
 export class CloudManagersService {
@@ -132,6 +133,35 @@ export class CloudManagersService {
         { ...updateCloudManagerDto },
         { new: true },
       );
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateStatus(
+    id: string,
+    updateStatusCloudManagerDto: UpdateStatusCloudManagerDto,
+  ) {
+    try {
+      if (updateStatusCloudManagerDto.status == 1) {
+        return await this.cloudManagerModal.findByIdAndUpdate(
+          id,
+          {
+            status: 1,
+            $unset: { dieDate: '' },
+          },
+          { new: true },
+        );
+      } else {
+        return await this.cloudManagerModal.findByIdAndUpdate(
+          id,
+          {
+            status: 0,
+            dieDate: new Date(),
+          },
+          { new: true },
+        );
+      }
     } catch (error) {
       throw error;
     }
