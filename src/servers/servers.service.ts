@@ -467,6 +467,7 @@ export class ServersService {
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
   async getDataUsage() {
     try {
+      await this.dataUsageQueue.clean(0, 10000, 'wait');
       console.log('start cron data usage');
 
       let skip = 0;
