@@ -397,21 +397,24 @@ export class KeysService {
             $gte: startToday,
             $lte: endToday,
           },
+          status: 1,
         })
         .count();
 
       const buyToday = await this.keyModal
         .find({
-          createdAt: {
+          createDate: {
             $gte: startToday,
             $lte: endToday,
           },
+          status: 1,
         })
         .count();
 
       const overbandWidthToday = await this.keyModal
         .find({
           $expr: { $gt: ['$dataUsage', '$dataLimit'] },
+          status: 1,
         })
         .count();
 
