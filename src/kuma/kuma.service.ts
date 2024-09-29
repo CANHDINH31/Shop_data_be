@@ -257,7 +257,7 @@ export class KumaService {
       });
       return 'remove monitoring successfully';
     } catch (error) {
-      throw new Error(error);
+      console.log(error);
     }
   }
 }

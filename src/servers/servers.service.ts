@@ -445,6 +445,7 @@ export class ServersService {
         message: 'Xóa thành công',
       };
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }
