@@ -781,8 +781,11 @@ export class KeysService {
   @Cron(CronExpression.EVERY_DAY_AT_1AM)
   async checkExpiredKey() {
     try {
-      await this.expriedKeyQueue.clean(0, 10000, 'wait');
       console.log('start cron check expire key');
+      const amountQueueWating = await this.expriedKeyQueue.count();
+      if (amountQueueWating > 200) {
+        await this.expriedKeyQueue.clean(0, 100, 'wait');
+      }
 
       let skip = 0;
       const limit = 10;
@@ -820,7 +823,11 @@ export class KeysService {
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async checkExpireDataExpandKey() {
     try {
-      await this.expriedDataExpandQueue.clean(0, 10000, 'wait');
+      const amountQueueWating = await this.expriedDataExpandQueue.count();
+      if (amountQueueWating > 200) {
+        await this.expriedDataExpandQueue.clean(0, 100, 'wait');
+      }
+
       let skip = 0;
       const limit = 10;
       let listKey: any = [];

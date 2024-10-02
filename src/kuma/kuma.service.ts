@@ -54,7 +54,10 @@ export class KumaService {
       };
 
       const result = this.extractInfo(kumaBody);
-      await this.kumaMonitorQueue.clean(0, 10000, 'wait');
+      const amountQueueWating = await this.kumaMonitorQueue.count();
+      if (amountQueueWating > 200) {
+        await this.kumaMonitorQueue.clean(0, 100, 'wait');
+      }
       await this.kumaMonitorQueue.add('kuma-monitor', {
         data: result,
       });
