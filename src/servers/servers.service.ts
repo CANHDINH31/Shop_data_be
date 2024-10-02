@@ -116,15 +116,48 @@ export class ServersService {
       });
       const server: any = await outlineVpn.getServer();
       if (syncServerDto?.isCheckUnique !== '1') {
-        const existServer = await this.serverModal.findOne({
+        const existServerRemoved = await this.serverModal.findOne({
           hostnameForAccessKeys: server.hostnameForAccessKeys,
           status: 0,
         });
-        if (existServer) {
+        if (existServerRemoved) {
           return {
             status: HttpStatus.OK,
             isCheckUnique: 1,
             message: 'Server đã được xóa trước đây',
+          };
+        }
+        const existServerActive = await this.serverModal.findOne({
+          hostnameForAccessKeys: server.hostnameForAccessKeys,
+          status: 1,
+        });
+        if (existServerActive) {
+          return {
+            status: HttpStatus.OK,
+            isCheckUnique: 1,
+            message: 'Server đang năm trong danh sách server active',
+          };
+        }
+        const existServerDowned = await this.serverModal.findOne({
+          hostnameForAccessKeys: server.hostnameForAccessKeys,
+          status: 2,
+        });
+        if (existServerDowned) {
+          return {
+            status: HttpStatus.OK,
+            isCheckUnique: 1,
+            message: 'Server đang năm trong danh sách server down',
+          };
+        }
+        const existServerMaintain = await this.serverModal.findOne({
+          hostnameForAccessKeys: server.hostnameForAccessKeys,
+          status: 3,
+        });
+        if (existServerMaintain) {
+          return {
+            status: HttpStatus.OK,
+            isCheckUnique: 1,
+            message: 'Server đang năm trong danh sách server maintain',
           };
         }
       }
