@@ -415,6 +415,30 @@ export class SatisfyService {
         { $group: { _id: id, money: { $sum: '$money' } } },
       ]);
 
+      const discount = await this.transactionModal.aggregate([
+        {
+          $match: { userId: new mongoose.Types.ObjectId(id) },
+        },
+        {
+          $project: {
+            adjustedMoney: {
+              $multiply: [
+                '$money',
+                {
+                  $divide: ['$discount', { $subtract: [100, '$discount'] }],
+                },
+              ],
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalAdjustedMoney: { $sum: '$adjustedMoney' },
+          },
+        },
+      ]);
+
       const user = await this.userModal.findById(id);
       const introduceUser = await this.userModal.find({ introduceCode: id });
 
@@ -422,6 +446,7 @@ export class SatisfyService {
         cash,
         rose,
         transaction,
+        discount,
         currentMoney: user?.money,
         numberIntoduce: introduceUser?.length,
       };
