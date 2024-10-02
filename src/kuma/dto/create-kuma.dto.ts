@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateKumaDto {
   @IsNotEmpty()
@@ -12,4 +12,8 @@ export class CreateKumaDto {
   @IsNotEmpty()
   @IsString()
   portC: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  status: number;
 }

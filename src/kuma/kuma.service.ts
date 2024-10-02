@@ -187,7 +187,7 @@ export class KumaService {
       await this.serverModal.findOneAndUpdate(
         {
           hostnameForAccessKeys: createKumaDto.hostname,
-          status: 1,
+          status: createKumaDto.status,
         },
         {
           monitorId: [monitorResC.data.monitorID, monitorResP.data.monitorID],
