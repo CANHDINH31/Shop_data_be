@@ -38,6 +38,30 @@ export class TransactionsService {
       .populate('extendPlanId');
   }
 
+  async historyUpgradePlan(
+    historyExtendPlanTransactionDto: HistoryExtendPlanTransactionDto,
+  ) {
+    const gist = await this.gistModal.findOne({
+      keyId: historyExtendPlanTransactionDto.keyId,
+    });
+
+    return await this.transactionModal
+      .find({
+        gistId: gist._id,
+        planId: { $exists: true },
+        description: { $regex: 'Gia hạn', $options: 'i' },
+      })
+      .sort({ createdAt: -1 })
+      .populate('userId')
+      .populate({
+        path: 'gistId',
+        populate: {
+          path: 'keyId',
+        },
+      })
+      .populate('planId');
+  }
+
   async findAll(req: any) {
     try {
       let query = {};

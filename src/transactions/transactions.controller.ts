@@ -31,6 +31,15 @@ export class TransactionsController {
     );
   }
 
+  @Post('history-upgrade-plan')
+  historyUpgradePlan(
+    @Body() historyExtendPlanTransactionDto: HistoryExtendPlanTransactionDto,
+  ) {
+    return this.transactionsService.historyUpgradePlan(
+      historyExtendPlanTransactionDto,
+    );
+  }
+
   @Get()
   findAll(@Req() req) {
     return this.transactionsService.findAll(req);
