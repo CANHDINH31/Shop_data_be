@@ -309,7 +309,7 @@ export class GistsService {
         .skip(skip)
         .limit(take);
 
-      const totalItems = await this.keyModal.find(query).count();
+      const totalItems = await this.gistModal.find(query).count();
 
       const totalPage = Math.ceil(totalItems / Number(pageSize));
 
