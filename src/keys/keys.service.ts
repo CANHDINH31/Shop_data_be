@@ -52,6 +52,36 @@ export class KeysService {
     });
   }
 
+  async test() {
+    const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD hh:mm');
+    const saturday = moment('2024-09-29')
+      .subtract(1, 'days')
+      .format('YYYY-MM-DD hh:mm');
+    const monday = moment('2024-09-29')
+      .add(1, 'days')
+      .format('YYYY-MM-DD hh:mm');
+    try {
+      const listKey: any = await this.keyModal.aggregate([
+        {
+          $match: {
+            status: 0,
+            endDate: {
+              $gte: new Date(yesterday),
+            },
+            updatedAt: {
+              $gte: new Date(saturday),
+              $lte: new Date(monday),
+            },
+          },
+        },
+      ]);
+
+      return listKey.map((k) => k._id);
+    } catch (err) {
+      throw err;
+    }
+  }
+
   create(createKeyDto: CreateKeyDto) {
     return 'This action adds a new key';
   }

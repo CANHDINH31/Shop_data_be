@@ -20,6 +20,11 @@ import { EndDateKeyDto } from './dto/end-date-key.dto';
 export class KeysController {
   constructor(private readonly keysService: KeysService) {}
 
+  @Get('/test')
+  test() {
+    return this.keysService.test();
+  }
+
   @Post('/multi-migrate')
   multiMigrate(@Body() multiMigrateKeyDto: MultiMigrateKeyDto) {
     return this.keysService.multiMigrate(multiMigrateKeyDto);
