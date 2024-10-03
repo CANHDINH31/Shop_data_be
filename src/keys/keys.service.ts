@@ -53,30 +53,51 @@ export class KeysService {
   }
 
   async test() {
-    const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD hh:mm');
-    const saturday = moment('2024-09-29')
-      .subtract(1, 'days')
-      .format('YYYY-MM-DD hh:mm');
-    const monday = moment('2024-09-29')
-      .add(1, 'days')
-      .format('YYYY-MM-DD hh:mm');
     try {
       const listKey: any = await this.keyModal.aggregate([
         {
           $match: {
-            status: 0,
-            endDate: {
-              $gte: new Date(yesterday),
+            status: 1, // Chỉ lấy những document có status = 1
+          },
+        },
+        {
+          $group: {
+            _id: {
+              name: '$name',
+              status: '$status',
             },
-            updatedAt: {
-              $gte: new Date(saturday),
-              $lte: new Date(monday),
-            },
+            keys: { $push: '$$ROOT' },
+            count: { $sum: 1 },
+          },
+        },
+        {
+          $match: {
+            count: { $gt: 1 }, // Chỉ giữ lại những nhóm có hơn 1 document
           },
         },
       ]);
 
-      return listKey.map((k) => k._id);
+      const data = listKey?.map((k) => ({
+        name: k?._id?.name,
+        count: k?.count,
+        keys: k?.keys?.map((sk) => ({ _id: sk._id, awsId: sk.awsId })),
+      }));
+
+      for (const d of data) {
+        await this.keyModal.findOneAndDelete({
+          _id: d.keys[0]._id,
+        });
+
+        await this.gistModal.findOneAndDelete({
+          keyId: d.keys[0]._id,
+        });
+
+        await this.awsModal.findOneAndDelete({
+          _id: d.keys[0].awsId,
+        });
+      }
+
+      return data?.length;
     } catch (err) {
       throw err;
     }
