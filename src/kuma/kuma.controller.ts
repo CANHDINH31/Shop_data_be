@@ -26,6 +26,11 @@ export class KumaController {
     return this.kumaService.create(createKumaDto);
   }
 
+  @Get('/test')
+  test() {
+    return this.kumaService.test();
+  }
+
   @Get()
   findAll() {
     return this.kumaService.findAll();

@@ -6,7 +6,7 @@ import { RemoveKumaDto } from './dto/remove-kuma.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Server } from 'src/schemas/servers.schema';
 import { Key } from 'src/schemas/keys.schema';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { KeysService } from 'src/keys/keys.service';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
@@ -68,6 +68,13 @@ export class KumaService {
     }
   }
 
+  async test() {
+    try {
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async _handleMonitorCore(result: any) {
     try {
       if (result && result.status === DOWN) {
@@ -83,8 +90,52 @@ export class KumaService {
           },
           { status: 2 },
         );
-        // // Migrate key to maintain server
-        const maintainServer = await this.serverModal.findOne({ status: 3 });
+        // Migrate key to maintain server
+        let maintainServer;
+
+        const serverSameLocation = await this.serverModal.findOne({
+          status: 3,
+          location: downServer.location,
+        });
+
+        if (serverSameLocation) {
+          maintainServer = serverSameLocation;
+        } else {
+          const listServer = await this.serverModal.aggregate([
+            {
+              $match: {
+                status: 3,
+              },
+            },
+            {
+              $lookup: {
+                from: 'keys',
+                localField: '_id',
+                foreignField: 'serverId',
+                as: 'keys',
+                pipeline: [
+                  {
+                    $match: { status: 1 },
+                  },
+                ],
+              },
+            },
+            {
+              $addFields: {
+                keyCount: { $size: '$keys' },
+              },
+            },
+            {
+              $sort: { keyCount: 1 },
+            },
+            {
+              $limit: 1,
+            },
+          ]);
+
+          maintainServer = listServer[0];
+        }
+
         if (maintainServer) {
           const listKey = await this.keyModal.find({
             serverId: downServer?._id?.toString(),
