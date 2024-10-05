@@ -312,7 +312,7 @@ export class SatisfyService {
           {
             $match: {
               status: 1,
-              $expr: { $gt: ['$dataUsage', '$dataLimit'] },
+              $expr: { $gt: ['$dataUsage', '$dataExpand'] },
             },
           },
         ]);
