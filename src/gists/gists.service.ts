@@ -530,6 +530,7 @@ export class GistsService {
       });
       return 'success';
     } catch (error) {
+      throw error;
       console.log(error, 'error');
     }
   }

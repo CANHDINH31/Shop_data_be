@@ -6,7 +6,7 @@ import { RemoveKumaDto } from './dto/remove-kuma.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Server } from 'src/schemas/servers.schema';
 import { Key } from 'src/schemas/keys.schema';
-import mongoose, { Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { KeysService } from 'src/keys/keys.service';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
