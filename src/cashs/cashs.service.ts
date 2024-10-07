@@ -93,6 +93,9 @@ export class CashsService {
         ...(req?.query?.status && {
           status: req.query.status,
         }),
+        ...(req?.query?.code && {
+          code: { $regex: req.query.code, $options: 'i' },
+        }),
       };
 
       return await this.cashModal

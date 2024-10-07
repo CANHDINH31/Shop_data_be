@@ -118,14 +118,14 @@ export class UsersService {
     try {
       let query = {};
       query = {
-        ...(req?.query?.introduceCode && {
-          introduceCode: req.query.introduceCode,
-        }),
         ...(req?.query?.email && {
           email: { $regex: req.query.email, $options: 'i' },
         }),
         ...(req?.query?.username && {
           username: { $regex: req.query.username, $options: 'i' },
+        }),
+        ...(req?.query?.introduceCode && {
+          introduceCode: { $regex: req.query.introduceCode, $options: 'i' },
         }),
       };
 
