@@ -446,7 +446,6 @@ export class KeysService {
         .startOf('day')
         .format('YYYY-MM-DD hh:mm');
 
-      console.log({ startToday, endToday });
       const expireToday = await this.keyModal
         .find({
           endDate: {
