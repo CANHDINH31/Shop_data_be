@@ -59,7 +59,7 @@ npm run build
 #### FE
 
 ```bash
-pm2 start npm --name shop_data_fe -- run start -- -p 5173
+pm2 start npm --name shop_data_fe -- run dev
 pm2 startup systemd
 pm2 save
 ```
