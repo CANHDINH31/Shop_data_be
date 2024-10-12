@@ -437,16 +437,21 @@ export class KeysService {
 
   async todayInfo() {
     try {
-      const startToday = new Date();
-      startToday.setHours(0, 0, 0, 0);
-      const endToday = new Date();
-      endToday.setHours(23, 59, 59, 999);
+      const startToday = moment()
+        .subtract(1, 'days')
+        .startOf('day')
+        .format('YYYY-MM-DD hh:mm');
+      const endToday = moment()
+        .add(1, 'days')
+        .startOf('day')
+        .format('YYYY-MM-DD hh:mm');
 
+      console.log({ startToday, endToday });
       const expireToday = await this.keyModal
         .find({
           endDate: {
-            $gte: startToday,
-            $lte: endToday,
+            $gt: new Date(startToday),
+            $lt: new Date(endToday),
           },
           status: 1,
         })
@@ -455,8 +460,8 @@ export class KeysService {
       const buyToday = await this.keyModal
         .find({
           createDate: {
-            $gte: startToday,
-            $lte: endToday,
+            $gt: new Date(startToday),
+            $lt: new Date(endToday),
           },
           status: 1,
         })
