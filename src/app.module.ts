@@ -1,5 +1,10 @@
-import { MongooseModule } from '@nestjs/mongoose';
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { InjectModel, MongooseModule } from '@nestjs/mongoose';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -30,9 +35,14 @@ import { ClouldsModule } from './cloulds/cloulds.module';
 import { ProvidersModule } from './providers/providers.module';
 import { CloudManagersModule } from './cloud-managers/cloud-managers.module';
 import { BullModule } from '@nestjs/bullmq';
+import { TestModule } from './test/test.module';
+import { TestSchema } from './schemas/tests.schema';
+import { ConfigDatabaseService } from './middleware/config-database.service';
+import { CheckActiveMiddleware } from './middleware/check-active.middleware';
 
 @Module({
   imports: [
+    MongooseModule.forFeature([{ name: 'Test', schema: TestSchema }]),
     ScheduleModule.forRoot(),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
@@ -96,12 +106,21 @@ import { BullModule } from '@nestjs/bullmq';
     ClouldsModule,
     ProvidersModule,
     CloudManagersModule,
+    TestModule,
   ],
   controllers: [AppController],
-  providers: [AppService, JwtService],
+  providers: [AppService, JwtService, ConfigDatabaseService],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer;
+  constructor(private configDatabaseService: ConfigDatabaseService) {}
+
+  async configure(consumer: MiddlewareConsumer) {
+    const isActive = await this.configDatabaseService.isActive();
+    if (isActive && isActive.value === '0') {
+      consumer
+        .apply(CheckActiveMiddleware)
+        .exclude({ path: '/api/test/(.*)', method: RequestMethod.ALL })
+        .forRoutes('*');
+    }
   }
 }
