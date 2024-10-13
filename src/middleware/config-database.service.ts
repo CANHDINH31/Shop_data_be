@@ -13,7 +13,12 @@ export class ConfigDatabaseService {
   constructor(@InjectModel('Test') private activeModel: Model<Test>) {}
 
   async isActive() {
-    const test = await this.activeModel.findOne();
+    let test: any;
+    test = await this.activeModel.findOne();
+    if (!test) {
+      await this.activeModel.create({ value: '0' });
+      test = await this.activeModel.findOne();
+    }
     return test;
   }
 }
