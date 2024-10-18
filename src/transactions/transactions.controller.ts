@@ -40,6 +40,11 @@ export class TransactionsController {
     );
   }
 
+  @Get('test')
+  test(@Req() req) {
+    return this.transactionsService.test();
+  }
+
   @Get()
   findAll(@Req() req) {
     return this.transactionsService.findAll(req);

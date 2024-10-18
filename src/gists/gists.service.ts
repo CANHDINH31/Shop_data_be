@@ -157,6 +157,7 @@ export class GistsService {
           server_port: sortedKeyCountByServerId[0].serverPort,
           password: rest.password,
           method: rest.method,
+          prefix: '\u0016\u0003\u0001\u0000¨\u0001\u0001',
         }),
         ContentType: 'application/json',
       }).promise();
@@ -165,6 +166,7 @@ export class GistsService {
       const keyAwsMongo = await this.awsModal.create({
         awsId: keyAws.Key,
         fileName: keyAws.Location,
+        prefix: '\u0016\u0003\u0001\u0000¨\u0001\u0001',
       });
 
       // Tạo key Mongo
@@ -485,6 +487,7 @@ export class GistsService {
           server_port: sortedKeyCountByServerId[0].serverPort,
           password: rest.password,
           method: rest.method,
+          prefix: '\u0016\u0003\u0001\u0000¨\u0001\u0001',
         }),
         ContentType: 'application/json',
       }).promise();
@@ -493,6 +496,7 @@ export class GistsService {
       const keyAwsMongo = await this.awsModal.create({
         awsId: keyAws.Key,
         fileName: keyAws.Location,
+        prefix: '\u0016\u0003\u0001\u0000¨\u0001\u0001',
       });
 
       // Tạo key Mongo

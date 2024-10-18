@@ -11,6 +11,9 @@ export class Aws {
   @Prop()
   fileName: string;
 
+  @Prop()
+  prefix: string;
+
   @Prop({ default: 1 })
   status: number;
   // 1:active - 0: inactive

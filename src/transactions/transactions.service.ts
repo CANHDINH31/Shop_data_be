@@ -62,6 +62,20 @@ export class TransactionsService {
       .populate('planId');
   }
 
+  async test() {
+    return await this.transactionModal
+      .find({ extendPlanId: { $exists: true } })
+      .sort({ createdAt: -1 })
+      .populate('userId')
+      .populate({
+        path: 'gistId',
+        populate: {
+          path: 'keyId',
+        },
+      })
+      .populate('extendPlanId');
+  }
+
   async findAll(req: any) {
     try {
       let query = {};
