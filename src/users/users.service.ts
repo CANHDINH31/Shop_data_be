@@ -118,11 +118,8 @@ export class UsersService {
     try {
       let query = {};
       query = {
-        ...(req?.query?.allLevel && {
-          level: { $in: [1, 2, 3] },
-        }),
         ...(req?.query?.level && {
-          level: req.query.level,
+          level: { $in: req.query.level?.split(',') },
         }),
         ...(req?.query?.email && {
           email: { $regex: req.query.email, $options: 'i' },
