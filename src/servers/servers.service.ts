@@ -194,6 +194,27 @@ export class ServersService {
     }
   }
 
+  async getServerToMigrate(req: any) {
+    try {
+      let query = {};
+      query = {
+        ...(req?.query?.status && {
+          status: req.query.status,
+        }),
+        ...(req?.query?.name && {
+          name: { $regex: req.query.name, $options: 'i' },
+        }),
+        ...(req?.query?.location && {
+          location: { $regex: req.query.location, $options: 'i' },
+        }),
+      };
+
+      return await this.serverModal.find(query).sort({ createdAt: -1 });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async getNormalServer(req: any) {
     try {
       let query = {};

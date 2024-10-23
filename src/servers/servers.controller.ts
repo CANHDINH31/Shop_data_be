@@ -47,6 +47,11 @@ export class ServersController {
     return this.serversService.findSettingBandWidthDefault();
   }
 
+  @Get('/server-to-migrate')
+  getServerToMigrate(@Req() req) {
+    return this.serversService.getServerToMigrate(req);
+  }
+
   @Get('/normal-server')
   getNormalServer(@Req() req) {
     return this.serversService.getNormalServer(req);
