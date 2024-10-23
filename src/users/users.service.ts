@@ -118,6 +118,9 @@ export class UsersService {
     try {
       let query = {};
       query = {
+        ...(req?.query?.allLevel && {
+          level: { $in: [1, 2, 3] },
+        }),
         ...(req?.query?.level && {
           level: req.query.level,
         }),
