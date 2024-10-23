@@ -192,7 +192,7 @@ export class KeysService {
         counterMigrate: CYCLE_PLAN,
       });
 
-      await this.gistModal.create({
+      const newGist = await this.gistModal.create({
         code: gist.code,
         gistId: gist._id,
         userId: gist?.userId,
@@ -208,6 +208,31 @@ export class KeysService {
       await this.keyModal.findByIdAndUpdate(key._id, { status: 2 });
       await this.gistModal.findByIdAndUpdate(gist._id, { status: 2 });
       await this.awsModal.findByIdAndUpdate(aws._id, { status: 2 });
+
+      // Cập nhật lại transaction (extendPlan)
+      const listExtendPlan = await this.transactionModal.find({
+        gistId: gist._id,
+        extendPlanId: { $exists: true },
+      });
+
+      for (const extendPlan of listExtendPlan) {
+        await this.transactionModal.findByIdAndUpdate(extendPlan._id, {
+          gistId: newGist._id,
+        });
+      }
+
+      // Cập nhật lại transaction (upgradePlan)
+      const listUpgradePlan = await this.transactionModal.find({
+        gistId: gist._id,
+        planId: { $exists: true },
+        description: { $regex: 'Gia hạn', $options: 'i' },
+      });
+
+      for (const upgradePlan of listUpgradePlan) {
+        await this.transactionModal.findByIdAndUpdate(upgradePlan._id, {
+          gistId: newGist._id,
+        });
+      }
 
       // disable key sau khi migrate
       if (!newKey.enable) {

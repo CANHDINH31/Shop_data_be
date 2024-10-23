@@ -63,8 +63,11 @@ export class TransactionsService {
   }
 
   async test() {
-    return await this.transactionModal
-      .find({ extendPlanId: { $exists: true } })
+    const data: any = await this.transactionModal
+      .find({
+        planId: { $exists: true },
+        description: { $regex: 'Gia hạn', $options: 'i' },
+      })
       .sort({ createdAt: -1 })
       .populate('userId')
       .populate({
@@ -73,7 +76,9 @@ export class TransactionsService {
           path: 'keyId',
         },
       })
-      .populate('extendPlanId');
+      .populate('planId');
+
+    return data;
   }
 
   async findAll(req: any) {
