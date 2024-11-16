@@ -535,7 +535,7 @@ export class ServersService {
 
       do {
         listKey = await this.keyModal
-          .find({ status: 1, enableByAdmin: true })
+          .find({ status: 1, enable: true })
           .skip(skip)
           .limit(limit)
           .populate('serverId');
