@@ -547,7 +547,10 @@ export class KeysService {
 
       await outlineVpn.enableUser(key?.keyId);
       await outlineVpn.addDataLimit(key?.keyId, key?.dataExpand);
-      await this.keyModal.findByIdAndUpdate(key._id, { enableByAdmin: true });
+      await this.keyModal.findByIdAndUpdate(key._id, {
+        enableByAdmin: true,
+        enable: true,
+      });
 
       return {
         status: HttpStatus.OK,
