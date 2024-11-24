@@ -519,7 +519,10 @@ export class KeysService {
       });
 
       await outlineVpn.disableUser(key?.keyId);
-      await this.keyModal.findByIdAndUpdate(key._id, { enableByAdmin: false });
+      await this.keyModal.findByIdAndUpdate(key._id, {
+        enableByAdmin: false,
+        enable: false,
+      });
 
       return {
         status: HttpStatus.OK,
