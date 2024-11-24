@@ -209,7 +209,22 @@ export class ServersService {
         }),
       };
 
-      return await this.serverModal.find(query).sort({ createdAt: -1 });
+      const servers = await this.serverModal
+        .find(query)
+        .sort({ createdAt: -1 });
+
+      const listResult = [];
+
+      for (const sv of servers) {
+        const numberKey = await this.keyModal.countDocuments({
+          serverId: sv._id,
+          status: 1,
+        });
+
+        listResult.push({ ...sv.toObject(), numberKey });
+      }
+
+      return listResult;
     } catch (error) {
       throw error;
     }
