@@ -527,7 +527,7 @@ export class ServersService {
         await this.dataUsageQueue.clean(0, 100, 'wait');
       }
 
-      console.log('start cron data usage');
+      console.log('start cron data usage: ', Date.now());
 
       let skip = 0;
       const limit = 10;
@@ -547,7 +547,7 @@ export class ServersService {
         skip += limit;
       } while (listKey.length > 0);
 
-      console.log('finnish cron data usage');
+      console.log('finnish cron data usage: ', Date.now());
     } catch (error) {
       throw error;
     }

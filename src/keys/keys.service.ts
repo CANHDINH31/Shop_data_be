@@ -833,7 +833,7 @@ export class KeysService {
   @Cron(CronExpression.EVERY_DAY_AT_1AM)
   async checkExpiredKey() {
     try {
-      console.log('start cron check expire key');
+      console.log('start cron check expire key: ', Date.now());
       const amountQueueWating = await this.expriedKeyQueue.count();
       if (amountQueueWating > 200) {
         await this.expriedKeyQueue.clean(0, 100, 'wait');
@@ -855,7 +855,7 @@ export class KeysService {
         }
         skip += limit;
       } while (listKey.length > 0);
-      console.log('finnish cron check expire key');
+      console.log('finnish cron check expire key: ', Date.now());
     } catch (error) {
       throw error;
     }
@@ -875,6 +875,7 @@ export class KeysService {
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async checkExpireDataExpandKey() {
     try {
+      console.log('start cron check expire data expand key: ', Date.now());
       const amountQueueWating = await this.expriedDataExpandQueue.count();
       if (amountQueueWating > 200) {
         await this.expriedDataExpandQueue.clean(0, 100, 'wait');
@@ -898,6 +899,7 @@ export class KeysService {
 
         skip += limit;
       } while (listKey.length > 0);
+      console.log('finnish cron check expire data expand key: ', Date.now());
     } catch (error) {}
   }
 
