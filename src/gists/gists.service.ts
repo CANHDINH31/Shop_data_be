@@ -87,7 +87,7 @@ export class GistsService {
           {
             $match: {
               serverId: new mongoose.Types.ObjectId(server._id),
-              status: { $in: [1, 2] },
+              status: 1,
             },
           },
           {
