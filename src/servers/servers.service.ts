@@ -570,17 +570,25 @@ export class ServersService {
 
   public async _handleCoreGetDataUsage(listKey: any) {
     for (const key of listKey) {
+      let dataAdd = 0;
+      let dataUsageYesterday = 0;
+
       const outlineVpn = new OutlineVPN({
         apiUrl: key.serverId.apiUrl,
         fingerprint: key.serverId.fingerPrint,
       });
-      const dataUsage = await outlineVpn.getDataUsage();
-      const bytesTransferredByUserId = dataUsage.bytesTransferredByUserId;
+      try {
+        const dataUsage = await outlineVpn.getDataUsage();
+        const bytesTransferredByUserId = dataUsage.bytesTransferredByUserId;
+        dataUsageYesterday = bytesTransferredByUserId[key.keyId] || 0;
+      } catch (error) {
+        continue;
+      }
+
       const arrayDataUsage = key?.arrayDataUsage || [];
       let counterMigrate = key?.counterMigrate || 0;
-      const dataUsageYesterday = bytesTransferredByUserId[key.keyId] || 0;
       if (counterMigrate > 0) {
-        const dataAdd =
+        dataAdd =
           Number(dataUsageYesterday) - Number(key.dataUsageYesterday) > 0
             ? Number(dataUsageYesterday) - Number(key.dataUsageYesterday)
             : 0;
@@ -593,13 +601,13 @@ export class ServersService {
         counterMigrate = counterMigrate - 1;
       } else {
         if (arrayDataUsage?.length < CYCLE_PLAN) {
-          const dataAdd =
+          dataAdd =
             Number(dataUsageYesterday) - Number(key.dataUsageYesterday) > 0
               ? Number(dataUsageYesterday) - Number(key.dataUsageYesterday)
               : 0;
           arrayDataUsage.push(dataAdd);
         } else {
-          const dataAdd =
+          dataAdd =
             Number(dataUsageYesterday) -
               Number(key.dataUsageYesterday) +
               Number(arrayDataUsage[0]) >
