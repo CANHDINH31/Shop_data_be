@@ -8,5 +8,7 @@ services:
       - '6379:6379'
     volumes:
       - redis_data:/data
+    environment:
+      - REDIS_PASSWORD=vpncn2@2025
 volumes:
   redis_data:

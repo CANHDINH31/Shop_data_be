@@ -80,7 +80,7 @@ import { CheckActiveMiddleware } from './middleware/check-active.middleware';
         connection: {
           host: configService.get('REDIS_HOST'),
           port: configService.get('REDIS_PORT'),
-          // password: configService.get('REDIS_PASSWORD'),
+          password: 'vpncn2@2025',
         },
       }),
       inject: [ConfigService],
